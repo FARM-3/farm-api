@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Wage
+from .models import Sale, Wage, Expense
 
 class WageSerializer(serializers.ModelSerializer):
     net_salary = serializers.ReadOnlyField(source='calculate_net_salary')
@@ -15,7 +15,23 @@ class WageSerializer(serializers.ModelSerializer):
             'monthly_pay', 
             'deduction', 
             'noted_reason', 
-            'net_salary'  # The calculated field
+            'net_salary'  
         )
-        # Users can't manually set the net salary, it is always calculated.
+        
         read_only_fields = ('net_salary',)
+
+class SaleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Sale
+        fields = [
+            'id', 'customer_name', 'item', 'rate', 'quantity', 
+            'total_amount', 'amount', 'date_of_payment', 
+            'status', 'balance', 'method_of_payment'
+        ]
+    
+        read_only_fields = ['total_amount', 'status', 'balance']
+
+class ExpenseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Expense
+        fields = '__all__'
