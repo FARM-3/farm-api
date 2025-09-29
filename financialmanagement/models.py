@@ -23,3 +23,56 @@ class Wage(models.Model):
     def calculate_net_salary(self):
         return self.monthly_pay - self.deduction
 
+class Sale(models.Model):
+    customer_name = models.CharField(max_length=20)
+    item = models.CharField(max_length=50)
+    rate = models.DecimalField(max_digits=10, decimal_places=2)
+    quantity = models.IntegerField()
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2)
+    date_of_payment = models.DateField()
+    status = models.CharField(max_length=20)
+    balance = models.DecimalField(max_digits=10, decimal_places=2)
+    method_of_payment = models.CharField(max_length=20)
+
+    class Meta:
+        verbose_name = "Sale Record"
+        verbose_name_plural = "Sale Records"
+        ordering = ['-date_of_payment', 'customer_name']
+
+    def __str__(self):
+        return f"Sale to {self.customer_name} of {self.item}"
+
+    def save(self, *args, **kwargs):
+        self.total_amount = self.rate * self.quantity
+
+        self.balance = self.total_amount - self.amount
+        
+        # 3. Update status based on balance
+        if self.balance <= 0:
+            self.status = "Paid"
+        elif self.amount > 0 and self.balance > 0:
+            self.status = "Partial Payment"
+        else:
+            self.status = "Pending"
+            
+        super().save(*args, **kwargs)
+
+class Expense(models.Model):
+    expense_name = models.CharField(max_length=50)
+    category = models.CharField(max_length=50)
+    item = models.CharField(max_length=50)
+    supplier = models.CharField(max_length=50)
+    description = models.CharField(max_length=255)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    date = models.DateField()
+    location = models.CharField(max_length=100)
+
+    class Meta:
+        verbose_name = "Expense"
+        verbose_name_plural = "Expenses"
+        ordering = ['-date']
+
+    def __str__(self):
+        return f"Expense: {self.description} - {self.amount}"
+    
