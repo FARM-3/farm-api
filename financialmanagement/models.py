@@ -1,5 +1,6 @@
 from django.db import models
 
+
 # Create your models here.
 class Wage(models.Model):
     employee_name = models.CharField(max_length=20)
@@ -22,4 +23,6 @@ class Wage(models.Model):
     @property
     def calculate_net_salary(self):
         return self.monthly_pay - self.deduction
+    
 
+      

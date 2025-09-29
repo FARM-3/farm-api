@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Fermenting, Washing, Sundrying, Bagging
+from .models import Fermenting,Washing
 
 
 class FermentingSerializer(serializers.ModelSerializer):
@@ -28,4 +28,26 @@ class FermentingSerializer(serializers.ModelSerializer):
         ]
         # Make created_at and updated_at read-only (auto-generated)
         read_only_fields = ['created_at', 'updated_at']
+
+class WashingSerializer(serializers.ModelSerializer):
+    """
+    Serializer for Washing model
+    """
+    weight_loss = serializers.ReadOnlyField()
+    
+    class Meta:
+        model = Washing
+        fields = [
+            'id',
+            'processing_id',
+            'name',
+            'grade',
+            'date',
+            'weight_before',
+            'weight_after',
+            'weight_loss',
+            'created_at',
+            'updated_at'
+        ]
+        read_only_fields = ['created_at', 'updated_at']     
     
