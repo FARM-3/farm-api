@@ -23,11 +23,8 @@ class Wage(models.Model):
     @property
     def calculate_net_salary(self):
         return self.monthly_pay - self.deduction
-    
 
-<<<<<<< HEAD
-      
-=======
+
 class Sale(models.Model):
     customer_name = models.CharField(max_length=20)
     item = models.CharField(max_length=50)
@@ -80,5 +77,3 @@ class Expense(models.Model):
 
     def __str__(self):
         return f"Expense: {self.description} - {self.amount}"
-    
->>>>>>> 195b9bc24d7730858bde4cf9397a2144897978ab
