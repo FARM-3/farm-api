@@ -20,7 +20,11 @@ from django.urls import path, include
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+<<<<<<< HEAD
     path('', include('financialmanagement.urls')), 
     path('api/', include('processing.urls')),
 
+=======
+    path('', include('financialmanagement.urls')),
+>>>>>>> 195b9bc24d7730858bde4cf9397a2144897978ab
 ]
