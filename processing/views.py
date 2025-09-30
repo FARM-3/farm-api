@@ -6,10 +6,11 @@ from rest_framework import viewsets, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
-from .models import Fermenting,Washing
+from .models import Fermenting,Washing,Sundrying
 from .serializers import (
     FermentingSerializer,
-    WashingSerializer
+    WashingSerializer,
+    SundryingSerializer
 
 )
 
@@ -94,3 +95,35 @@ class WashingViewSet(viewsets.ModelViewSet):
             'total_weight_after': float(total_weight_after),
             'total_weight_loss': float(total_weight_before - total_weight_after)
         })
+    
+
+class SundryingViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for Sundrying process
+    Includes weather and moisture tracking
+    """
+    queryset = Sundrying.objects.all()
+    serializer_class = SundryingSerializer
+    
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ['grade', 'weather', 'date']
+    search_fields = ['processing_id', 'name']
+    ordering_fields = ['date', 'temperature', 'moisture_content', 'created_at']
+    ordering = ['-date']
+    
+    @action(detail=False, methods=['get'])
+    def by_weather(self, request):
+        """
+        Custom endpoint: /api/sundrying/by_weather/
+        Groups sundrying records by weather conditions
+        """
+        from django.db.models import Count, Avg
+        
+        weather_stats = self.get_queryset().values('weather').annotate(
+            count=Count('id'),
+            avg_temperature=Avg('temperature'),
+            avg_moisture=Avg('moisture_content'),
+            avg_weight_loss=Avg(models.F('weight_before') - models.F('weight_after'))
+        )
+        
+        return Response(weather_stats)
