@@ -17,9 +17,23 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path, include
+from drf_spectacular.views import (
+    SpectacularAPIView,
+    SpectacularSwaggerView,
+)
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path('', include('financialmanagement.urls')),
     path('api/', include('processing.urls')),
+    path('api/users/', include('users.urls')),  # Include users app URLs
+    path('api/schema/', SpectacularAPIView.as_view(), name='schema'), # API schema (to view apis for frontend)
+    path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'), # Swagger UI for API docs
 ]
+
+# Available endpoints for users app:
+    # - POST /api/users/login/
+    # - POST /api/users/security-question/
+    # - POST /api/users/reset-pin/
+    # - POST /api/users/token/refresh/
+    # - GET  /api/users/me/

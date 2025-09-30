@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+from datetime import timedelta
 
 import environ
 import os
@@ -43,9 +44,19 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
+    "rest_framework_simplejwt",
+    "django_filters",
+    "drf_spectacular",
     "financialmanagement",
     "processing",
+    "users",
 
+]
+
+AUTH_USER_MODEL = 'users.User'
+
+AUTHENTICATION_BACKENDS = [
+    'users.backends.PhonePinBackend',    # Our custom backend
 ]
 
 MIDDLEWARE = [
@@ -56,6 +67,99 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
+]
+
+REST_FRAMEWORK = {
+    # Use JWT for authentication by default
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ],
+    
+    # Require authentication by default (except views with AllowAny)
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+    
+    # Use JSON renderer (standard for APIs)
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+    ],
+    
+    # Pagination (optional, useful for large datasets)
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 50,
+}
+
+REST_FRAMEWORK['DEFAULT_SCHEMA_CLASS'] = 'drf_spectacular.openapi.AutoSchema'
+
+# ============================================
+# JWT CONFIGURATION
+# ============================================
+SIMPLE_JWT = {
+    # Access token expires after 24 hours (adjust as needed)
+    'ACCESS_TOKEN_LIFETIME': timedelta(hours=24),
+    
+    # Refresh token expires after 7 days
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    
+    # Rotate refresh tokens (get new refresh token when refreshing)
+    'ROTATE_REFRESH_TOKENS': True,
+    
+    # Blacklist old tokens (requires simplejwt.token_blacklist app)
+    'BLACKLIST_AFTER_ROTATION': False,  # Set to True if you add token blacklist
+    
+    # Algorithm for signing tokens
+    'ALGORITHM': 'HS256',
+    
+    # User ID field
+    'USER_ID_FIELD': 'id',
+    'USER_ID_CLAIM': 'user_id',
+    
+    # Token type
+    'AUTH_HEADER_TYPES': ('Bearer',),
+}
+
+
+# ============================================
+# CORS CONFIGURATION
+# ============================================
+# Allow React web app and React Native app to make requests
+
+# For development - allow all origins
+CORS_ALLOW_ALL_ORIGINS = True  # Change to False in production!
+
+# For production - specify allowed origins
+# CORS_ALLOWED_ORIGINS = [
+#     "http://localhost:3000",           # React web app (development)
+#     "http://localhost:19006",          # React Native (Expo)
+#     "https://yourproduction.com",      # Production web app
+# ]
+
+# Allow credentials (cookies, authorization headers)
+CORS_ALLOW_CREDENTIALS = True
+
+# Allow these HTTP methods
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
+
+# Allow these headers
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
 ]
 
 ROOT_URLCONF = "api.urls"
@@ -103,7 +207,8 @@ DATABASES = {
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
-    {
+
+    """{
         "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
     {
@@ -114,7 +219,8 @@ AUTH_PASSWORD_VALIDATORS = [
     },
     {
         "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
-    },
+    },"""
+
 ]
 
 
@@ -139,3 +245,50 @@ STATIC_URL = "static/"
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# LOGGING (Optional but helpful for debugging)
+# ============================================
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'users': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+    },
+}
+
+
+# ============================================
+# NOTES FOR PRODUCTION
+# ============================================
+"""
+Before deploying to production:
+
+1. Set DEBUG = False
+2. Update ALLOWED_HOSTS with your domain
+3. Set CORS_ALLOW_ALL_ORIGINS = False
+4. Specify exact CORS_ALLOWED_ORIGINS
+5. Use environment variables for SECRET_KEY
+6. Configure HTTPS
+7. Set secure cookie settings:
+   - SESSION_COOKIE_SECURE = True
+   - CSRF_COOKIE_SECURE = True
+8. Consider adding rate limiting
+"""
