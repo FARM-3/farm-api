@@ -6,11 +6,12 @@ from rest_framework import viewsets, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
-from .models import Fermenting,Washing,Sundrying
+from .models import Fermenting,Washing,Sundrying,Bagging
 from .serializers import (
     FermentingSerializer,
     WashingSerializer,
-    SundryingSerializer
+    SundryingSerializer,
+    BaggingSerializer
 
 )
 
@@ -127,3 +128,48 @@ class SundryingViewSet(viewsets.ModelViewSet):
         )
         
         return Response(weather_stats)
+    
+
+class BaggingViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for Bagging process (final stage)
+    """
+    queryset = Bagging.objects.all()
+    serializer_class = BaggingSerializer
+    
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ['grade', 'date']
+    search_fields = ['processing_id', 'name']
+    ordering_fields = ['date', 'weight', 'moisture_content', 'created_at']
+    ordering = ['-date']
+    
+    @action(detail=False, methods=['get'])
+    def summary(self, request):
+        """
+        Custom endpoint: /api/bagging/summary/
+        Returns final bagging statistics
+        """
+        from django.db.models import Sum, Avg
+        
+        queryset = self.get_queryset()
+        stats = queryset.aggregate(
+            total_batches=Count('id'),
+            total_weight=Sum('weight'),
+            avg_moisture=Avg('moisture_content')
+        )
+        
+        # Group by grade
+        by_grade = queryset.values('grade').annotate(
+            count=Count('id'),
+            total_weight=Sum('weight')
+        )
+        
+        return Response({
+            'overall': stats,
+            'by_grade': list(by_grade)
+        })
+
+
+# Import models for custom actions
+from django.db.models import Avg, Count, Sum, F
+import models
