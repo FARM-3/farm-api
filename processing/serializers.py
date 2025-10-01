@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Fermenting,Washing,Sundrying
+from .models import Fermenting,Washing,Sundrying,Bagging
 
 class FermentingSerializer(serializers.ModelSerializer):
     """
@@ -96,5 +96,39 @@ class SundryingSerializer(serializers.ModelSerializer):
                 )
         
         return data
+    
+class BaggingSerializer(serializers.ModelSerializer):
+    """
+    Serializer for Bagging model (final stage)
+    """
+    class Meta:
+        model = Bagging
+        fields = [
+            'id',
+            'processing_id',
+            'name',
+            'grade',
+            'moisture_content',
+            'date',
+            'weight',
+            'created_at',
+            'updated_at'
+        ]
+        read_only_fields = ['created_at', 'updated_at']
+    
+    def validate_moisture_content(self, value):
+        """
+        Validate that moisture content is in acceptable range for bagging
+        Typically, coffee should be dried to 10-12% moisture before bagging
+        """
+        if value > 15:
+            raise serializers.ValidationError(
+                "Moisture content too high for bagging (should be ≤15%)"
+            )
+        if value < 8:
+            raise serializers.ValidationError(
+                "Moisture content too low (should be ≥8%)"
+            )
+        return value
 
 

@@ -48,6 +48,8 @@ INSTALLED_APPS = [
     "django_filters",
     "drf_spectacular",
     "financialmanagement",
+    'aggregation',
+    'harvests',
     "processing",
     "users",
 
