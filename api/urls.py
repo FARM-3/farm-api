@@ -32,7 +32,7 @@ urlpatterns = [
     path('api/aggregation/', include('aggregation.urls')),
     path('api/harvests/', include('harvests.urls')),
 
-    path('api/', include('processing.urls')),
+    path('api/processing/', include('processing.urls')),
     path('api/users/', include('users.urls')),  # Include users app URLs
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'), # API schema (to view apis for frontend)
     path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'), # Swagger UI for API docs
