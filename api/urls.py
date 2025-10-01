@@ -16,13 +16,33 @@ Including another URLconf
 """
 
 from django.contrib import admin
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenRefreshView,
+)
 from django.urls import path, include
+from drf_spectacular.views import (
+    SpectacularAPIView,
+    SpectacularSwaggerView,
+)
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path('', include('financialmanagement.urls')),
+    path('api/finance/', include('financialmanagement.urls')),
     path('api/aggregation/', include('aggregation.urls')),
     path('api/harvests/', include('harvests.urls')),
 
-    path('api/', include('processing.urls')),
+    path('api/processing/', include('processing.urls')),
+    path('api/users/', include('users.urls')),  # Include users app URLs
+    path('api/schema/', SpectacularAPIView.as_view(), name='schema'), # API schema (to view apis for frontend)
+    path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'), # Swagger UI for API docs
+    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 ]
+
+# Available endpoints for users app:
+    # - POST /api/users/login/
+    # - POST /api/users/security-question/
+    # - POST /api/users/reset-pin/
+    # - POST /api/users/token/refresh/
+    # - GET  /api/users/me/
