@@ -16,7 +16,7 @@ class UserManager(BaseUserManager):
     Provides methods to create regular users and superusers.
     """
     
-    def create_user(self, phone, pin, role="block_champion", security_question="", security_answer=""):
+    def create_user(self, phone, pin, role="block_champion", security_question="", security_answer="", is_staff=False, is_superuser=False):
         """
         Creates and saves a regular user with phone, pin, and security details.
         
@@ -39,7 +39,9 @@ class UserManager(BaseUserManager):
         user = self.model(
             phone=phone,
             role=role,
-            security_question=security_question
+            security_question=security_question,
+            is_staff=is_staff,
+            is_superuser=is_superuser
         )
         
         # Hash and store PIN securely (never store raw PIN)
@@ -52,27 +54,21 @@ class UserManager(BaseUserManager):
         user.save(using=self._db)
         return user
     
-    def create_superuser(self, phone, pin):
+
+    def create_superuser(self, phone, **extra_fields):
         """
         Creates a superuser (admin) with full permissions.
-        Used for Django admin access.
-        
-        Args:
-            phone (str): Admin's phone number
-            pin (str): Admin's PIN
-        
-        Returns:
-            User: The created superuser instance
+        Converts Django's 'password' input into 'pin'.
         """
-        user = self.create_user(
-            phone=phone,
-            pin=pin,
-            role="admin"
-        )
-        user.is_superuser = True
-        user.is_staff = True
-        user.save(using=self._db)
-        return user
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+
+        # Django creates a 'password' field by default; treat it as pin
+        pin = extra_fields.pop('password', None)
+        if pin is None:
+            raise ValueError('Superuser must have a PIN (password field used as PIN)')
+
+        return self.create_user(phone=phone, pin=pin, role="admin", **extra_fields)
 
 
 # ============================================

@@ -16,6 +16,10 @@ Including another URLconf
 """
 
 from django.contrib import admin
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenRefreshView,
+)
 from django.urls import path, include
 from drf_spectacular.views import (
     SpectacularAPIView,
@@ -29,6 +33,8 @@ urlpatterns = [
     path('api/users/', include('users.urls')),  # Include users app URLs
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'), # API schema (to view apis for frontend)
     path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'), # Swagger UI for API docs
+    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 ]
 
 # Available endpoints for users app:
