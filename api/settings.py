@@ -213,7 +213,7 @@ WSGI_APPLICATION = "api.wsgi.application"
 
 env = environ.Env()
 environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
-
+"""
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
@@ -224,7 +224,7 @@ DATABASES = {
         "PORT": env("DB_PORT"),
         "DATABASE_URL": env("DB_URL"),
     }
-}
+}"""
 
 DATABASES = {
     "default": dj_database_url.config(
