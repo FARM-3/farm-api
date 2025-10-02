@@ -35,7 +35,7 @@ def redirect_to_docs(request):
 urlpatterns = [
     path('', redirect_to_docs),
     path("admin/", admin.site.urls),
-     path('api-auth/', include('rest_framework.urls')),
+    path('api-auth/', include('rest_framework.urls')),
     path('api/', include('financialmanagement.urls')),
     path('api/aggregation/', include('aggregation.urls')),
     path('api/harvests/', include('harvests.urls')),

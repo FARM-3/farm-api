@@ -39,7 +39,7 @@ SECRET_KEY = config("DJANGO_SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production
 DEBUG = config('DEBUG', default=False, cast=bool) 
 
-"""if DEBUG:
+if DEBUG:
     # 🌟 LOCAL DEVELOPMENT SETTINGS 🌟
     # If DEBUG is True, automatically allow 127.0.0.1 and localhost.
     ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
@@ -54,7 +54,7 @@ else:
         ALLOWED_HOSTS = RENDER_HOSTS_STRING.split(',')
     else:
         # Prevent an error if the environment variable is completely missing/empty
-        ALLOWED_HOSTS = []"""
+        ALLOWED_HOSTS = []
 
 # Application definition
 INSTALLED_APPS = [
@@ -213,7 +213,8 @@ WSGI_APPLICATION = "api.wsgi.application"
 
 env = environ.Env()
 environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
-"""
+
+
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
@@ -224,12 +225,6 @@ DATABASES = {
         "PORT": env("DB_PORT"),
         "DATABASE_URL": env("DB_URL"),
     }
-}"""
-
-DATABASES = {
-    "default": dj_database_url.config(
-        default=os.getenv("DATABASE_URL"), conn_max_age=600, ssl_require=False
-        )
 }
 
 
