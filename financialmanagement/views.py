@@ -20,3 +20,9 @@ class ExpenseViewSet(viewsets.ModelViewSet):
     queryset = Expense.objects.all()
     serializer_class = ExpenseSerializer
 
+"""class BalanceSheetViewSet(viewsets.ModelViewSet):
+    queryset = AccountBalance.objects.all()
+    serializer_class = AccountBalanceSerializer
+    # Setting permission to AllowAny
+    permission_classes = [AllowAny]"""
+

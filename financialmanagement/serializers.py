@@ -35,3 +35,13 @@ class ExpenseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Expense
         fields = '__all__'
+
+
+"""class AccountBalanceSerializer(serializers.ModelSerializer):
+    # This field shows the full category name (e.g., "Asset")
+    account_type_display = serializers.CharField(source='get_account_type_display', read_only=True)
+
+    class Meta:
+        model = AccountBalance
+        fields = ['id', 'account_name', 'account_type', 'account_type_display', 'balance', 'last_updated']
+        read_only_fields = ['last_updated']"""

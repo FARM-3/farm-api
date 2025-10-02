@@ -33,13 +33,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = config("DJANGO_SECRET_KEY")
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='').split(',')
 
 
 # SECURITY WARNING: don't run with debug turned on in production
 # SECURITY WARNING: don't run with debug turned on in production
 DEBUG = config('DEBUG', default=False, cast=bool) 
 
-"""if DEBUG:
+if DEBUG:
     # 🌟 LOCAL DEVELOPMENT SETTINGS 🌟
     # If DEBUG is True, automatically allow 127.0.0.1 and localhost.
     ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
@@ -54,7 +55,7 @@ else:
         ALLOWED_HOSTS = RENDER_HOSTS_STRING.split(',')
     else:
         # Prevent an error if the environment variable is completely missing/empty
-        ALLOWED_HOSTS = []"""
+        ALLOWED_HOSTS = []
 
 # Application definition
 INSTALLED_APPS = [
@@ -96,7 +97,7 @@ MIDDLEWARE = [
 REST_FRAMEWORK = {
     # Use JWT for authentication by default
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        #'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
     
     # Require authentication by default (except views with AllowAny)
@@ -224,12 +225,6 @@ DATABASES = {
         "PORT": env("DB_PORT"),
         "DATABASE_URL": env("DB_URL"),
     }
-}
-
-DATABASES = {
-    "default": dj_database_url.config(
-        default=os.getenv("DATABASE_URL"), conn_max_age=600, ssl_require=False
-        )
 }
 
 
