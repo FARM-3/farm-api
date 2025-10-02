@@ -96,7 +96,7 @@ MIDDLEWARE = [
 REST_FRAMEWORK = {
     # Use JWT for authentication by default
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
+#        'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
     
     # Require authentication by default (except views with AllowAny)
