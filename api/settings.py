@@ -97,7 +97,7 @@ MIDDLEWARE = [
 REST_FRAMEWORK = {
     # Use JWT for authentication by default
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        #'rest_framework_simplejwt.authentication.JWTAuthentication',
+#        'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
     
     # Require authentication by default (except views with AllowAny)
@@ -214,6 +214,7 @@ WSGI_APPLICATION = "api.wsgi.application"
 
 env = environ.Env()
 environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
+
 
 DATABASES = {
     "default": {
