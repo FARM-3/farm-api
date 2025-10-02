@@ -15,6 +15,8 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 
+from django.shortcuts import render, redirect
+
 from django.contrib import admin
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
@@ -26,13 +28,17 @@ from drf_spectacular.views import (
     SpectacularSwaggerView,
 )
 
+def redirect_to_docs(request):
+    # This sends the user from the root path (/) to your documentation
+    return redirect('api/docs/') 
+
 urlpatterns = [
+    path('', redirect_to_docs),
     path("admin/", admin.site.urls),
      path('api-auth/', include('rest_framework.urls')),
-    path('api/finance/', include('financialmanagement.urls')),
+    path('api/', include('financialmanagement.urls')),
     path('api/aggregation/', include('aggregation.urls')),
     path('api/harvests/', include('harvests.urls')),
-
     path('api/processing/', include('processing.urls')),
     path('api/users/', include('users.urls')),  # Include users app URLs
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'), # API schema (to view apis for frontend)

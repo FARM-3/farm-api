@@ -34,14 +34,29 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = config("DJANGO_SECRET_KEY")
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
 
-ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="localhost").split(",")
+# SECURITY WARNING: don't run with debug turned on in production
+# SECURITY WARNING: don't run with debug turned on in production
+DEBUG = config('DEBUG', default=False, cast=bool) 
 
+"""if DEBUG:
+    # 🌟 LOCAL DEVELOPMENT SETTINGS 🌟
+    # If DEBUG is True, automatically allow 127.0.0.1 and localhost.
+    ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+else:
+    # 🌍 PRODUCTION (RENDER) SETTINGS 🌍
+    
+    # Get the comma-separated host string from the environment variable (Render)
+    RENDER_HOSTS_STRING = config('ALLOWED_HOSTS', default='')
+    
+    # Assign the split list to the actual Django setting
+    if RENDER_HOSTS_STRING:
+        ALLOWED_HOSTS = RENDER_HOSTS_STRING.split(',')
+    else:
+        # Prevent an error if the environment variable is completely missing/empty
+        ALLOWED_HOSTS = []"""
 
 # Application definition
-
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -199,7 +214,7 @@ WSGI_APPLICATION = "api.wsgi.application"
 env = environ.Env()
 environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 
-"""DATABASES = {
+DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
         "NAME": env("DB_NAME"),
@@ -209,7 +224,7 @@ environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
         "PORT": env("DB_PORT"),
         "DATABASE_URL": env("DB_URL"),
     }
-}"""
+}
 
 DATABASES = {
     "default": dj_database_url.config(
