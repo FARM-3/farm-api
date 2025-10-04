@@ -15,6 +15,8 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 
+from django.shortcuts import redirect
+
 from django.contrib import admin
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
@@ -26,7 +28,11 @@ from drf_spectacular.views import (
     SpectacularSwaggerView,
 )
 
+def redirect_to_docs(request):
+    return redirect("api/docs/")
+
 urlpatterns = [
+    path('', redirect_to_docs),  # Redirect root URL to API docs
     path("admin/", admin.site.urls),
     path('api/finance/', include('financialmanagement.urls')),
     path('api/aggregation/', include('aggregation.urls')),

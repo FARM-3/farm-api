@@ -4,6 +4,8 @@ from .models import Harvests
 from .serializers import HarvestsSerializer
 from rest_framework import viewsets
 
+
+
 # Create your views here.
 class HarvestListView(ListView):
     model = Harvests
@@ -14,3 +16,8 @@ class HarvestListView(ListView):
 class HarvestsViewSet(viewsets.ModelViewSet):
     queryset = Harvests.objects.all()
     serializer_class = HarvestsSerializer
+
+    
+
+
+
