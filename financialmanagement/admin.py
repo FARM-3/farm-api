@@ -2,7 +2,7 @@ from django.contrib import admin
 
 # Register your models here.
 from .models import Wage
-from .models import Sale, Expense
+from .models import Sale, Expense,Balancesheet
 
 
 class WageAdmin(admin.ModelAdmin):
@@ -54,7 +54,22 @@ class ExpenseAdmin(admin.ModelAdmin):
     search_fields = ('expense_name', 'category')
 
 
+class BalancesheetAdmin(admin.ModelAdmin):
+    list_display = (
+        'account_name', 
+        'account_type', 
+        'balance', 
+        'last_updated',
+        '__str__'
+    )
+
+    list_filter = ('account_type', 'last_updated')
+
+    search_fields = ('account_name', 'account_type')
+
 admin.site.register(Wage, WageAdmin)
 admin.site.register(Sale, SaleAdmin)
 admin.site.register(Expense, ExpenseAdmin)
+admin.site.register(Balancesheet, BalancesheetAdmin)
+
 

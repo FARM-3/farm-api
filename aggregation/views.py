@@ -13,6 +13,7 @@ class FarmerListView(ListView):
     template_name = 'farmer_list.html'
     context_object_name = 'farmers'
     queryset = Farmer.objects.all().order_by('name')
+    
 class FarmerViewSet(viewsets.ModelViewSet):
     queryset = Farmer.objects.all()
     serializer_class = FarmerSerializer
