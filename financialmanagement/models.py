@@ -1,4 +1,5 @@
 from django.db import models
+from decimal import Decimal
 
 
 # Create your models here.
@@ -77,3 +78,29 @@ class Expense(models.Model):
 
     def __str__(self):
         return f"Expense: {self.description} - {self.amount}"
+    
+"""class AccountBalance(models.Model):
+    BALANCE_CHOICES = [
+        ('A', 'Asset'),
+        ('L', 'Liability'),
+        ('E', 'Equity'),
+    ]
+
+    account_type = models.CharField(max_length=1, choices=BALANCE_CHOICES)
+    balance = models.DecimalField(
+        max_digits=15, 
+        decimal_places=2, 
+        default=Decimal('0.00'),
+        help_text="The current balance of this account."
+    )
+
+    last_updated = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Account Balance"
+        verbose_name_plural = "Account Balances"
+        # Group accounts together for easier reading
+        ordering = ['account_type', 'account_name']
+
+    def __str__(self):
+        return f"{self.account_name} ({self.get_account_type_display()}): ${self.balance}"""

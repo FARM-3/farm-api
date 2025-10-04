@@ -10,12 +10,17 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
-from pathlib import Path
-from datetime import timedelta
-
-
-import environ
 import os
+from pathlib import Path
+import dj_database_url
+from datetime import timedelta
+from decouple import config
+from dotenv import load_dotenv
+
+load_dotenv()
+import environ
+
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -27,16 +32,32 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "DUMMY"
+SECRET_KEY = config("DJANGO_SECRET_KEY")
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='').split(',')
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
 
-ALLOWED_HOSTS = []
+# SECURITY WARNING: don't run with debug turned on in production
+# SECURITY WARNING: don't run with debug turned on in production
+DEBUG = config('DEBUG', default=False, cast=bool) 
 
+if DEBUG:
+    # 🌟 LOCAL DEVELOPMENT SETTINGS 🌟
+    # If DEBUG is True, automatically allow 127.0.0.1 and localhost.
+    ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+else:
+    # 🌍 PRODUCTION (RENDER) SETTINGS 🌍
+    
+    # Get the comma-separated host string from the environment variable (Render)
+    RENDER_HOSTS_STRING = config('ALLOWED_HOSTS', default='')
+    
+    # Assign the split list to the actual Django setting
+    if RENDER_HOSTS_STRING:
+        ALLOWED_HOSTS = RENDER_HOSTS_STRING.split(',')
+    else:
+        # Prevent an error if the environment variable is completely missing/empty
+        ALLOWED_HOSTS = []
 
 # Application definition
-
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -76,7 +97,7 @@ MIDDLEWARE = [
 REST_FRAMEWORK = {
     # Use JWT for authentication by default
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
+#        'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
     
     # Require authentication by default (except views with AllowAny)
@@ -194,6 +215,7 @@ WSGI_APPLICATION = "api.wsgi.application"
 env = environ.Env()
 environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 
+
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
@@ -202,6 +224,7 @@ DATABASES = {
         "PASSWORD": env("DB_PASSWORD"),
         "HOST": env("DB_HOST"),
         "PORT": env("DB_PORT"),
+        "DATABASE_URL": env("DB_URL"),
     }
 }
 
