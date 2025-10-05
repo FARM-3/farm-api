@@ -1,4 +1,6 @@
 from django.db import models
+from decimal import Decimal
+
 
 # Create your models here.
 class Wage(models.Model):
@@ -22,6 +24,7 @@ class Wage(models.Model):
     @property
     def calculate_net_salary(self):
         return self.monthly_pay - self.deduction
+
 
 class Sale(models.Model):
     customer_name = models.CharField(max_length=20)
@@ -76,3 +79,32 @@ class Expense(models.Model):
     def __str__(self):
         return f"Expense: {self.description} - {self.amount}"
     
+class Balancesheet(models.Model):
+    BALANCE_CHOICES = [
+        ('A', 'Asset'),
+        ('L', 'Liability'),
+        ('E', 'Equity'),
+    ]
+
+    account_name = models.CharField(
+        max_length=100,
+        help_text="Name of the account (e.g., 'Cash', 'Accounts Receivable', etc.)"
+    )
+    account_type = models.CharField(max_length=1, choices=BALANCE_CHOICES)
+    balance = models.DecimalField(
+        max_digits=15, 
+        decimal_places=2, 
+        default=Decimal('0.00'),
+        help_text="The current balance of this account."
+    )
+
+    last_updated = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Account Balance"
+        verbose_name_plural = "Account Balances"
+        # Group accounts together for easier reading
+        ordering = ['account_type', 'account_type']
+
+    def __str__(self):
+        return f"{self.account_name} ({self.get_account_type_display()}): ${self.balance}"""

@@ -10,10 +10,17 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
-from pathlib import Path
-
-import environ
 import os
+from pathlib import Path
+import dj_database_url
+from datetime import timedelta
+from decouple import config
+from dotenv import load_dotenv
+
+load_dotenv()
+import environ
+
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -25,16 +32,32 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "DUMMY"
+SECRET_KEY = config("DJANGO_SECRET_KEY")
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
 
-ALLOWED_HOSTS = []
 
+# SECURITY WARNING: don't run with debug turned on in production
+# SECURITY WARNING: don't run with debug turned on in production
+DEBUG = config('DEBUG', default=False, cast=bool) 
+
+if DEBUG:
+    # 🌟 LOCAL DEVELOPMENT SETTINGS 🌟
+    # If DEBUG is True, automatically allow 127.0.0.1 and localhost.
+    ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+else:
+    # 🌍 PRODUCTION (RENDER) SETTINGS 🌍
+    
+    # Get the comma-separated host string from the environment variable (Render)
+    RENDER_HOSTS_STRING = config('ALLOWED_HOSTS', default='')
+    
+    # Assign the split list to the actual Django setting
+    if RENDER_HOSTS_STRING:
+        ALLOWED_HOSTS = RENDER_HOSTS_STRING.split(',')
+    else:
+        # Prevent an error if the environment variable is completely missing/empty
+        ALLOWED_HOSTS = []
 
 # Application definition
-
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -43,7 +66,21 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
+    "rest_framework_simplejwt",
+    "django_filters",
+    "drf_spectacular",
     "financialmanagement",
+    'aggregation',
+    'harvests',
+    "processing",
+    "users",
+
+]
+
+AUTH_USER_MODEL = 'users.User'
+
+AUTHENTICATION_BACKENDS = [
+    'users.backends.PhonePinBackend',    # Our custom backend
 ]
 
 MIDDLEWARE = [
@@ -54,6 +91,99 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
+]
+
+REST_FRAMEWORK = {
+    # Use JWT for authentication by default
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+#        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ],
+    
+    # Require authentication by default (except views with AllowAny)
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.AllowAny',
+    ],
+    
+    # Use JSON renderer (standard for APIs)
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+    ],
+    
+    # Pagination (optional, useful for large datasets)
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 50,
+}
+
+REST_FRAMEWORK['DEFAULT_SCHEMA_CLASS'] = 'drf_spectacular.openapi.AutoSchema'
+
+# ============================================
+# JWT CONFIGURATION
+# ============================================
+SIMPLE_JWT = {
+    # Access token expires after 24 hours (adjust as needed)
+    'ACCESS_TOKEN_LIFETIME': timedelta(hours=24),
+    
+    # Refresh token expires after 7 days
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    
+    # Rotate refresh tokens (get new refresh token when refreshing)
+    'ROTATE_REFRESH_TOKENS': True,
+    
+    # Blacklist old tokens (requires simplejwt.token_blacklist app)
+    'BLACKLIST_AFTER_ROTATION': False,  # Set to True if you add token blacklist
+    
+    # Algorithm for signing tokens
+    'ALGORITHM': 'HS256',
+    
+    # User ID field
+    'USER_ID_FIELD': 'id',
+    'USER_ID_CLAIM': 'user_id',
+    
+    # Token type
+    'AUTH_HEADER_TYPES': ('Bearer',),
+}
+
+
+# ============================================
+# CORS CONFIGURATION
+# ============================================
+# Allow React web app and React Native app to make requests
+
+# For development - allow all origins
+CORS_ALLOW_ALL_ORIGINS = True  # Change to False in production!
+
+# For production - specify allowed origins
+# CORS_ALLOWED_ORIGINS = [
+#     "http://localhost:3000",           # React web app (development)
+#     "http://localhost:19006",          # React Native (Expo)
+#     "https://yourproduction.com",      # Production web app
+# ]
+
+# Allow credentials (cookies, authorization headers)
+CORS_ALLOW_CREDENTIALS = True
+
+# Allow these HTTP methods
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
+
+# Allow these headers
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
 ]
 
 ROOT_URLCONF = "api.urls"
@@ -85,6 +215,7 @@ WSGI_APPLICATION = "api.wsgi.application"
 env = environ.Env()
 environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 
+
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
@@ -93,6 +224,7 @@ DATABASES = {
         "PASSWORD": env("DB_PASSWORD"),
         "HOST": env("DB_HOST"),
         "PORT": env("DB_PORT"),
+        "DATABASE_URL": env("DB_URL"),
     }
 }
 
@@ -100,20 +232,7 @@ DATABASES = {
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
 
-AUTH_PASSWORD_VALIDATORS = [
-    {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
-    },
-]
+AUTH_PASSWORD_VALIDATORS = []
 
 
 # Internationalization
@@ -138,4 +257,49 @@ STATIC_URL = "static/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+# LOGGING (Optional but helpful for debugging)
+# ============================================
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'users': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+    },
+}
 
+
+# ============================================
+# NOTES FOR PRODUCTION
+# ============================================
+"""
+Before deploying to production:
+
+1. Set DEBUG = False
+2. Update ALLOWED_HOSTS with your domain
+3. Set CORS_ALLOW_ALL_ORIGINS = False
+4. Specify exact CORS_ALLOWED_ORIGINS
+5. Use environment variables for SECRET_KEY
+6. Configure HTTPS
+7. Set secure cookie settings:
+   - SESSION_COOKIE_SECURE = True
+   - CSRF_COOKIE_SECURE = True
+8. Consider adding rate limiting
+"""
