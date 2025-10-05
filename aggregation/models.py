@@ -12,10 +12,16 @@ class Farmer(models.Model):
     
     #Farmerharvest model
 class FarmerHarvest(models.Model):
-    farmer = models.ForeignKey(Farmer, on_delete=models.CASCADE)
-    harvest = models.CharField(max_length=100)
-    date_harvested = models.DateField()
-    quantity = models.FloatField()
+    name = models.CharField(max_length=100)               # Farmer's name
+    weight_note = models.CharField(max_length=100)          # Weight of the harvest
+    date_of_delivery = models.CharField(max_length=100)    # Date of delivery
+    grade = models.CharField(max_length=100)               # Grade of the harvest
+    cherry_color = models.CharField(max_length=100)        # Color of the cherry
+    stage = models.CharField(max_length=100)               # Stage of processing
+    amount_paid = models.CharField(max_length=100)         # Amount paid to the farmer
+    paid_by = models.CharField(max_length=100)             # Entity that made the payment
+    id = models.CharField(max_length=100)          # Unique identifier for the harvest
 
     def __str__(self):
-        return f"{self.farmer.name} - {self.harvest.cherry_color} - {self.date_harvested}"
+        return self.name            
+    
