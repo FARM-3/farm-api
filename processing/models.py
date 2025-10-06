@@ -4,6 +4,7 @@
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.contrib.auth.models import User
+from django.utils import timezone
 
 
 
@@ -52,11 +53,23 @@ class Fermenting(models.Model):
         choices=GRADE_CHOICES,
         help_text="Quality grade of the coffee"
     )
+    CHERRY_COLOUR_CHOICES = [
+        ('red', 'Red'),
+        ('green', 'Green'),
+        ('Yellow', 'yellow'),
+        ('Black', 'Black'),
+    ]
+    cherry_colour = models.CharField(
+        max_length=10,
+        choices=CHERRY_COLOUR_CHOICES,
+        help_text="Cherry colour",
+        null=True, # Allow nulls for migration
+        blank=True,
+
+    )
     
     # Processing date
-    date = models.DateField(
-        help_text="Date when fermentation started"
-    )
+    date = models.DateField(default=timezone.now)
     
     # Weight tracking
     weight_before = models.DecimalField(
@@ -86,7 +99,7 @@ class Fermenting(models.Model):
         return f"{self.processing_id} - {self.name}"
     
     @property
-    def weight_loss(self):
+    def weight_loss(self) -> float: #Add type hint
         """Calculate weight loss during fermentation"""
         return self.weight_before - self.weight_after
 
@@ -98,8 +111,11 @@ class Washing(models.Model):
     processing_id = models.CharField(
         max_length=50,
         unique=True,
-        help_text="Unique ID for this washing batch (e.g., WASH-2024-001)"
+        editable=False,
+        help_text="Auto-generated: WASH-{DDMMYY}-{SEQ}"
+
     )
+       
     
     name = models.CharField(
         max_length=100,
@@ -111,10 +127,23 @@ class Washing(models.Model):
         choices=GRADE_CHOICES,
         help_text="Quality grade of the coffee"
     )
-    
-    date = models.DateField(
-        help_text="Date when washing occurred"
+    CHERRY_COLOUR_CHOICES = [
+        ('red', 'Red'),
+        ('green', 'Green'),
+        ('Yellow', 'Yellow'),
+        ('Black', 'Black'),
+    ]
+    cherry_colour = models.CharField(
+        max_length=10,
+        choices=CHERRY_COLOUR_CHOICES,
+        help_text="Cherry colour",
+        null=True, #Allow nulls for migration
+        blank=True,
+
     )
+
+    
+    date = models.DateField(default=timezone.now)
     
     weight_before = models.DecimalField(
         max_digits=10,
@@ -142,7 +171,7 @@ class Washing(models.Model):
         return f"{self.processing_id} - {self.name}"
     
     @property
-    def weight_loss(self):
+    def weight_loss(self) -> float: #Add type hint
         """Calculate weight loss during washing"""
         return self.weight_before - self.weight_after
     
@@ -154,7 +183,8 @@ class Sundrying(models.Model):
      processing_id = models.CharField(
         max_length=50,
         unique=True,
-        help_text="Unique ID for this sundrying batch (e.g., DRY-2024-001)"
+        editable=False,
+        help_text="Auto-generated: DRY-{DDMMYY}-{SEQ}"
     )
     
      name = models.CharField(
@@ -167,6 +197,21 @@ class Sundrying(models.Model):
         choices=GRADE_CHOICES,
         help_text="Quality grade of the coffee"
     )
+     CHERRY_COLOUR_CHOICES = [
+        ('red', 'Red'),
+        ('green', 'Green'),
+        ('Yellow', 'Yellow'),
+        ('Black', 'Black'),
+    ]
+     cherry_colour = models.CharField(
+        max_length=10,
+        choices=CHERRY_COLOUR_CHOICES,
+        help_text="Cherry colour",
+        null=True, #Allow nulls for migration
+        blank=True,
+        
+    )
+    
     
     # Weather tracking
      weather = models.CharField(
@@ -189,9 +234,7 @@ class Sundrying(models.Model):
         help_text="Moisture content percentage (0-100%)"
     )
     
-     date = models.DateField(
-        help_text="Date when sundrying occurred"
-    )
+     date = models.DateField(default=timezone.now)
     
      weight_before = models.DecimalField(
         max_digits=10,
@@ -219,7 +262,7 @@ class Sundrying(models.Model):
         return f"{self.processing_id} - {self.name}"
     
      @property
-     def weight_loss(self):
+     def weight_loss(self) -> float: #Add type hint
         """Calculate weight loss during sundrying"""
         return self.weight_before - self.weight_after
 
