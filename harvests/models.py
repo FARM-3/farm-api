@@ -9,6 +9,7 @@ class Harvests(models.Model):
     date = models.CharField(max_length=100)               # Date of the harvest
     name = models.CharField(max_length=100)               # Farmer's name
     amount_paid = models.CharField(max_length=100)         # Amount paid to the farmer
+    id = models.CharField(max_length=100)          # Unique identifier for the harvest
 
     def __str__(self):
         return self.cherry_color

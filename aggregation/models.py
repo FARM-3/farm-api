@@ -13,7 +13,8 @@ class Farmer(models.Model):
     #Farmerharvest model
 class FarmerHarvest(models.Model):
     name = models.CharField(max_length=100)               # Farmer's name
-    weight_note = models.CharField(max_length=100)          # Weight of the harvest
+    weight_on_delivery = models.IntegerField(max_length=100)         # Weight of the harvest
+    weight_after_floating = models.IntegerField(max_length=100)       # Weight after floating
     date_of_delivery = models.CharField(max_length=100)    # Date of delivery
     grade = models.CharField(max_length=100)               # Grade of the harvest
     cherry_color = models.CharField(max_length=100)        # Color of the cherry
