@@ -11,5 +11,7 @@ class Harvests(models.Model):
     amount_paid = models.CharField(max_length=100)         # Amount paid to the farmer
 
     def __str__(self):
-        return self.name
-    
+        return self.cherry_color
+
+
+
