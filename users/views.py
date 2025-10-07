@@ -8,11 +8,12 @@ from rest_framework.permissions import AllowAny
 from rest_framework import status
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
+from drf_spectacular.utils import extend_schema, OpenApiResponse
 
 from .models import User
 from .serializers import (
-    UserSerializer, 
-    LoginSerializer, 
+    UserSerializer,
+    LoginSerializer,
     ResetPinSerializer,
     SecurityQuestionSerializer
 )
@@ -21,6 +22,10 @@ from .serializers import (
 # ============================================
 # LOGIN VIEW
 # ============================================
+@extend_schema(
+    request=LoginSerializer,
+    responses={200: OpenApiResponse(description="Login successful")}
+)
 @api_view(['POST'])
 @permission_classes([AllowAny])  # Anyone can attempt login
 def login_view(request):
@@ -99,6 +104,10 @@ def login_view(request):
 # ============================================
 # GET SECURITY QUESTION VIEW
 # ============================================
+@extend_schema(
+    request=SecurityQuestionSerializer,
+    responses={200: OpenApiResponse(description="Security question retrieved")}
+)
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def get_security_question_view(request):
@@ -160,6 +169,10 @@ def get_security_question_view(request):
 # ============================================
 # RESET PIN VIEW
 # ============================================
+@extend_schema(
+    request=ResetPinSerializer,
+    responses={200: OpenApiResponse(description="PIN reset successful")}
+)
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def reset_pin_view(request):

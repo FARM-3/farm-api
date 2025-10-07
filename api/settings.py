@@ -97,12 +97,13 @@ MIDDLEWARE = [
 REST_FRAMEWORK = {
     # Use JWT for authentication by default
     'DEFAULT_AUTHENTICATION_CLASSES': [
-#        'rest_framework_simplejwt.authentication.JWTAuthentication',
+       'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
     
     # Require authentication by default (except views with AllowAny)
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.AllowAny',
+        # 'rest_framework.permissions.AllowAny',
+        'rest_framework.permissions.IsAuthenticated'
     ],
     
     # Use JSON renderer (standard for APIs)
@@ -122,7 +123,7 @@ REST_FRAMEWORK['DEFAULT_SCHEMA_CLASS'] = 'drf_spectacular.openapi.AutoSchema'
 # ============================================
 SIMPLE_JWT = {
     # Access token expires after 24 hours (adjust as needed)
-    'ACCESS_TOKEN_LIFETIME': timedelta(hours=24),
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=30),
     
     # Refresh token expires after 7 days
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
