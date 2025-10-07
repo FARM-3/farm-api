@@ -22,7 +22,7 @@ class FarmerHarvestListView(ListView):
     model = FarmerHarvest
     template_name = 'farmerharvest_list.html'
     context_object_name = 'farmerharvests'
-    queryset = FarmerHarvest.objects.all().order_by('date_harvested')
+    queryset = FarmerHarvest.objects.all().order_by('date_of_delivery')
 
 class FarmerHarvestViewSet(viewsets.ModelViewSet):
     queryset = FarmerHarvest.objects.all()
