@@ -4,7 +4,7 @@ from django.db import models
 class Farmer(models.Model):
     name = models.CharField(max_length=100, blank=True)               # Farmer's name
     location = models.CharField(max_length=200, blank=True)           # Farmer's location
-    num_trees = models.CharField(max_length=100,default=0, blank=True)       # Count of trees (only positive numbers)
+    num_trees = models.CharField(max_length=100,default=0, blank=True)   # Count of trees (only positive numbers)
     contact = models.CharField(max_length=100, blank=True)            # Contact details (phone/email/etc.)
 
     def __str__(self):
