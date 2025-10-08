@@ -94,6 +94,12 @@ class User(AbstractBaseUser):
         unique=True,
         help_text="Phone number used for login"
     )
+
+    name = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text="User's full name"
+    )
     
     role = models.CharField(
         max_length=20, 
@@ -138,7 +144,7 @@ class User(AbstractBaseUser):
     objects = UserManager()
     
     USERNAME_FIELD = "phone"      # Login with phone instead of username
-    REQUIRED_FIELDS = []          # Only phone + pin needed for createsuperuser
+    REQUIRED_FIELDS = ["name"]          # Only phone + pin needed for createsuperuser
     
     class Meta:
         verbose_name = "User"

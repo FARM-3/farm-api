@@ -21,7 +21,7 @@ class FarmerHarvest(models.Model):
     stage = models.CharField(max_length=100)               # Stage of processing
     amount_paid = models.CharField(max_length=100)         # Amount paid to the farmer
     paid_by = models.CharField(max_length=100)             # Entity that made the payment
-    id = models.CharField(max_length=100)          # Unique identifier for the harvest
+    id = models.CharField(max_length=100, primary_key=True)          # Unique identifier for the harvest
 
     def __str__(self):
         return self.name            
