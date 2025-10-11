@@ -24,8 +24,7 @@ class Wage(models.Model):
     @property
     def calculate_net_salary(self):
         return self.monthly_pay - self.deduction
-
-
+    
 class Sale(models.Model):
     customer_name = models.CharField(max_length=20)
     item = models.CharField(max_length=50)
@@ -107,4 +106,4 @@ class Balancesheet(models.Model):
         ordering = ['account_type', 'account_type']
 
     def __str__(self):
-        return f"{self.account_name} ({self.get_account_type_display()}): ${self.balance}"""
+        return f"{self.account_name} ({self.get_account_type_display()}): ${self.balance}"
