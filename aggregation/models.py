@@ -71,30 +71,33 @@ class FarmerRegistration(models.Model):
 
     #location details
     DISTRICT_CHOICES = [
-        ('MASAKA', 'Masaka'),
         ('WAKISO', 'Wakiso'),
-        ('MBALE', 'Mbale'),
         ('OTHER', 'Other'),
     ]
     SUB_COUNTY_CHOICES = [
-        ('MASAKA', 'Masaka'),
-        ('WAKISO', 'Wakiso'),
-        ('MBALE', 'Mbale'),
+        ('NAMAYUMBA', 'Masaka'),
+        ('BUSUKUMA', 'Wakiso'),
+        ('GOMBE', 'Mbale'),
+        ('KATABI', 'KATABI'),
+        ('KAKIRI', 'KAKIRI'),
+        ('KASANJE', 'KASANJE'),
+        ('KAJJANSI', 'KAJJANSI'),
+        ('MASULIITA', 'MASULIITA'),
+        ('MENDE', 'MENDE'),
+        ('NANSABO', 'NANSABO'),
+        ('NSANGI', 'NSANGI'),
+        ('SSISA', 'SSISA'),
+        ('BUSSI', 'BUSSI'),
+        ('NBWERU', 'NBWERU'),
         ('OTHER', 'Other'),
     ]
-    PARISH_CHOICES = [
-        ('MASAKA', 'Masaka'),
-        ('WAKISO', 'Wakiso'),
-        ('MBALE', 'Mbale'),
-        ('OTHER', 'Other'),
-    ]
+
 
     district = models.CharField(max_length=100, blank=True, choices=DISTRICT_CHOICES)         # District
     other_district = models.CharField(max_length=100, blank=True, null=True)                  # If 'Other', specify
     sub_county = models.CharField(max_length=100, blank=True, choices=SUB_COUNTY_CHOICES)     # Sub-county
     other_sub_county = models.CharField(max_length=100, blank=True, null=True)                # If 'Other', specify
-    parish = models.CharField(max_length=100, blank=True, choices=PARISH_CHOICES)             # Parish
-    other_parish = models.CharField(max_length=100, blank=True, null=True)                    # If 'Other', specify
+    parish = models.CharField(max_length=100, blank=True)             # Parish                    # If 'Other', specify
     village = models.CharField(max_length=100, blank=True)          # Village
     gps_coordinates = models.CharField(max_length=100, blank=True) # GPS coordinates
     nearest_landmark = models.CharField(max_length=100, blank=True) # Nearest landmark
@@ -105,7 +108,7 @@ class FarmerRegistration(models.Model):
 
     def save(self, *args, **kwargs):
         # 1. Ensure the model is fully validated (important for cleaning/setting data)
-        self.full_clean() 
+        self.full_clean()
 
         # 2. Auto-generate farmer_id only if it's missing
         if not self.farmer_id:
@@ -166,22 +169,7 @@ class FarmerRegistration(models.Model):
     ownership_of_trees = models.BooleanField(default=True)      # Do you own all these trees? (Yes/No)
 
     # If ownership_of_trees is Yes, capture month and year planted (optional)
-    PLANTED_MONTH_CHOICES = [
-        (1, 'January'), (2, 'February'), (3, 'March'), (4, 'April'), (5, 'May'), (6, 'June'),
-        (7, 'July'), (8, 'August'), (9, 'September'), (10, 'October'), (11, 'November'), (12, 'December')
-    ]
-    planted_month = models.PositiveSmallIntegerField(
-        choices=PLANTED_MONTH_CHOICES,
-        null=True,
-        blank=True,
-        help_text="Select the month trees were planted (shown if you own the trees)"
-    )
-    planted_year = models.PositiveIntegerField(
-        null=True,
-        blank=True,
-        validators=[MinValueValidator(1900), MaxValueValidator(2100)],
-        help_text="Enter the year trees were planted (shown if you own the trees)"
-    )
+    
     planted_date = models.DateField(null=True, blank=True)            # Legacy field; kept for compatibility
     land_ownership = models.CharField(choices=LAND_OWNERSHIP_CHOICES)         # Land ownership details
     spacing_between_trees = models.CharField(max_length=100)  # Spacing between trees

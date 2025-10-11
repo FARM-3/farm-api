@@ -2,7 +2,7 @@ from rest_framework import serializers
 from .models import FarmerRegistration
 from .models import FarmerHarvest
 
-class FarmerSerializer(serializers.ModelSerializer):
+class FarmerRegistrationSerializer(serializers.ModelSerializer):
     class Meta:
         model = FarmerRegistration
         fields = '__all__'  
