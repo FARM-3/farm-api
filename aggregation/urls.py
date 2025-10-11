@@ -1,12 +1,12 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import FarmerViewSet
-from .views import FarmerHarvestViewSet
+from .views import FarmerRegistrationViewSet, FarmerHarvestViewSet, get_wakiso_parishes
 
 router = DefaultRouter()
-router.register(r'Farmer', FarmerViewSet)
+router.register(r'Farmer', FarmerRegistrationViewSet)
 router.register(r'FarmerHarvest', FarmerHarvestViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
+    path('wakiso-parishes/', get_wakiso_parishes, name='wakiso-parishes'),
 ]

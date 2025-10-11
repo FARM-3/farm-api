@@ -24,11 +24,7 @@ class Wage(models.Model):
     @property
     def calculate_net_salary(self):
         return self.monthly_pay - self.deduction
-
-<<<<<<< HEAD
-
-=======
->>>>>>> a48265d (created Sale and Expense APIs)
+    
 class Sale(models.Model):
     customer_name = models.CharField(max_length=20)
     item = models.CharField(max_length=50)
