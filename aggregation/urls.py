@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import FarmerRegistrationViewSet, FarmerHarvestViewSet, get_wakiso_parishes
+from .views import FarmerViewSet, FarmerHarvestViewSet, get_wakiso_parishes
 
 router = DefaultRouter()
 router.register(r'FarmerRegistration', FarmerViewSet)
