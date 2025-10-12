@@ -8,13 +8,13 @@ from rest_framework import viewsets
 
 
 # Create your views here.
-class FarmerRegistrationListView(ListView):
+class FarmerListView(ListView):
     model = FarmerRegistration
     template_name = 'farmer_list.html'
     context_object_name = 'farmers'
     queryset = FarmerRegistration.objects.all().order_by('first_name')
     
-class FarmerRegistrationViewSet(viewsets.ModelViewSet):
+class FarmerViewSet(viewsets.ModelViewSet):
     queryset = FarmerRegistration.objects.all()
     serializer_class = FarmerRegistrationSerializer
 
