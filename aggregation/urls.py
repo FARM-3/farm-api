@@ -4,7 +4,7 @@ from .views import FarmerViewSet
 from .views import FarmerHarvestViewSet
 
 router = DefaultRouter()
-router.register(r'Farmer', FarmerViewSet)
+router.register(r'FarmerRegistration', FarmerViewSet)
 router.register(r'FarmerHarvest', FarmerHarvestViewSet)
 
 urlpatterns = [
