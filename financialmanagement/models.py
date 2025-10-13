@@ -174,6 +174,11 @@ class Staff(models.Model):
         help_text="Village where staff member resides"
     )
     
+    gender = models.CharField(
+        max_length=100,
+        help_text="Gender of a worker"
+    )
+
     # Employment Information
     date_hired = models.DateField(
         help_text="Date when staff member was hired"
