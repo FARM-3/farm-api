@@ -1,8 +1,6 @@
 from django.contrib import admin
-<<<<<<< HEAD
 
 # Register your models here.
-=======
 from django.utils.html import format_html
 from .models import Harvests, Block
 
