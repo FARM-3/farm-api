@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.views.generic import ListView
 from .models import FarmerRegistration
 from .models import FarmerHarvest
-from .serializers import FarmerSerializer
+from .serializers import FarmerRegistrationSerializer
 from .serializers import FarmerHarvestSerializer
 from rest_framework import viewsets
 
@@ -16,7 +16,7 @@ class FarmerListView(ListView):
     
 class FarmerViewSet(viewsets.ModelViewSet):
     queryset = FarmerRegistration.objects.all()
-    serializer_class = FarmerSerializer
+    serializer_class = FarmerRegistrationSerializer
 
 class FarmerHarvestListView(ListView):
     model = FarmerHarvest

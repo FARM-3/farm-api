@@ -39,13 +39,13 @@ urlpatterns = [
     path('api/', include('financialmanagement.urls')),
     path('api/aggregation/', include('aggregation.urls')),
     path('api/harvests/', include('production.urls')),
+    path('api/blocks/', include('production.urls')),
     path('api/processing/', include('processing.urls')),
     path('api/users/', include('users.urls')),  # Include users app URLs
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'), # API schema (to view apis for frontend)
     path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'), # Swagger UI for API docs
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'), 
 ]
 
 # Available endpoints for users app:
@@ -53,4 +53,4 @@ urlpatterns = [
     # - POST /api/users/security-question/
     # - POST /api/users/reset-pin/
     # - POST /api/users/token/refresh/
-    # - GET  /api/users/me/
+    # - GET  /api/users/me/ 
