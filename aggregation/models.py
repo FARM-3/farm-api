@@ -13,14 +13,14 @@ class Farmer(models.Model):
     #Farmerharvest model
 class FarmerHarvest(models.Model):
     name = models.CharField(max_length=100)               # Farmer's name
-    weight_on_delivery = models.IntegerField(max_length=100)         # Weight of the harvest
-    weight_after_floating = models.IntegerField(max_length=100)       # Weight after floating
-    date_of_delivery = models.CharField(max_length=100)    # Date of delivery
-    grade = models.CharField(max_length=100)               # Grade of the harvest
-    cherry_color = models.CharField(max_length=100)        # Color of the cherry
-    stage = models.CharField(max_length=100)               # Stage of processing
-    amount_paid = models.CharField(max_length=100)         # Amount paid to the farmer
-    paid_by = models.CharField(max_length=100)             # Entity that made the payment
+    weight_on_delivery = models.IntegerField(max_length=100, null=True)         # Weight of the harvest
+    weight_after_floating = models.IntegerField(max_length=100, null=True)       # Weight after floating
+    date_of_delivery = models.CharField(max_length=100, null=True)    # Date of delivery
+    grade = models.CharField(max_length=100, null=True)               # Grade of the harvest
+    cherry_color = models.CharField(max_length=100, null=True)        # Color of the cherry
+    stage = models.CharField(max_length=100, null=True)               # Stage of processing
+    amount_paid = models.CharField(max_length=100, null=True)         # Amount paid to the farmer
+    paid_by = models.CharField(max_length=100, null=True)             # Entity that made the payment
     id = models.CharField(max_length=100, primary_key=True)          # Unique identifier for the harvest
 
     def __str__(self):
