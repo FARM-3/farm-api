@@ -1,4 +1,20 @@
 from rest_framework import serializers
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+from .models import Harvests
+
+
+
+
+
+
+class HarvestsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Harvests
+        fields = '__all__'
+=======
+>>>>>>> 447798b3a9fca5fed9ccfbdbfbdeb8a9db50aeb0
 from .models import Harvests, Block
 from rest_framework import serializers
 
@@ -145,5 +161,9 @@ class HarvestsSummarySerializer(serializers.Serializer):
     total_amount_paid = serializers.DecimalField(max_digits=10, decimal_places=2)
     average_weight = serializers.DecimalField(max_digits=10, decimal_places=2)
     date_range = serializers.DictField()
+<<<<<<< HEAD
+=======
+>>>>>>> 32f5cd754438efd6bf2c5652d930d014e74a421b
+>>>>>>> 447798b3a9fca5fed9ccfbdbfbdeb8a9db50aeb0
 
 

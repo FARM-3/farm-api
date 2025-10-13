@@ -1,4 +1,11 @@
 from django.contrib import admin
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+
+# Register your models here.
+=======
+>>>>>>> 447798b3a9fca5fed9ccfbdbfbdeb8a9db50aeb0
 from django.utils.html import format_html
 from .models import Harvests, Block
 
@@ -130,4 +137,9 @@ class BlockAdmin(admin.ModelAdmin):
             'fields': ('created_at', 'updated_at', 'created_by'),
             'classes': ('collapse',)
         }),
+<<<<<<< HEAD
     )
+=======
+    )
+>>>>>>> 32f5cd754438efd6bf2c5652d930d014e74a421b
+>>>>>>> 447798b3a9fca5fed9ccfbdbfbdeb8a9db50aeb0
