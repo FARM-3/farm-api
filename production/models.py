@@ -1,5 +1,8 @@
 from django.db import models
-<<<<<<< HEAD
+from django.core.exceptions import ValidationError
+from django.contrib.auth.models import User
+from django.core.validators import MinValueValidator
+from django.conf import settings
 
 # Create your models here.
 class Harvests(models.Model):
@@ -13,11 +16,6 @@ class Harvests(models.Model):
 
     def __str__(self):
         return self.cherry_color
-=======
-from django.core.exceptions import ValidationError
-from django.contrib.auth.models import User
-from django.core.validators import MinValueValidator
-from django.conf import settings
 
 # Create your models here.
 class Harvests(models.Model):
