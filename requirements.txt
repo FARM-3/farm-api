@@ -1,26 +1,28 @@
-asgiref==3.9.1
-attrs==25.3.0
-dj-database-url==3.0.1
-Django==5.2.6
-django-cors-headers==4.9.0
-django-environ==0.12.0
-django-filter==25.1
-djangorestframework==3.16.1
-djangorestframework_simplejwt==5.5.1
-dotenv==0.9.9
-drf-spectacular==0.28.0
-gunicorn==23.0.0
-inflection==0.5.1
-jsonschema==4.25.1
-jsonschema-specifications==2025.9.1
-packaging==25.0
-psycopg2-binary==2.9.10
-PyJWT==2.10.1
-python-decouple==3.8
-python-dotenv==1.1.1
-PyYAML==6.0.3
-referencing==0.36.2
-rpds-py==0.27.1
-sqlparse==0.5.3
-tzdata==2025.2
-uritemplate==4.2.0
+gunicorn api.wsgi:application --bind 0.0.0.0:$PORT --workers 4
+
+0789270943
+
+-surname and last name
+-national id
+-drop down of villages
+-what is the qualification to be an outgrower, minimum threshold for number of trees. "age of trees?"
+-register more farm details 
+-specify data type (predetermined, options, selection)
+-capture pin(geolocation)
+-email(optional)
+-coffee cherries cannot be red and dried
+-make it a search for farmers names
+-assign the farmer reg number
+-how do they determine grade
+-need to do diagrams (process flow diagrams, journey map)
+-a step form (processes)
+
+sort
+-color
+-grade 2 (green ones) dry
+-weigh
+
+floating
+-float red cherries only
+sink(grade one) ferment (1 week)
+float(grade 2) ferment

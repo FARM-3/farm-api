@@ -16,7 +16,7 @@ class HarvestListView(ListView):
     model = Harvests
     template_name = 'harvest_list.html'
     context_object_name = 'harvests'
-    queryset = Harvests.objects.all().order_by('date')
+    queryset = Harvests.objects.all().order_by('date_of_delivery')
 
 class HarvestsViewSet(viewsets.ModelViewSet):
     queryset = Harvests.objects.all()
