@@ -102,7 +102,7 @@ class HarvestsAdmin(admin.ModelAdmin):
             request, 
             f'{count} harvest(s) selected for export. (Export functionality to be implemented)'
         )
-    export_selected_harvests.short_description = 'Export selected harvests'from django.contrib import admin
+    export_selected_harvests.short_description = 'Export selected harvests'
 
 
 # Register your models here.
