@@ -5,7 +5,7 @@ import requests
 
 # Create your models here.
 class FarmerRegistration(models.Model):
-    GENDER_CHOICES = [
+    """GENDER_CHOICES = [
         ('MALE', 'Male'),
         ('FEMALE', 'Female'),
         ('OTHER', 'Other'),
@@ -44,10 +44,10 @@ class FarmerRegistration(models.Model):
     FERTILIZER_CHOICES = [
         ('ORGANIC', 'Organic'),
         ('INORGANIC', 'Inorganic'),
-    ]
-    first_name = models.CharField(max_length=100, blank=True)               # Farmer's name
-    last_name = models.CharField(max_length=100, blank=True)                # Farmer's name
-    gender = models.CharField(max_length=10, choices=GENDER_CHOICES)  # Farmer
+    ]"""
+    first_name = models.CharField(max_length=100)              
+    last_name = models.CharField(max_length=100)             
+    gender = models.CharField(max_length=10, blank=False)  
     nin = models.CharField(
         max_length=14,
         unique=True,
@@ -56,12 +56,12 @@ class FarmerRegistration(models.Model):
         validators=[RegexValidator(regex=r'^[A-Z0-9]{14}$', message='NIN must be 14 characters: uppercase letters and digits only.')],
         help_text="Enter 14 characters (A–Z, 0–9); leave empty if not available"
     )                     # National Identification Number
-    date_of_birth = models.DateField()         # Date of birth
-    contact = models.CharField(max_length=20, blank=True, null=True)            # Contact details (optional)
-    email = models.EmailField(max_length=100, unique=True, blank=True, null=True)          # Email address (optional)
-    farmer_type = models.CharField(max_length=15, choices=FARMER_TYPE_CHOICES)  # Type of farmer
+    date_of_birth = models.DateField()        
+    contact = models.CharField(max_length=20, blank=True, null=True)            
+    email = models.EmailField(max_length=100, unique=True, blank=True, null=True)        
+    farmer_type = models.CharField(max_length=15, blank=False)  
 
-    # Section 1 end question: Which year did you start coffee farming?
+    
     started_coffee_farming_year = models.PositiveIntegerField(
         null=True,
         blank=True,
@@ -70,14 +70,14 @@ class FarmerRegistration(models.Model):
     )
 
     #location details
-    DISTRICT_CHOICES = [
+    """DISTRICT_CHOICES = [
         ('WAKISO', 'Wakiso'),
         ('OTHER', 'Other'),
     ]
     SUB_COUNTY_CHOICES = [
-        ('NAMAYUMBA', 'Masaka'),
-        ('BUSUKUMA', 'Wakiso'),
-        ('GOMBE', 'Mbale'),
+        ('NAMAYUMBA', 'NAMAYUMBA'),
+        ('BUSUKUMA', 'BUSUKUMA'),
+        ('GOMBE', 'GOMBE'),
         ('KATABI', 'KATABI'),
         ('KAKIRI', 'KAKIRI'),
         ('KASANJE', 'KASANJE'),
@@ -90,12 +90,12 @@ class FarmerRegistration(models.Model):
         ('BUSSI', 'BUSSI'),
         ('NBWERU', 'NBWERU'),
         ('OTHER', 'Other'),
-    ]
+    ]"""
 
 
-    district = models.CharField(max_length=100, blank=True, choices=DISTRICT_CHOICES)         # District
+    district = models.CharField(max_length=100, blank=True)         # District
     other_district = models.CharField(max_length=100, blank=True, null=True)                  # If 'Other', specify
-    sub_county = models.CharField(max_length=100, blank=True, choices=SUB_COUNTY_CHOICES)     # Sub-county
+    sub_county = models.CharField(max_length=100, blank=True)     # Sub-county
     other_sub_county = models.CharField(max_length=100, blank=True, null=True)                # If 'Other', specify
     parish = models.CharField(max_length=100, blank=True)             # Parish                    # If 'Other', specify
     village = models.CharField(max_length=100, blank=True)          # Village
@@ -107,13 +107,13 @@ class FarmerRegistration(models.Model):
         return f"{self.first_name} {self.last_name} ({self.farmer_id or 'New'})"
 
     def save(self, *args, **kwargs):
-        # 1. Ensure the model is fully validated (important for cleaning/setting data)
+        
         self.full_clean()
 
-        # 2. Auto-generate farmer_id only if it's missing
+        
         if not self.farmer_id:
             
-            # Ensure names exist before trying to access their first letter
+            
             first_initial = self.first_name[0].upper() if self.first_name else 'X'
             last_initial = self.last_name[0].upper() if self.last_name else 'X'
             
@@ -124,16 +124,16 @@ class FarmerRegistration(models.Model):
             new_unique_id = f"{first_initial}{last_initial}{random_digits}A"
             
             # Check if this generated ID already exists in the database
-            # This is critical to ensure uniqueness
+            
             while FarmerRegistration.objects.filter(farmer_id=new_unique_id).exists():
-                # If it exists, generate a new set of random digits and try again
+                
                 random_digits = ''.join(random.choices('0123456789', k=3))
                 new_unique_id = f"{first_initial}{last_initial}{random_digits}A"
             
             # Assign the unique ID
             self.farmer_id = new_unique_id
         
-        # 3. Auto-generate GPS coordinates if missing, using OpenStreetMap Nominatim
+        
         if not self.gps_coordinates:
             try:
                 parts = [
@@ -158,33 +158,33 @@ class FarmerRegistration(models.Model):
                             if lat and lon:
                                 self.gps_coordinates = f"{lat},{lon}"
             except Exception:
-                # Silently ignore geocoding failures to avoid blocking saves
+                
                 pass
 
         super().save(*args, **kwargs)
 
-        #coffee details
-    coffee_variety = models.CharField(choices=COFFEE_VARIETY_CHOICES)       # Coffee variety
-    number_of_trees = models.PositiveIntegerField(default=0)          # Number of trees under coffee cultivation
-    ownership_of_trees = models.BooleanField(default=True)      # Do you own all these trees? (Yes/No)
+        
+    coffee_variety = models.CharField(max_length=100, blank=False)     
+    number_of_trees = models.PositiveIntegerField(default=0)         
+    ownership_of_trees = models.BooleanField(default=True)    
 
-    # If ownership_of_trees is Yes, capture month and year planted (optional)
     
-    planted_date = models.DateField(null=True, blank=True)            # Legacy field; kept for compatibility
-    land_ownership = models.CharField(choices=LAND_OWNERSHIP_CHOICES)         # Land ownership details
-    spacing_between_trees = models.CharField(max_length=100)  # Spacing between trees
-    defforestation_status = models.BooleanField(default=True)      # Deforestation status
+    
+    planted_date = models.DateField(null=True, blank=True)            
+    land_ownership = models.CharField(max_length=100, blank=False)         
+    spacing_between_trees = models.CharField(max_length=100)  
+    defforestation_status = models.BooleanField(default=True)      
 
     #source of seedlings
-    source_of_seedlings = models.CharField(choices=SEEDLING_SOURCE_CHOICES)      # Source of seedlings
-    type_of_seedlings = models.CharField(choices=COFFEE_VARIETY_CHOICES)          # Type of seedlings
-    age_of_seedlings = models.CharField(max_length=100)          # Age of seedlings
-    standard_practices = models.BooleanField(choices=STANDARD_PRACTICES_CHOICES) # Whether standard practices are followed
-    irrigation_source = models.CharField(max_length=100)        # Source of irrigation
+    source_of_seedlings = models.CharField(max_length=100, blank=False)      # Source of seedlings
+    type_of_seedlings = models.CharField(max_length=100, blank=False)          # Type of seedlings
+    age_of_seedlings = models.CharField(max_length=100, blank=False)          # Age of seedlings
+    standard_practices = models.BooleanField(default=False) # Whether standard practices are followed
+    irrigation_source = models.CharField(max_length=100, blank=False)        # Source of irrigation
 
     #agro-chemicals used
-    fertilizers = models.CharField(max_length=100)        # Fertilizers used
-    pesticide = models.CharField(max_length=100)          # Pesticides used
+    fertilizers = models.CharField(max_length=100, blank=False)        # Fertilizers used
+    pesticide = models.CharField(max_length=100, blank=False)          # Pesticides used
 
 
 

@@ -16,7 +16,7 @@ class FarmerListView(ListView):
     
 class FarmerViewSet(viewsets.ModelViewSet):
     queryset = FarmerRegistration.objects.all()
-    serializer_class = FarmerSerializer
+    serializer_class = FarmerRegistrationSerializer
 
 class FarmerHarvestListView(ListView):
     model = FarmerHarvest
