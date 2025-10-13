@@ -39,7 +39,7 @@ urlpatterns = [
     path('api/', include('financialmanagement.urls')),
     path('api/aggregation/', include('aggregation.urls')),
     path('api/harvests/', include('harvests.urls')),
-    path('api/blocks/', include('blocks.urls')),
+    path('api/blocks/', include('harvests.urls')),
     path('api/processing/', include('processing.urls')),
     path('api/users/', include('users.urls')),  # Include users app URLs
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'), # API schema (to view apis for frontend)
