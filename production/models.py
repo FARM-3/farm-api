@@ -148,6 +148,8 @@ class Block(models.Model):
     source_of_seedling = models.CharField(max_length=200)
     type_of_seedling = models.CharField(max_length=200)
     age_of_seedling = models.IntegerField(validators=[MinValueValidator(0)])
+    fertilizers = models.CharField(max_length=255 , default='Not Specified')         
+    fertilizer_names = models.TextField(blank=True, null=True, help_text="Comma-separated list of fertilizer names")
     use_pesticides = models.CharField(max_length=255)
     pesticides_list = models.TextField(blank=True, null=True)
     standard_practices = models.CharField(max_length=255)

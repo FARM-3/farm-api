@@ -17,6 +17,8 @@ class BlockSerializer(serializers.ModelSerializer):
             'source_of_seedling',
             'type_of_seedling',
             'age_of_seedling',
+            'fertilizers',
+            'fertilizer_names',
             'use_pesticides',
             'pesticides_list',
             'standard_practices',
