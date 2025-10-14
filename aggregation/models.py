@@ -93,10 +93,8 @@ class FarmerRegistration(models.Model):
     ]"""
 
 
-    district = models.CharField(max_length=100, blank=True)         # District
-    other_district = models.CharField(max_length=100, blank=True, null=True)                  # If 'Other', specify
-    sub_county = models.CharField(max_length=100, blank=True)     # Sub-county
-    other_sub_county = models.CharField(max_length=100, blank=True, null=True)                # If 'Other', specify
+    district = models.CharField(max_length=100, blank=True)         # District                  # If 'Other', specify
+    sub_county = models.CharField(max_length=100, blank=True)                 # If 'Other', specify
     parish = models.CharField(max_length=100, blank=True)             # Parish                    # If 'Other', specify
     village = models.CharField(max_length=100, blank=True)          # Village
     gps_coordinates = models.CharField(max_length=100, blank=True) # GPS coordinates
