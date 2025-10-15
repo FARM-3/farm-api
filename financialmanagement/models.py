@@ -170,8 +170,8 @@ class Wage(models.Model):
         return self.monthly_pay - self.deduction
     
 class Sale(models.Model):
-    first_name = models.CharField(max_length=50)
-    last_name = models.CharField(max_length=50)
+    first_name = models.CharField(max_length=50, null=True, blank=True)
+    last_name = models.CharField(max_length=50, null=True, blank=True)
     batch_id = models.CharField(max_length=20, null=True, blank=True)
     item = models.CharField(max_length=50)
     rate = models.DecimalField(max_digits=10, decimal_places=2)
