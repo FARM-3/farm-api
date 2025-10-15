@@ -102,8 +102,8 @@ REST_FRAMEWORK = {
     
     # Require authentication by default (except views with AllowAny)
     'DEFAULT_PERMISSION_CLASSES': [
-        #'rest_framework.permissions.AllowAny',
-        'rest_framework.permissions.IsAuthenticated'
+        'rest_framework.permissions.AllowAny',
+        #'rest_framework.permissions.IsAuthenticated'
     ],
     
     # Use JSON renderer (standard for APIs)
