@@ -186,10 +186,10 @@ class Sale(models.Model):
     class Meta:
         verbose_name = "Sale Record"
         verbose_name_plural = "Sale Records"
-        ordering = ['-date_of_payment', 'customer_name']
+        ordering = ['-date_of_payment', 'first_name']
 
     def __str__(self):
-        return f"Sale to {self.customer_name} of {self.item}"
+        return f"Sale to {self.first_name} {self.last_name} of {self.item}"
 
     def save(self, *args, **kwargs):
         self.total_amount = self.rate * self.quantity
@@ -218,7 +218,7 @@ class Receipt(models.Model):
         ordering = ['-date_issued', 'receipt_number']
 
     def __str__(self):
-        return f"Receipt {self.receipt_number} for {self.sale.customer_name}"
+        return f"Receipt {self.receipt_number} for {self.sale.first_name} {self.sale.last_name}"
 
 class Expense(models.Model):
     expense_name = models.CharField(max_length=50)
