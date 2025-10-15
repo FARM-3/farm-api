@@ -1,6 +1,60 @@
 from rest_framework import serializers
 from .models import Sale, Wage, Expense, Balancesheet, Staff
 
+class StaffSerializer(serializers.ModelSerializer):
+    """
+    Serializer for Staff model
+    Handles serialization/deserialization of staff data
+    """
+    
+    # Read-only field to display full name
+    full_name = serializers.SerializerMethodField()
+    
+    # Read-only field to display full address
+    full_address = serializers.SerializerMethodField()
+    
+    # Staff ID is auto-generated and read-only
+    staff_id = serializers.CharField(read_only=True)
+    
+    class Meta:
+        model = Staff
+        fields = '__all__'
+        read_only_fields = ['staff_id', 'created_at', 'updated_at']
+    
+    def get_full_name(self, obj):
+        """
+        Return the staff member's full name
+        """
+        return obj.get_full_name()
+    
+    def get_full_address(self, obj):
+        """
+        Return the staff member's complete address
+        """
+        return obj.get_full_address()
+    
+    def validate_nin(self, value):
+        """
+        Validate NIN format - ensure it's uppercase
+        """
+        return value.upper()
+    
+    def validate(self, data):
+        """
+        Object-level validation
+        """
+        # Ensure date_hired is not in the future
+        if 'date_hired' in data:
+            from django.utils import timezone
+            if data['date_hired'] > timezone.now().date():
+                raise serializers.ValidationError({
+                    'date_hired': 'Date hired cannot be in the future'
+                })
+        
+        return data
+     
+
+
 class WageSerializer(serializers.ModelSerializer):
     net_salary = serializers.ReadOnlyField(source='calculate_net_salary')
 

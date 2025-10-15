@@ -11,7 +11,7 @@ class HarvestsAdmin(admin.ModelAdmin):
     """
     list_display = [
         'harvest_id',
-        'worker_name', 
+        'worker_name',
         'block_id',
         'formatted_weight',
         'date_of_delivery',
@@ -38,7 +38,7 @@ class HarvestsAdmin(admin.ModelAdmin):
     ]
     ordering = ['-date_of_delivery', '-created_at']
     date_hierarchy = 'date_of_delivery'
-    
+
     fieldsets = (
         ('Harvest Information', {
             'fields': (
@@ -60,19 +60,19 @@ class HarvestsAdmin(admin.ModelAdmin):
             'classes': ('collapse',)
         }),
     )
-    
+
     def formatted_weight(self, obj):
         """Display weight with 2 decimal places and unit"""
         return f"{obj.weight_on_delivery:.2f} kg"
     formatted_weight.short_description = 'Weight'
     formatted_weight.admin_order_field = 'weight_on_delivery'
-    
+
     def formatted_amount(self, obj):
         """Display amount with currency formatting"""
         return f"UGX {obj.amount_paid:,.2f}"
     formatted_amount.short_description = 'Amount Paid'
     formatted_amount.admin_order_field = 'amount_paid'
-    
+
     def get_paid_by_name(self, obj):
         """Display the name of staff who processed payment"""
         if obj.paid_by:
@@ -80,7 +80,7 @@ class HarvestsAdmin(admin.ModelAdmin):
         return '-'
     get_paid_by_name.short_description = 'Paid By'
     get_paid_by_name.admin_order_field = 'paid_by__last_name'
-    
+
     def get_queryset(self, request):
         """
         Optimize queries by selecting related staff data
@@ -88,10 +88,10 @@ class HarvestsAdmin(admin.ModelAdmin):
         queryset = super().get_queryset(request)
         queryset = queryset.select_related('paid_by')
         return queryset
-    
+
     # Add some custom actions
     actions = ['export_selected_harvests']
-    
+
     def export_selected_harvests(self, request, queryset):
         """
         Action to export selected harvests (placeholder)
@@ -99,7 +99,7 @@ class HarvestsAdmin(admin.ModelAdmin):
         """
         count = queryset.count()
         self.message_user(
-            request, 
+            request,
             f'{count} harvest(s) selected for export. (Export functionality to be implemented)'
         )
     export_selected_harvests.short_description = 'Export selected harvests'
@@ -112,7 +112,7 @@ class BlockAdmin(admin.ModelAdmin):
     list_filter = ['use_pesticides', 'created_at']
     search_fields = ['block_id', 'type_of_coffee']
     readonly_fields = ['created_at', 'updated_at', 'created_by']
-    
+
     fieldsets = (
         ('Basic Information', {
             'fields': ('block_id', 'no_of_trees', 'date_planted')
