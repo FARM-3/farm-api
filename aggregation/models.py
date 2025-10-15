@@ -165,8 +165,6 @@ class FarmerRegistration(models.Model):
     coffee_variety = models.CharField(max_length=100, blank=False)     
     number_of_trees = models.PositiveIntegerField(default=0)         
     ownership_of_trees = models.BooleanField(default=True)    
-
-    
     
     planted_date = models.DateField(null=True, blank=True)            
     land_ownership = models.CharField(max_length=100, blank=False)         
@@ -174,31 +172,31 @@ class FarmerRegistration(models.Model):
     defforestation_status = models.BooleanField(default=True)      
 
     #source of seedlings
-    source_of_seedlings = models.CharField(max_length=100, blank=False)      # Source of seedlings
-    type_of_seedlings = models.CharField(max_length=100, blank=False)          # Type of seedlings
-    age_of_seedlings = models.CharField(max_length=100, blank=False)          # Age of seedlings
-    standard_practices = models.BooleanField(default=False) # Whether standard practices are followed
-    irrigation_source = models.CharField(max_length=100, blank=False)        # Source of irrigation
+    source_of_seedlings = models.CharField(max_length=100, blank=False)      
+    type_of_seedlings = models.CharField(max_length=100, blank=False)     
+    age_of_seedlings = models.CharField(max_length=100, blank=False)          
+    standard_practices = models.BooleanField(default=False) 
+    irrigation_source = models.CharField(max_length=100, blank=False)       
 
     #agro-chemicals used
-    fertilizers = models.CharField(max_length=100, blank=False)        # Fertilizers used
-    pesticide = models.CharField(max_length=100, blank=False)          # Pesticides used
+    fertilizers = models.CharField(max_length=100, blank=False)       
+    pesticide = models.CharField(max_length=100, blank=False)         
 
 
 
     
     #Farmerharvest model
 class FarmerHarvest(models.Model):
-    name = models.CharField(max_length=100)               # Farmer's name
+    name = models.CharField(max_length=100)              
     weight_on_delivery = models.IntegerField(max_length=100, null=True)
-    date_of_delivery = models.CharField(max_length=100, null=True)    # Date of delivery
-    coffee_variety = models.CharField(max_length=100, null=True)      # Variety of coffee
+    date_of_delivery = models.CharField(max_length=100, null=True)    
+    coffee_variety = models.CharField(max_length=100, null=True)     
     stage = models.CharField(max_length=100, null=True)
-    moisture_content = models.CharField(max_length=100, null=True)    # Moisture               # Stage of processing
-    amount_paid = models.CharField(max_length=100, null=True)         # Amount paid to the farmer
+    moisture_content = models.CharField(max_length=100, null=True)                
+    amount_paid = models.CharField(max_length=100, null=True)       
     paid_by = models.CharField(max_length=100, null=True)
-    number_of_bags = models.IntegerField(null=True)                     # Number of bags delivered
-    harvest_id = models.CharField(max_length=100, primary_key=True)          # Unique identifier for the harvest
+    number_of_bags = models.IntegerField(null=True)                     
+    harvest_id = models.CharField(max_length=100, primary_key=True)       
     
     # Auto-generate harvest_id
     def save(self, *args, **kwargs):
