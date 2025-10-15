@@ -1,5 +1,4 @@
 from django.db import models
-from django.contrib.postgres.fields import ArrayField
 from django.core.validators import RegexValidator, MinValueValidator, MaxValueValidator
 import random
 import requests
@@ -184,8 +183,8 @@ class FarmerRegistration(models.Model):
     irrigation_source = models.CharField(max_length=100, blank=False)        # Source of irrigation
 
     #agro-chemicals used
-    fertilizers = ArrayField(models.CharField(max_length=100), blank=True, default=list)        # Fertilizers used
-    pesticide = ArrayField(models.CharField(max_length=100), blank=True, default=list)          # Pesticides used
+    fertilizers = models.CharField(max_length=100, blank=False)        # Fertilizers used
+    pesticide = models.CharField(max_length=100, blank=False)          # Pesticides used
 
 
 
