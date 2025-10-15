@@ -16,7 +16,7 @@ class WageViewSet(viewsets.ModelViewSet):
 
 class SaleViewSet(viewsets.ModelViewSet):
 
-    queryset = Sale.objects.all().order_by('-date_of_payment', 'first_name')
+    queryset = Sale.objects.all().order_by('-date_of_payment', 'customer_name')
     serializer_class = SaleSerializer
     permission_classes = [AllowAny]
 

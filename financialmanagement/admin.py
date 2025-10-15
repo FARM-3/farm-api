@@ -24,7 +24,7 @@ class WageAdmin(admin.ModelAdmin):
 
 class SaleAdmin(admin.ModelAdmin):
     list_display = (
-        'first_name', 
+        'customer_name', 
         'item', 
         'rate', 
         'quantity', 
@@ -37,9 +37,9 @@ class SaleAdmin(admin.ModelAdmin):
         '__str__'
     )
 
-    list_filter = ('date_of_payment', 'first_name', 'status')
+    list_filter = ('date_of_payment', 'customer_name', 'status')
 
-    search_fields = ('first_name', 'item', 'method_of_payment')
+    search_fields = ('customer_name', 'item', 'method_of_payment')
 
 class ExpenseAdmin(admin.ModelAdmin):
     list_display = (

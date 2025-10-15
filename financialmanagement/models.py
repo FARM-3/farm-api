@@ -170,8 +170,8 @@ class Wage(models.Model):
         return self.monthly_pay - self.deduction
     
 class Sale(models.Model):
-    first_name = models.CharField(max_length=50, null=True, blank=True)
-    last_name = models.CharField(max_length=50, null=True, blank=True)
+    
+    customer_name = models.CharField(max_length=100)
     batch_id = models.CharField(max_length=20, null=True, blank=True)
     item = models.CharField(max_length=50)
     rate = models.DecimalField(max_digits=10, decimal_places=2)
@@ -186,10 +186,10 @@ class Sale(models.Model):
     class Meta:
         verbose_name = "Sale Record"
         verbose_name_plural = "Sale Records"
-        ordering = ['-date_of_payment', 'first_name']
+        ordering = ['-date_of_payment', 'customer_name']
 
     def __str__(self):
-        return f"Sale to {self.first_name} {self.last_name} of {self.item}"
+        return f"Sale to {self.customer_name} of {self.item}"
 
     def save(self, *args, **kwargs):
         self.total_amount = self.rate * self.quantity
@@ -218,7 +218,7 @@ class Receipt(models.Model):
         ordering = ['-date_issued', 'receipt_number']
 
     def __str__(self):
-        return f"Receipt {self.receipt_number} for {self.sale.first_name} {self.sale.last_name}"
+        return f"Receipt {self.receipt_number} for {self.sale.customer_name}"
 
 class Expense(models.Model):
     expense_name = models.CharField(max_length=50)
@@ -267,4 +267,5 @@ class Balancesheet(models.Model):
 
     def __str__(self):
         return f"{self.account_name} ({self.get_account_type_display()}): ${self.balance}"
+
 
