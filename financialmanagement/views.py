@@ -1,8 +1,8 @@
 from django.shortcuts import render
 from rest_framework import viewsets
 from .models import Balancesheet, Wage
-from .serializers import WageSerializer, SaleSerializer, ExpenseSerializer, BalancesheetSerializer
-from .models import Sale, Expense   
+from .serializers import WageSerializer, SaleSerializer, ExpenseSerializer, BalancesheetSerializer, StaffSerializer
+from .models import Sale, Expense, Staff   
 from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -10,9 +10,15 @@ from django.db.models import Sum
 from datetime import datetime
 
 # Create your views here.
+class StaffViewSet(viewsets.ModelViewSet):
+    queryset = Staff.objects.all()
+    serializer_class = StaffSerializer
+    permission_classes = [AllowAny]
+
 class WageViewSet(viewsets.ModelViewSet):
     queryset = Wage.objects.all()
     serializer_class = WageSerializer
+    permission_classes = [AllowAny]
 
 class SaleViewSet(viewsets.ModelViewSet):
 
@@ -23,6 +29,7 @@ class SaleViewSet(viewsets.ModelViewSet):
 class ExpenseViewSet(viewsets.ModelViewSet):
     queryset = Expense.objects.all()
     serializer_class = ExpenseSerializer
+    permission_classes = [AllowAny]
 
 class BalanceSheetViewSet(viewsets.ModelViewSet):
     queryset = Balancesheet.objects.all()
