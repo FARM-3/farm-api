@@ -187,32 +187,16 @@ class FarmerRegistration(models.Model):
     
     #Farmerharvest model
 class FarmerHarvest(models.Model):
-    name = models.CharField(max_length=100)              
-    weight_on_delivery = models.IntegerField(max_length=100, null=True)
-    date_of_delivery = models.CharField(max_length=100, null=True)    
-    coffee_variety = models.CharField(max_length=100, null=True)     
-    stage = models.CharField(max_length=100, null=True)
-    moisture_content = models.CharField(max_length=100, null=True)                
-    amount_paid = models.CharField(max_length=100, null=True)       
-    paid_by = models.CharField(max_length=100, null=True)
-    number_of_bags = models.IntegerField(null=True)                     
-    harvest_id = models.CharField(max_length=100, primary_key=True)       
-    
-    # Auto-generate harvest_id
-    def save(self, *args, **kwargs):
-        if not self.harvest_id:
-            last_entry = FarmerHarvest.objects.order_by('-harvest_id').first()
-            if last_entry:
-            
-                last_number = int(last_entry.harvest_id[2:5])
-                new_number = last_number + 1
-            else:
-                new_number = 1
-
-            # Format new ID: RF + 3 digits + A
-            self.harvest_id = f"RF{new_number:03d}A"
-
-        super().save(*args, **kwargs)
+    name = models.CharField(max_length=100)               # Farmer's name
+    weight_on_delivery = models.IntegerField(null=True)         # Weight of the harvest
+    weight_after_floating = models.IntegerField(null=True)       # Weight after floating
+    date_of_delivery = models.CharField(max_length=100, null=True)    # Date of delivery
+    grade = models.CharField(max_length=100, null=True)               # Grade of the harvest
+    cherry_color = models.CharField(max_length=100, null=True)        # Color of the cherry
+    stage = models.CharField(max_length=100, null=True)               # Stage of processing
+    amount_paid = models.CharField(max_length=100, null=True)         # Amount paid to the farmer
+    paid_by = models.CharField(max_length=100, null=True)             # Entity that made the payment
+    id = models.CharField(max_length=100, primary_key=True)          # Unique identifier for the harvest
 
     def __str__(self):
         return f"{self.name} ({self.harvest_id})"
