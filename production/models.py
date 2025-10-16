@@ -12,14 +12,14 @@ class Harvests(models.Model):
     """
 
     # Block choices - six predefined blocks
-    BLOCK_CHOICES = [
-        ('block01', 'Block 01'),
-        ('block02', 'Block 02'),
-        ('block03', 'Block 03'),
-        ('block04', 'Block 04'),
-        ('block05', 'Block 05'),
-        ('block06', 'Block 06'),
-    ]
+    # BLOCK_CHOICES = [
+    #     ('block01', 'Block 01'),
+    #     ('block02', 'Block 02'),
+    #     ('block03', 'Block 03'),
+    #     ('block04', 'Block 04'),
+    #     ('block05', 'Block 05'),
+    #     ('block06', 'Block 06'),
+    #]
 
     # Auto-generated harvest ID (e.g., ED0711PA1)
     harvest_id = models.CharField(
@@ -39,7 +39,6 @@ class Harvests(models.Model):
     # Block where harvest was collected
     block_id = models.CharField(
         max_length=10,
-        choices=BLOCK_CHOICES,
         help_text="Block identifier where coffee was harvested"
     )
 
@@ -63,9 +62,15 @@ class Harvests(models.Model):
     )
 
     # Staff member who processed payment (Foreign Key to Staff model)
-    paid_by = models.ForeignKey(
-        'financialmanagement.Staff',  # Reference to Staff in financialmanagement app
-        on_delete=models.PROTECT,  # Prevent deletion of staff with payment records
+    # paid_by = models.ForeignKey(
+    #     'financialmanagement.Staff',  # Reference to Staff in financialmanagement app
+    #     on_delete=models.PROTECT,  # Prevent deletion of staff with payment records
+    #     related_name='payments_processed',
+    #     help_text="Staff member who processed the payment"
+    # )
+
+    paid_by = models.CharField(
+        max_length=100,
         related_name='payments_processed',
         help_text="Staff member who processed the payment"
     )
