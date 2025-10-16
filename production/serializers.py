@@ -48,13 +48,13 @@ class HarvestsSerializer(serializers.ModelSerializer):
         fields = '__all__'
         read_only_fields = ['harvest_id', 'created_at', 'updated_at']
 
-    def get_paid_by_name(self, obj):
-        """
-        Return the full name of the staff member who processed payment
-        """
-        if obj.paid_by:
-            return obj.paid_by.get_full_name()
-        return None
+    # def get_paid_by_name(self, obj):
+    #     """
+    #     Return the full name of the staff member who processed payment
+    #     """
+    #     if obj.paid_by:
+    #         return obj.paid_by.get_full_name()
+    #     return None
 
     def validate_weight_on_delivery(self, value):
         """
@@ -81,15 +81,15 @@ class HarvestsSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Date of delivery cannot be in the future")
         return value
 
-    def validate_paid_by(self, value):
-        """
-        Ensure the staff member is active
-        """
-        if not value.is_active:
-            raise serializers.ValidationError(
-                f"Staff member {value.get_full_name()} is not currently active"
-            )
-        return value
+    # def validate_paid_by(self, value):
+    #     """
+    #     Ensure the staff member is active
+    #     """
+    #     if not value.is_active:
+    #         raise serializers.ValidationError(
+    #             f"Staff member {value.get_full_name()} is not currently active"
+    #         )
+    #     return value
 
     def to_representation(self, instance):
         """
@@ -124,16 +124,16 @@ class HarvestsListSerializer(serializers.ModelSerializer):
             'weight_on_delivery',
             'date_of_delivery',
             'amount_paid',
-            'paid_by_name'
+            'paid_by'
         ]
 
-    def get_paid_by_name(self, obj):
-        """
-        Return the staff member's full name
-        """
-        if obj.paid_by:
-            return obj.paid_by.get_full_name()
-        return None
+    # def get_paid_by_name(self, obj):
+    #     """
+    #     Return the staff member's full name
+    #     """
+    #     if obj.paid_by:
+    #         return obj.paid_by.get_full_name()
+    #     return None
 
 
 class HarvestsSummarySerializer(serializers.Serializer):
