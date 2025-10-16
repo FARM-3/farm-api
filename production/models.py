@@ -71,7 +71,6 @@ class Harvests(models.Model):
 
     paid_by = models.CharField(
         max_length=100,
-        related_name='payments_processed',
         help_text="Staff member who processed the payment"
     )
 
