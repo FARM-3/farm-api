@@ -37,8 +37,9 @@ class HarvestsSerializer(serializers.ModelSerializer):
     Handles serialization/deserialization of harvest data
     """
 
+    # COMMENTED OUT: This field expects get_paid_by_name() method which requires paid_by to be a ForeignKey
     # Read-only field to display staff member's full name
-    paid_by_name = serializers.SerializerMethodField()
+    # paid_by_name = serializers.SerializerMethodField()
 
     # Read-only field - harvest_id is auto-generated
     harvest_id = serializers.CharField(read_only=True)
@@ -48,6 +49,8 @@ class HarvestsSerializer(serializers.ModelSerializer):
         fields = '__all__'
         read_only_fields = ['harvest_id', 'created_at', 'updated_at']
 
+    # COMMENTED OUT: This method requires paid_by to be a ForeignKey to Staff model
+    # Currently paid_by is a CharField, so this would cause AttributeError
     # def get_paid_by_name(self, obj):
     #     """
     #     Return the full name of the staff member who processed payment
@@ -81,6 +84,8 @@ class HarvestsSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Date of delivery cannot be in the future")
         return value
 
+    # COMMENTED OUT: This validation requires paid_by to be a ForeignKey to Staff model
+    # Currently paid_by is a CharField, so this would cause AttributeError
     # def validate_paid_by(self, value):
     #     """
     #     Ensure the staff member is active
@@ -98,8 +103,9 @@ class HarvestsSerializer(serializers.ModelSerializer):
         """
         data = super().to_representation(instance)
 
+        # COMMENTED OUT: This line calls get_paid_by_name() which is commented out above
         # Add paid_by_name to the response
-        data['paid_by_name'] = self.get_paid_by_name(instance)
+        # data['paid_by_name'] = self.get_paid_by_name(instance)
 
         # Format weight to always show 2 decimal places
         if 'weight_on_delivery' in data:
@@ -113,7 +119,8 @@ class HarvestsListSerializer(serializers.ModelSerializer):
     Simplified serializer for listing harvests
     Shows only essential information for list views
     """
-    paid_by_name = serializers.SerializerMethodField()
+    # COMMENTED OUT: This field expects get_paid_by_name() method which requires paid_by to be a ForeignKey
+    # paid_by_name = serializers.SerializerMethodField()
 
     class Meta:
         model = Harvests
@@ -127,6 +134,8 @@ class HarvestsListSerializer(serializers.ModelSerializer):
             'paid_by'
         ]
 
+    # COMMENTED OUT: This method requires paid_by to be a ForeignKey to Staff model
+    # Currently paid_by is a CharField, so this would cause AttributeError
     # def get_paid_by_name(self, obj):
     #     """
     #     Return the staff member's full name
