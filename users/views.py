@@ -45,6 +45,7 @@ def login_view(request):
             "message": "Login successful",
             "user": {
                 "id": 1,
+                "name": "John Doe",
                 "phone": "0700000000",
                 "role": "manager",
                 "role_display": "Farm Manager"
@@ -257,6 +258,7 @@ def me_view(request):
     Response:
         {
             "id": 1,
+            "name": "John Doe",
             "phone": "0700000000",
             "role": "manager",
             "role_display": "Farm Manager"

@@ -13,14 +13,15 @@ class UserSerializer(serializers.ModelSerializer):
     Used to return user information in API responses.
     NEVER includes sensitive data like PIN or security answer.
     """
-    
+
     # Make role human-readable (e.g., "Farm Manager" instead of "manager")
     role_display = serializers.CharField(source='get_role_display', read_only=True)
-    
+
     class Meta:
         model = User
         fields = [
             'id',
+            'name',
             'phone',
             'role',
             'role_display',
