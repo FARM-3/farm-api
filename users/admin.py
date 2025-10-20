@@ -42,7 +42,7 @@ class UserCreationForm(forms.ModelForm):
     
     class Meta:
         model = User
-        fields = ('phone', 'role', 'security_question')
+        fields = ('name', 'phone', 'role', 'security_question')
     
     def clean_pin2(self):
         """Check that the two PIN entries match."""
@@ -94,12 +94,13 @@ class UserChangeForm(forms.ModelForm):
     class Meta:
         model = User
         fields = (
-            'phone', 
-            'password', 
-            'role', 
+            'name',
+            'phone',
+            'password',
+            'role',
             'security_question',
-            'is_active', 
-            'is_staff', 
+            'is_active',
+            'is_staff',
             'is_superuser'
         )
     
@@ -141,8 +142,9 @@ class UserAdmin(BaseUserAdmin):
     
     # ---- List View Configuration ----
     list_display = [
+        'name',
         'phone',
-        'role', 
+        'role',
         'is_active',
         'has_security_question',
         'created_at'
@@ -155,17 +157,17 @@ class UserAdmin(BaseUserAdmin):
         'created_at'
     ]
     
-    search_fields = ['phone']
+    search_fields = ['name', 'phone']
     
     ordering = ['-created_at']
     
     # ---- Detail View Configuration ----
     fieldsets = (
         # Basic Info Section
-        ('Login Information', {
-            'fields': ('phone', 'password')
+        ('User Information', {
+            'fields': ('name', 'phone', 'password')
         }),
-        
+
         # Role Section
         ('Role & Permissions', {
             'fields': ('role', 'is_active')
@@ -187,9 +189,9 @@ class UserAdmin(BaseUserAdmin):
     
     # ---- Add User View Configuration ----
     add_fieldsets = (
-        ('Login Information', {
+        ('User Information', {
             'classes': ('wide',),
-            'fields': ('phone', 'pin1', 'pin2')
+            'fields': ('name', 'phone', 'pin1', 'pin2')
         }),
         ('Role', {
             'fields': ('role',)
