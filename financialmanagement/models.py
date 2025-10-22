@@ -133,6 +133,33 @@ class Staff(models.Model):
     
     def __str__(self):
         return f"{self.first_name} {self.last_name} ({self.employment_type})"
+    def save(self, *args, **kwargs):
+        """
+        Override save to auto-generate staff_id before saving
+        """
+        if not self.staff_id:
+            self.staff_id = self.generate_staff_id()
+        super().save(*args, **kwargs)
+
+    def generate_staff_id(self):
+        """
+        Generate staff ID in format: RF + 3-digit number
+        - RF: Prefix for staff
+        - 3-digit number: Sequential number starting from 001
+        """
+        # Get the count of all staff to determine sequence
+        count = Staff.objects.count()
+
+        # Generate 3-digit number (001, 002, ..., 999)
+        sequence_number = count + 1  # Start from 1
+
+        # Format as 3-digit with leading zeros
+        formatted_number = f"{sequence_number:03d}"
+
+        # Combine prefix and number
+        staff_id = f"RF{formatted_number}"
+
+        return staff_id
     
     def get_full_name(self):
         """
@@ -170,7 +197,8 @@ class Wage(models.Model):
         return self.monthly_pay - self.deduction
     
 class Sale(models.Model):
-    customer_name = models.CharField(max_length=50)
+    
+    customer_name = models.CharField(max_length=100, null=True, blank=True)
     batch_id = models.CharField(max_length=20, null=True, blank=True)
     item = models.CharField(max_length=50)
     rate = models.DecimalField(max_digits=10, decimal_places=2)
@@ -266,4 +294,5 @@ class Balancesheet(models.Model):
 
     def __str__(self):
         return f"{self.account_name} ({self.get_account_type_display()}): ${self.balance}"
+
 

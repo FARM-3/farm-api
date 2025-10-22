@@ -93,10 +93,8 @@ class FarmerRegistration(models.Model):
     ]"""
 
 
-    district = models.CharField(max_length=100, blank=True)         # District
-    other_district = models.CharField(max_length=100, blank=True, null=True)                  # If 'Other', specify
-    sub_county = models.CharField(max_length=100, blank=True)     # Sub-county
-    other_sub_county = models.CharField(max_length=100, blank=True, null=True)                # If 'Other', specify
+    district = models.CharField(max_length=100, blank=True)         # District                  # If 'Other', specify
+    sub_county = models.CharField(max_length=100, blank=True)                 # If 'Other', specify
     parish = models.CharField(max_length=100, blank=True)             # Parish                    # If 'Other', specify
     village = models.CharField(max_length=100, blank=True)          # Village
     gps_coordinates = models.CharField(max_length=100, blank=True) # GPS coordinates
@@ -167,8 +165,6 @@ class FarmerRegistration(models.Model):
     coffee_variety = models.CharField(max_length=100, blank=False)     
     number_of_trees = models.PositiveIntegerField(default=0)         
     ownership_of_trees = models.BooleanField(default=True)    
-
-    
     
     planted_date = models.DateField(null=True, blank=True)            
     land_ownership = models.CharField(max_length=100, blank=False)         
@@ -176,15 +172,15 @@ class FarmerRegistration(models.Model):
     defforestation_status = models.BooleanField(default=True)      
 
     #source of seedlings
-    source_of_seedlings = models.CharField(max_length=100, blank=False)      # Source of seedlings
-    type_of_seedlings = models.CharField(max_length=100, blank=False)          # Type of seedlings
-    age_of_seedlings = models.CharField(max_length=100, blank=False)          # Age of seedlings
-    standard_practices = models.BooleanField(default=False) # Whether standard practices are followed
-    irrigation_source = models.CharField(max_length=100, blank=False)        # Source of irrigation
+    source_of_seedlings = models.CharField(max_length=100, blank=False)      
+    type_of_seedlings = models.CharField(max_length=100, blank=False)     
+    age_of_seedlings = models.CharField(max_length=100, blank=False)          
+    standard_practices = models.BooleanField(default=False) 
+    irrigation_source = models.CharField(max_length=100, blank=False)       
 
     #agro-chemicals used
-    fertilizers = models.CharField(max_length=100, blank=False)        # Fertilizers used
-    pesticide = models.CharField(max_length=100, blank=False)          # Pesticides used
+    fertilizers = models.CharField(max_length=100, blank=False)       
+    pesticide = models.CharField(max_length=100, blank=False)         
 
 
 
@@ -203,5 +199,6 @@ class FarmerHarvest(models.Model):
     id = models.CharField(max_length=100, primary_key=True)          # Unique identifier for the harvest
 
     def __str__(self):
-        return self.name            
+        return f"{self.name} ({self.harvest_id})"
+               
     

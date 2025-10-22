@@ -10,7 +10,6 @@ from .models import Block
 from .serializers import BlockSerializer
 
 
-
 # Create your views here.
 class HarvestListView(ListView):
     model = Harvests
@@ -22,18 +21,12 @@ class HarvestsViewSet(viewsets.ModelViewSet):
     queryset = Harvests.objects.all()
     serializer_class = HarvestsSerializer
 
-
 class BlockViewSet(viewsets.ModelViewSet):
     """ViewSet for Block management"""
     queryset = Block.objects.all()
     serializer_class = BlockSerializer
     permission_classes = [IsAuthenticated]
     lookup_field = 'block_id'
-    
+
     def perform_create(self, serializer):
         serializer.save(created_by=self.request.user)
-
-    
-
-
-

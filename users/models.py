@@ -89,15 +89,21 @@ class User(AbstractBaseUser):
     ]
     
     # ---- Core Fields ----
+    name = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text="User's full name"
+    )
+
     phone = models.CharField(
-        max_length=20, 
+        max_length=20,
         unique=True,
         help_text="Phone number used for login"
     )
-    
+
     role = models.CharField(
-        max_length=20, 
-        choices=ROLE_CHOICES, 
+        max_length=20,
+        choices=ROLE_CHOICES,
         default="block_champion",
         help_text="User's role in the system"
     )
@@ -146,6 +152,8 @@ class User(AbstractBaseUser):
         ordering = ["-created_at"]
     
     def __str__(self):
+        if self.name:
+            return f"{self.name} - {self.phone} ({self.get_role_display()})"
         return f"{self.phone} ({self.get_role_display()})"
     
     # ---- Security Answer Methods ----
