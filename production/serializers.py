@@ -21,7 +21,7 @@ class BlockSerializer(serializers.ModelSerializer):
             'fertilizer_names',
             'use_pesticides',
             'pesticides_list',
-            'standard_practices',
+            'standard_practices',       
             'created_at',
             'updated_at',
         ]

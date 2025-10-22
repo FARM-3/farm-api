@@ -111,7 +111,7 @@ class BlockAdmin(admin.ModelAdmin):
     list_display = ['block_id', 'type_of_coffee', 'no_of_trees', 'date_planted', 'created_at']
     list_filter = ['use_pesticides', 'created_at']
     search_fields = ['block_id', 'type_of_coffee']
-    readonly_fields = ['created_at', 'updated_at', 'created_by']
+    readonly_fields = ['created_at', 'updated_at', ]
     
     fieldsets = (
         ('Basic Information', {
