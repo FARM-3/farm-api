@@ -121,6 +121,31 @@ REST_FRAMEWORK = {
 
 REST_FRAMEWORK['DEFAULT_SCHEMA_CLASS'] = 'drf_spectacular.openapi.AutoSchema'
 
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Farm Management API',
+    'DESCRIPTION': 'API for farm management system',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    'COMPONENT_SPLIT_REQUEST': True,
+    'SECURITY': [
+        {
+            'Bearer': {
+                'type': 'http',
+                'scheme': 'bearer',
+                'bearerFormat': 'JWT',
+            }
+        }
+    ],
+    'SECURITY_REQUIREMENTS': [
+        {
+            'Bearer': []
+        }
+    ],
+    'ENUM_NAME_OVERRIDES': {
+        'CherryColour051Enum': 'CherryColourEnum',
+    },
+}
+
 # ============================================
 # JWT CONFIGURATION
 # ============================================

@@ -3,6 +3,7 @@
 from django.urls import path, include
 from rest_framework_simplejwt.views import TokenRefreshView
 from . import views
+from .views import logout_view
 
 """
 URL patterns for the users app.
@@ -10,10 +11,12 @@ All these URLs will be prefixed with /api/users/ in the main project urls.py
 
 Available endpoints:
 - POST /api/users/login/              → Login with phone + PIN
+- POST /api/users/logout/             → Logout and invalidate session/token
 - POST /api/users/security-question/  → Get security question
 - POST /api/users/reset-pin/          → Reset PIN with security answer
 - POST /api/users/token/refresh/      → Refresh JWT access token
 - GET  /api/users/me/                 → Get current user info (requires auth)
+
 """
 
 app_name = 'users'  # Namespace for reverse URL lookups
@@ -53,8 +56,15 @@ urlpatterns = [
     
     # ---- User Info Endpoint ----
     path(
-        'me/', 
-        views.me_view, 
+        'me/',
+        views.me_view,
         name='me'
+    ),
+
+    # ---- Logout Endpoint ----
+    path(
+        'logout/',
+        views.logout_view,
+        name='logout'
     ),
 ]

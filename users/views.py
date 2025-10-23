@@ -9,7 +9,8 @@ from rest_framework import status
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
 from drf_spectacular.utils import extend_schema, OpenApiResponse
-
+from django.contrib.auth import logout
+from rest_framework.permissions import IsAuthenticated
 from .models import User
 from .serializers import (
     UserSerializer,
@@ -243,6 +244,9 @@ def reset_pin_view(request):
 # ============================================
 # ME VIEW (Get current user info)
 # ============================================
+@extend_schema(
+    responses={200: UserSerializer}
+)
 @api_view(['GET'])
 # Note: This view requires authentication (JWT token in header)
 def me_view(request):
@@ -270,3 +274,32 @@ def me_view(request):
         UserSerializer(request.user).data,
         status=status.HTTP_200_OK
     )
+
+
+
+@extend_schema(
+    responses={200: OpenApiResponse(description="Logout successful")}
+)
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def logout_view(request):
+    """
+    Logout endpoint - terminates session and deletes token
+    """
+    try:
+        # Delete the user's token
+        if hasattr(request.user, 'auth_token'):
+            request.user.auth_token.delete()
+        
+        # Logout user
+        logout(request)
+        
+        return Response({
+            'success': True,
+            'message': 'Successfully logged out'
+        }, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response({
+            'success': False,
+            'message': f'Logout failed: {str(e)}'
+        }, status=status.HTTP_400_BAD_REQUEST)
