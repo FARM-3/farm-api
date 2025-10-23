@@ -247,6 +247,8 @@ def reset_pin_view(request):
 @extend_schema(
     responses={200: UserSerializer}
 )
+
+
 @api_view(['GET'])
 # Note: This view requires authentication (JWT token in header)
 def me_view(request):
@@ -278,8 +280,10 @@ def me_view(request):
 
 
 @extend_schema(
-    responses={200: OpenApiResponse(description="Logout successful")}
+    responses={200: OpenApiResponse(description="Logout successful")},
+    auth=[{'Bearer': []}]
 )
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def logout_view(request):
