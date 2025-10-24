@@ -187,16 +187,15 @@ class FarmerRegistration(models.Model):
     
     #Farmerharvest model
 class FarmerHarvest(models.Model):
-    name = models.CharField(max_length=100)               # Farmer's name
+    name = models.CharField(max_length=100)
+    coffee_type = models.CharField(max_length=100, null=True)       # Type of coffee
     weight_on_delivery = models.IntegerField(null=True)         # Weight of the harvest
-    weight_after_floating = models.IntegerField(null=True)       # Weight after floating
     date_of_delivery = models.CharField(max_length=100, null=True)    # Date of delivery
-    grade = models.CharField(max_length=100, null=True)               # Grade of the harvest
-    cherry_color = models.CharField(max_length=100, null=True)        # Color of the cherry
-    stage = models.CharField(max_length=100, null=True)               # Stage of processing
+    moisture_content = models.IntegerField(null=True)               # Moisture content of the harvest
     amount_paid = models.CharField(max_length=100, null=True)         # Amount paid to the farmer
     paid_by = models.CharField(max_length=100, null=True)             # Entity that made the payment
-    id = models.CharField(max_length=100, primary_key=True)          # Unique identifier for the harvest
+    harvest_id = models.CharField(max_length=100, primary_key=True)          # Unique identifier for the harvest
+    no_of_bags = models.IntegerField(null=True)               # Number of bags delivered
 
     def __str__(self):
         return f"{self.name} ({self.harvest_id})"
