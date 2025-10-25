@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from drf_spectacular.utils import extend_schema_field
 from .models import Sale, Wage, Expense, Balancesheet, Staff
 
 class StaffSerializer(serializers.ModelSerializer):
@@ -56,7 +57,11 @@ class StaffSerializer(serializers.ModelSerializer):
 
 
 class WageSerializer(serializers.ModelSerializer):
-    net_salary = serializers.ReadOnlyField(source='calculate_net_salary')
+    @extend_schema_field(serializers.DecimalField(max_digits=10, decimal_places=2))
+    def get_net_salary(self, obj):
+        return obj.calculate_net_salary
+
+    net_salary = serializers.SerializerMethodField()
 
     class Meta:
         model = Wage
