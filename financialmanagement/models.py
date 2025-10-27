@@ -36,10 +36,10 @@ class Staff(models.Model):
     """
     
     # Employment type choices
-    EMPLOYMENT_TYPE_CHOICES = [
-        ('fulltime', 'Full Time'),
-        ('parttime', 'Part Time'),
-    ]
+    # EMPLOYMENT_TYPE_CHOICES = [
+    #     ('fulltime', 'Full Time'),
+    #     ('parttime', 'Part Time'),
+    # ]
     
     # Auto-generated staff ID (e.g., RF001, RF002, etc.)
     staff_id = models.CharField(
@@ -106,9 +106,7 @@ class Staff(models.Model):
     )
     
     employment_type = models.CharField(
-        max_length=10,
-        choices=EMPLOYMENT_TYPE_CHOICES,
-        default='fulltime',
+        max_length=100,
         help_text="Type of employment contract"
     )
     
