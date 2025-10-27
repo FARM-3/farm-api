@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('aggregation', '0003_remove_farmerregistration_other_district_and_more'),
+        ('aggregation', '0001_initial'),
     ]
 
     operations = [
