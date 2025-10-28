@@ -3,6 +3,44 @@
 from django.db import migrations, models
 
 
+def remove_field_if_exists(apps, schema_editor):
+    """
+    Custom migration function to safely remove fields that may not exist in the database.
+    """
+    from django.db import connection
+
+    with connection.cursor() as cursor:
+        # Check if other_district column exists
+        cursor.execute("""
+            SELECT column_name
+            FROM information_schema.columns
+            WHERE table_name='aggregation_farmerregistration'
+            AND column_name='other_district'
+        """)
+        if cursor.fetchone():
+            cursor.execute('ALTER TABLE aggregation_farmerregistration DROP COLUMN other_district')
+
+        # Check if other_sub_county column exists
+        cursor.execute("""
+            SELECT column_name
+            FROM information_schema.columns
+            WHERE table_name='aggregation_farmerregistration'
+            AND column_name='other_sub_county'
+        """)
+        if cursor.fetchone():
+            cursor.execute('ALTER TABLE aggregation_farmerregistration DROP COLUMN other_sub_county')
+
+        # Check if moisture_content column exists
+        cursor.execute("""
+            SELECT column_name
+            FROM information_schema.columns
+            WHERE table_name='aggregation_farmerharvest'
+            AND column_name='moisture_content'
+        """)
+        if cursor.fetchone():
+            cursor.execute('ALTER TABLE aggregation_farmerharvest DROP COLUMN moisture_content')
+
+
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -10,18 +48,7 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RemoveField(
-            model_name='farmerharvest',
-            name='moisture_content',
-        ),
-        migrations.RemoveField(
-            model_name='farmerregistration',
-            name='other_district',
-        ),
-        migrations.RemoveField(
-            model_name='farmerregistration',
-            name='other_sub_county',
-        ),
+        migrations.RunPython(remove_field_if_exists, migrations.RunPython.noop),
         migrations.AddField(
             model_name='farmerharvest',
             name='price_per_kg',
