@@ -188,7 +188,7 @@ class Wage(models.Model):
         ordering = ['-date_of_payment', 'employee_name__last_name']
 
     def __str__(self):
-        return f"Wages for {self.employee_name.full_name} - {self.deduction}"
+        return f"Wages for {self.employee_name.staff_id} - {self.deduction}"
     
     @property
     def calculate_net_salary(self):
