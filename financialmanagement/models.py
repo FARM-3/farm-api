@@ -173,7 +173,7 @@ class Staff(models.Model):
 
 
 class Wage(models.Model):
-    employee_name = models.ForeignKey(Staff, on_delete=models.CASCADE, related_name='wages')
+    employee_name = models.CharField(max_length=100)
     days_worked = models.IntegerField()
     amount_paid = models.IntegerField()
     date_of_payment = models.DateField()
