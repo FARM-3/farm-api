@@ -57,17 +57,18 @@ class StaffSerializer(serializers.ModelSerializer):
 
 
 class WageSerializer(serializers.ModelSerializer):
-    @extend_schema_field(serializers.DecimalField(max_digits=10, decimal_places=2))
-    def get_net_salary(self, obj):
-        return obj.calculate_net_salary
+    employee_display = serializers.SerializerMethodField(read_only=True)
+    staff_id = serializers.SerializerMethodField(read_only=True)
+    net_salary = serializers.SerializerMethodField(read_only=True)
 
-    net_salary = serializers.SerializerMethodField()
 
     class Meta:
         model = Wage
         fields = (
             'id', 
-            'employee_name', 
+            'employee_name',
+            'employee_display',
+            'staff_id', 
             'days_worked', 
             'amount_paid', 
             'date_of_payment', 
@@ -76,8 +77,84 @@ class WageSerializer(serializers.ModelSerializer):
             'noted_reason', 
             'net_salary'  
         )
+
+        read_only_fields = ('net_salary', 'employee_display', 'staff_id')
+
+    def get_employee_display(self, obj):
+        if obj.employee_name:
+            return f"{obj.employee_name.staff_id} - {obj.employee_name.first_name} {obj.employee_name.last_name}"
+        return ""
+    
+    def get_staff_id(self, obj):
+        """
+        Return just the staff_id for easy reference
+        """
+        return obj.employee_name.staff_id if obj.employee_name else None
+    
+    def get_net_salary(self, obj):
+        """
+        Calculate net salary (amount_paid - deduction)
+        """
+        if hasattr(obj, 'calculate_net_salary'):
+            return obj.calculate_net_salary
+        return (obj.amount_paid or 0) - (obj.deduction or 0)
+    
+    def to_representation(self, instance):
+        """
+        Customize the output representation
+        Override employee_name to show display format instead of ID
+        """
+        representation = super().to_representation(instance)
+        # Replace employee_name with the display format in responses
+        representation['employee_name'] = self.get_employee_display(instance)
+        return representation
+    
+    def validate_days_worked(self, value):
+        """
+        Validate days_worked is positive
+        """
+        if value < 0:
+            raise serializers.ValidationError("Days worked cannot be negative")
+        if value > 31:
+            raise serializers.ValidationError("Days worked cannot exceed 31 days")
+        return value
+    
+    def validate_amount_paid(self, value):
+        """
+        Validate amount_paid is positive
+        """
+        if value < 0:
+            raise serializers.ValidationError("Amount paid cannot be negative")
+        return value
+    
+    def validate_deduction(self, value):
+        """
+        Validate deduction is not negative
+        """
+        if value < 0:
+            raise serializers.ValidationError("Deduction cannot be negative")
+        return value
+    
+    def validate(self, data):
+        """
+        Object-level validation
+        """
+        # Ensure date_of_payment is not in the future
+        if 'date_of_payment' in data:
+            from django.utils import timezone
+            if data['date_of_payment'] > timezone.now().date():
+                raise serializers.ValidationError({
+                    'date_of_payment': 'Payment date cannot be in the future'
+                })
+        amount_paid = data.get('amount_paid', 0)
+        deduction = data.get('deduction', 0)
+        if deduction > amount_paid:
+            raise serializers.ValidationError({
+                'deduction': 'Deduction cannot exceed amount paid'
+            })
         
-        read_only_fields = ('net_salary',)
+        return data
+
 
 class SaleSerializer(serializers.ModelSerializer):
     class Meta:
