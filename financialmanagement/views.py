@@ -38,7 +38,9 @@ class WageViewSet(viewsets.ModelViewSet):
             # Get the staff instance
             staff = Staff.objects.get(staff_id=staff_id)
             wage_data = {
-                'employee_name': staff.id,  # Use the primary key of Staff
+                # Staff model uses `staff_id` as the primary key (to_field on Wage),
+                # so pass that value when creating a Wage record.
+                'employee_name': staff.staff_id,
                 'date_of_payment': request.data.get('date_of_payment'),
                 'days_worked': int(request.data.get('days_worked', 0)),
                 'monthly_pay': int(request.data.get('monthly_pay')) if request.data.get('monthly_pay') else None,

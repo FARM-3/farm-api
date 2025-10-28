@@ -57,6 +57,15 @@ class StaffSerializer(serializers.ModelSerializer):
 
 
 class WageSerializer(serializers.ModelSerializer):
+    # Use SlugRelatedField so clients can post the staff's `staff_id` (a string)
+    # PrimaryKeyRelatedField's `pk_field` expects a Field instance, not a string,
+    # which caused the "'str' object has no attribute 'to_internal_value'" error.
+    employee_name = serializers.SlugRelatedField(
+        queryset=Staff.objects.filter(is_active=True),
+        slug_field='staff_id',
+        label="Staff ID",
+        help_text="The unique ID of the active staff member (e.g., RF001)"
+    )
     employee_display = serializers.SerializerMethodField(read_only=True)
     staff_id = serializers.SerializerMethodField(read_only=True)
     net_salary = serializers.SerializerMethodField(read_only=True)
@@ -261,7 +270,7 @@ class StaffListSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Staff
-        fields = ['id', 'full_name', 'nin', 'employment_type', 'is_active']
+        fields = ['staff_id', 'full_name', 'nin', 'employment_type', 'is_active']
     
     def get_full_name(self, obj):
         return obj.get_full_name()
