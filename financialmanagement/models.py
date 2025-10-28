@@ -175,10 +175,10 @@ class Staff(models.Model):
 class Wage(models.Model):
     employee_name = models.ForeignKey(Staff, on_delete=models.CASCADE, related_name='wages')
     days_worked = models.IntegerField()
-    amount_paid = models.DecimalField(max_digits=10, decimal_places=2)
+    amount_paid = models.IntegerField()
     date_of_payment = models.DateField()
-    monthly_pay = models.DecimalField(max_digits=10, decimal_places=2)
-    deduction = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    monthly_pay = models.IntegerField()
+    deduction = models.IntegerField(default=0)
     noted_reason = models.CharField(max_length=255, default="", blank=True)
 
 
