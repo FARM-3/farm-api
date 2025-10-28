@@ -81,22 +81,37 @@ class WageSerializer(serializers.ModelSerializer):
         read_only_fields = ('net_salary', 'employee_display', 'staff_id')
 
     def get_employee_display(self, obj):
-        if obj.employee_name:
-            return f"{obj.employee_name.staff_id} - {obj.employee_name.first_name} {obj.employee_name.last_name}"
-        return ""
+        # Support both: employee_name can be a Staff instance or a plain string
+        emp = obj.employee_name
+        if not emp:
+            return ""
+        # If it's a Staff instance (has staff_id and name attrs)
+        if hasattr(emp, 'staff_id'):
+            first = getattr(emp, 'first_name', '')
+            last = getattr(emp, 'last_name', '')
+            return f"{emp.staff_id} - {first} {last}".strip()
+        # Otherwise just return the string representation
+        return str(emp)
     
     def get_staff_id(self, obj):
         """
         Return just the staff_id for easy reference
         """
-        return obj.employee_name.staff_id if obj.employee_name else None
+        emp = obj.employee_name
+        if not emp:
+            return None
+        return getattr(emp, 'staff_id', None)
     
     def get_net_salary(self, obj):
         """
         Calculate net salary (amount_paid - deduction)
         """
-        if hasattr(obj, 'calculate_net_salary'):
-            return obj.calculate_net_salary
+        # Use the model property if available, otherwise compute safely
+        try:
+            if hasattr(obj, 'calculate_net_salary'):
+                return obj.calculate_net_salary
+        except Exception:
+            pass
         return (obj.amount_paid or 0) - (obj.deduction or 0)
     
     def to_representation(self, instance):

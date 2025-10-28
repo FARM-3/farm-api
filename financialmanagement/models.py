@@ -173,7 +173,7 @@ class Staff(models.Model):
 
 
 class Wage(models.Model):
-    employee_name = models.CharField(max_length=100)
+    employee_name = models.ForeignKey(Staff, on_delete=models.CASCADE, related_name='wages', verbose_name="Staff Member")
     days_worked = models.IntegerField()
     amount_paid = models.IntegerField()
     date_of_payment = models.DateField()
@@ -189,11 +189,12 @@ class Wage(models.Model):
         ordering = ['-date_of_payment', 'created_at']
 
     def __str__(self):
-        return f"Wages for {self.employee_name.staff_id} - {self.deduction}"
+        return f"Wages for {self.employee_name.get_full_name()} - {self.deduction}"
     
     @property
     def calculate_net_salary(self):
-        return self.amount_paid or 0 - self.deduction or 0
+        # Ensure correct precedence and fallback to 0 when values are falsy
+        return (self.amount_paid or 0) - (self.deduction or 0)
     
     def save(self, *args, **kwargs):
         """
