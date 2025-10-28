@@ -191,7 +191,7 @@ class FarmerHarvest(models.Model):
     coffee_type = models.CharField(max_length=100, null=True)       # Type of coffee
     weight_on_delivery = models.IntegerField(null=True)         # Weight of the harvest
     date_of_delivery = models.CharField(max_length=100, null=True)    # Date of delivery
-    moisture_content = models.IntegerField(null=True)               # Moisture content of the harvest
+    price_per_kg = models.IntegerField(null=True)               # Price per kg of the harvest
     amount_paid = models.CharField(max_length=100, null=True)         # Amount paid to the farmer
     paid_by = models.CharField(max_length=100, null=True)             # Entity that made the payment
     harvest_id = models.CharField(max_length=100, primary_key=True)          # Unique identifier for the harvest
