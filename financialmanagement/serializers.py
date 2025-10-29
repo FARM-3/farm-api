@@ -57,6 +57,10 @@ class StaffSerializer(serializers.ModelSerializer):
 
 
 class WageSerializer(serializers.ModelSerializer):
+    # Properly handle the ForeignKey relationship to Staff
+    staff_id = serializers.CharField(source='employee_name.staff_id', read_only=True)
+    employee_full_name = serializers.CharField(source='employee_name.get_full_name', read_only=True)
+
     @extend_schema_field(serializers.DecimalField(max_digits=10, decimal_places=2))
     def get_net_salary(self, obj):
         return obj.calculate_net_salary
@@ -66,18 +70,20 @@ class WageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Wage
         fields = (
-            'id', 
-            'employee_name', 
-            'days_worked', 
-            'amount_paid', 
-            'date_of_payment', 
-            'monthly_pay', 
-            'deduction', 
-            'noted_reason', 
-            'net_salary'  
+            'id',
+            'employee_name',
+            'staff_id',
+            'employee_full_name',
+            'days_worked',
+            'amount_paid',
+            'date_of_payment',
+            'monthly_pay',
+            'deduction',
+            'noted_reason',
+            'net_salary'
         )
-        
-        read_only_fields = ('net_salary',)
+
+        read_only_fields = ('net_salary', 'staff_id', 'employee_full_name')
 
 class SaleSerializer(serializers.ModelSerializer):
     class Meta:
