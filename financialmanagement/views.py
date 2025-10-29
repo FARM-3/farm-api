@@ -1,5 +1,6 @@
 from django.shortcuts import render
-from rest_framework import viewsets
+from rest_framework import viewsets, status
+from rest_framework.decorators import action
 from .models import Balancesheet, Wage
 from .serializers import WageSerializer, SaleSerializer, ExpenseSerializer, BalancesheetSerializer, StaffSerializer
 from .models import Sale, Expense, Staff   
@@ -16,10 +17,80 @@ class StaffViewSet(viewsets.ModelViewSet):
     permission_classes = [AllowAny]
 
 class WageViewSet(viewsets.ModelViewSet):
-    queryset = Wage.objects.all()
+    queryset = Wage.objects.all().select_related('employee_name').order_by('-date_of_payment')
     serializer_class = WageSerializer
     permission_classes = [AllowAny]
 
+    def create(self, request, *args, **kwargs):
+        """
+        Create a new wage payment record
+        Expects staff_id in employee_name field
+        """
+        staff_id = request.data.get('employee_name')
+        
+        if not staff_id:
+            return Response(
+                {'error': 'Employee name (staff_id) is required'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            # Get the staff instance
+            staff = Staff.objects.get(staff_id=staff_id)
+            wage_data = {
+                # Staff model uses `staff_id` as the primary key (to_field on Wage),
+                # so pass that value when creating a Wage record.
+                'employee_name': staff.staff_id,
+                'date_of_payment': request.data.get('date_of_payment'),
+                'days_worked': int(request.data.get('days_worked', 0)),
+                'monthly_pay': int(request.data.get('monthly_pay')) if request.data.get('monthly_pay') else None,
+                'amount_paid': int(request.data.get('amount_paid', 0)),
+                'deduction': int(request.data.get('deduction', 0)),
+                'noted_reason': request.data.get('noted_reason', ''),
+            }
+            serializer = self.get_serializer(data=wage_data)
+            serializer.is_valid(raise_exception=True)
+            self.perform_create(serializer)
+            
+            headers = self.get_success_headers(serializer.data)
+            return Response(
+                serializer.data, 
+                status=status.HTTP_201_CREATED, 
+                headers=headers
+            )
+            
+        except Staff.DoesNotExist:
+            return Response(
+                {'error': f'Staff member with ID {staff_id} not found or inactive'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        except ValueError as e:
+            return Response(
+                {'error': f'Invalid number format: {str(e)}'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        except Exception as e:
+            return Response(
+                {'error': str(e)}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+    @action(detail=False, methods=['get'])
+    def by_employee(self, request):
+        """
+        Get wages filtered by employee staff_id
+        Usage: /wages/by_employee/?staff_id=RF001
+        """
+        staff_id = request.query_params.get('staff_id')
+        if not staff_id:
+            return Response(
+                {'error': 'staff_id parameter is required'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        wages = self.queryset.filter(employee_name__staff_id=staff_id)
+        serializer = self.get_serializer(wages, many=True)
+        return Response(serializer.data)
+        
 class SaleViewSet(viewsets.ModelViewSet):
 
     queryset = Sale.objects.all().order_by('-date_of_payment', 'customer_name')
