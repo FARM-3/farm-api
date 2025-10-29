@@ -60,6 +60,12 @@ class WageSerializer(serializers.ModelSerializer):
     # Use SlugRelatedField so clients can post the staff's `staff_id` (a string)
     # PrimaryKeyRelatedField's `pk_field` expects a Field instance, not a string,
     # which caused the "'str' object has no attribute 'to_internal_value'" error.
+
+    days_worked = serializers.IntegerField() 
+    amount_paid = serializers.IntegerField() 
+    monthly_pay = serializers.IntegerField()
+    deduction = serializers.IntegerField()
+
     employee_name = serializers.SlugRelatedField(
         queryset=Staff.objects.filter(is_active=True),
         slug_field='staff_id',
