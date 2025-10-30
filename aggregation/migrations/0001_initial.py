@@ -73,15 +73,7 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 ("district", models.CharField(blank=True, max_length=100)),
-                (
-                    "other_district",
-                    models.CharField(blank=True, max_length=100, null=True),
-                ),
                 ("sub_county", models.CharField(blank=True, max_length=100)),
-                (
-                    "other_sub_county",
-                    models.CharField(blank=True, max_length=100, null=True),
-                ),
                 ("parish", models.CharField(blank=True, max_length=100)),
                 ("village", models.CharField(blank=True, max_length=100)),
                 ("gps_coordinates", models.CharField(blank=True, max_length=100)),

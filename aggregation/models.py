@@ -136,9 +136,9 @@ class FarmerRegistration(models.Model):
             try:
                 parts = [
                     (self.village or ''),
-                    (self.other_parish or self.parish or ''),
-                    (self.other_sub_county or self.sub_county or ''),
-                    (self.other_district or self.district or ''),
+                    (self.parish or ''),
+                    (self.sub_county or ''),
+                    (self.district or ''),
                     'Uganda'
                 ]
                 query = ', '.join([p for p in parts if p])
@@ -156,7 +156,7 @@ class FarmerRegistration(models.Model):
                             if lat and lon:
                                 self.gps_coordinates = f"{lat},{lon}"
             except Exception:
-                
+
                 pass
 
         super().save(*args, **kwargs)
