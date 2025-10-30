@@ -17,61 +17,63 @@ class StaffViewSet(viewsets.ModelViewSet):
     permission_classes = [AllowAny]
 
 class WageViewSet(viewsets.ModelViewSet):
-    queryset = Wage.objects.all().select_related('employee_name').order_by('-date_of_payment')
+    queryset = Wage.objects.all().select_related('staff').order_by('-date_of_payment')
     serializer_class = WageSerializer
     permission_classes = [AllowAny]
 
     def create(self, request, *args, **kwargs):
         """
         Create a new wage payment record
-        Expects staff_id in employee_name field
+        Accepts employee_name as free text
+        Optionally links to staff if staff_id is provided in 'staff' field
         """
-        staff_id = request.data.get('employee_name')
-        
-        if not staff_id:
+        employee_name = request.data.get('employee_name')
+
+        if not employee_name:
             return Response(
-                {'error': 'Employee name (staff_id) is required'}, 
+                {'error': 'Employee name is required'},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
         try:
-            # Get the staff instance
-            staff = Staff.objects.get(staff_id=staff_id)
             wage_data = {
-                # Staff model uses `staff_id` as the primary key (to_field on Wage),
-                # so pass that value when creating a Wage record.
-                'employee_name': staff.staff_id,
+                'employee_name': employee_name,
                 'date_of_payment': request.data.get('date_of_payment'),
                 'days_worked': int(request.data.get('days_worked', 0)),
-                'monthly_pay': int(request.data.get('monthly_pay')) if request.data.get('monthly_pay') else None,
-                'amount_paid': int(request.data.get('amount_paid', 0)),
-                'deduction': int(request.data.get('deduction', 0)),
+                'monthly_pay': float(request.data.get('monthly_pay')) if request.data.get('monthly_pay') else None,
+                'amount_paid': float(request.data.get('amount_paid', 0)),
+                'deduction': float(request.data.get('deduction', 0)),
                 'noted_reason': request.data.get('noted_reason', ''),
             }
+
+            # Optional: if a staff field is provided, link to registered staff
+            staff_id = request.data.get('staff')
+            if staff_id:
+                try:
+                    staff = Staff.objects.get(staff_id=staff_id)
+                    wage_data['staff'] = staff.staff_id
+                except Staff.DoesNotExist:
+                    pass  # Just ignore if staff not found, still create the wage record
+
             serializer = self.get_serializer(data=wage_data)
             serializer.is_valid(raise_exception=True)
             self.perform_create(serializer)
-            
+
             headers = self.get_success_headers(serializer.data)
             return Response(
-                serializer.data, 
-                status=status.HTTP_201_CREATED, 
+                serializer.data,
+                status=status.HTTP_201_CREATED,
                 headers=headers
             )
-            
-        except Staff.DoesNotExist:
-            return Response(
-                {'error': f'Staff member with ID {staff_id} not found or inactive'}, 
-                status=status.HTTP_400_BAD_REQUEST
-            )
+
         except ValueError as e:
             return Response(
-                {'error': f'Invalid number format: {str(e)}'}, 
+                {'error': f'Invalid number format: {str(e)}'},
                 status=status.HTTP_400_BAD_REQUEST
             )
         except Exception as e:
             return Response(
-                {'error': str(e)}, 
+                {'error': str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
     @action(detail=False, methods=['get'])
@@ -83,11 +85,11 @@ class WageViewSet(viewsets.ModelViewSet):
         staff_id = request.query_params.get('staff_id')
         if not staff_id:
             return Response(
-                {'error': 'staff_id parameter is required'}, 
+                {'error': 'staff_id parameter is required'},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        
-        wages = self.queryset.filter(employee_name__staff_id=staff_id)
+
+        wages = self.queryset.filter(staff__staff_id=staff_id)
         serializer = self.get_serializer(wages, many=True)
         return Response(serializer.data)
         
