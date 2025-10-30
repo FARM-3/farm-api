@@ -20,10 +20,9 @@ class Migration(migrations.Migration):
             old_name='id',
             new_name='harvest_id',
         ),
-        migrations.RenameField(
+        migrations.RemoveField(
             model_name='farmerharvest',
-            old_name='weight_after_floating',
-            new_name='moisture_content',
+            name='weight_after_floating',
         ),
         migrations.RemoveField(
             model_name='farmerharvest',
