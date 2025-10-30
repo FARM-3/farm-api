@@ -173,7 +173,24 @@ class Staff(models.Model):
 
 
 class Wage(models.Model):
-    employee_name = models.ForeignKey(Staff, on_delete=models.CASCADE, related_name='wages',to_field='staff_id', verbose_name="Staff Member")
+    # Free-text employee name (can be any name)
+    employee_name = models.CharField(
+        max_length=255,
+        help_text="Employee name (can be any name)",
+        blank=True,
+        null=True
+    )
+
+    # Optional link to registered staff
+    staff = models.ForeignKey(
+        Staff,
+        on_delete=models.SET_NULL,
+        related_name='wages',
+        null=True,
+        blank=True,
+        help_text="Link to registered staff member (optional)"
+    )
+
     days_worked = models.IntegerField()
     amount_paid = models.IntegerField()
     date_of_payment = models.DateField()
@@ -186,11 +203,12 @@ class Wage(models.Model):
     class Meta:
         verbose_name = "Wage Payment"
         verbose_name_plural = "Wage Payments"
-        ordering = ['-date_of_payment', 'created_at']
+        ordering = ['-date_of_payment']
 
     def __str__(self):
-        return f"Wages for {self.employee_name.get_full_name()} - {self.deduction}"
-    
+        name = self.employee_name if self.employee_name else "Unknown"
+        return f"Wages for {name} - {self.amount_paid}"
+
     @property
     def calculate_net_salary(self):
         # Ensure correct precedence and fallback to 0 when values are falsy
