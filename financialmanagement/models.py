@@ -192,11 +192,12 @@ class Wage(models.Model):
     )
 
     days_worked = models.IntegerField()
-    amount_paid = models.DecimalField(max_digits=10, decimal_places=2)
+    amount_paid = models.IntegerField()
     date_of_payment = models.DateField()
-    monthly_pay = models.DecimalField(max_digits=10, decimal_places=2)
-    deduction = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    monthly_pay = models.IntegerField()
+    deduction = models.IntegerField(default=0)
     noted_reason = models.CharField(max_length=255, default="", blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
 
     class Meta:
@@ -210,7 +211,22 @@ class Wage(models.Model):
 
     @property
     def calculate_net_salary(self):
-        return self.monthly_pay - self.deduction
+        # Ensure correct precedence and fallback to 0 when values are falsy
+        return (self.amount_paid or 0) - (self.deduction or 0)
+    
+    def save(self, *args, **kwargs):
+        """
+        Override save to add any custom logic
+        """
+        # Ensure values are not negative
+        if self.amount_paid < 0:
+            raise ValueError("Amount paid cannot be negative")
+        if self.deduction < 0:
+            raise ValueError("Deduction cannot be negative")
+        if self.days_worked < 0:
+            raise ValueError("Days worked cannot be negative")
+            
+        super().save(*args, **kwargs)
     
 class Sale(models.Model):
     

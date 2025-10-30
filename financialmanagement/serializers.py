@@ -176,7 +176,7 @@ class StaffListSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Staff
-        fields = ['id', 'full_name', 'nin', 'employment_type', 'is_active']
+        fields = ['staff_id', 'full_name', 'nin', 'employment_type', 'is_active']
     
     def get_full_name(self, obj):
         return obj.get_full_name()
