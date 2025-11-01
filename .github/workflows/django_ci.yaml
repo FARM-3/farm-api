@@ -1,0 +1,41 @@
+# .github/workflows/django_ci.yml
+
+name: Django CI/CD
+
+on:
+  push:
+    branches: [ "main" ] 
+  pull_request:
+    branches: [ "main" ]  
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11' # Specify your Django-compatible Python version
+
+    - name: Install Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install poetry  # If you use Poetry for dependency management
+        poetry install      # Replace with 'pip install -r requirements.txt' if you use pip
+
+    # Set up a database service (e.g., PostgreSQL or SQLite for tests)
+    - name: Set up Test Database (Example using SQLite for simplicity)
+      run: |
+        # If using PostgreSQL, you'd configure the service here. 
+        # For simplicity, most Python test suites use SQLite by default.
+        echo "DATABASE_URL=sqlite:///test_db.sqlite3" >> $GITHUB_ENV 
+
+    - name: Run Migrations
+      run: python manage.py migrate
+
+    - name: Run Tests
+      run: python manage.py test
