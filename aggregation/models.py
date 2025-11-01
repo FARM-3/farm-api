@@ -146,7 +146,8 @@ class FarmerRegistration(models.Model):
                     resp = requests.get(
                         'https://nominatim.openstreetmap.org/search',
                         params={'q': query, 'format': 'json', 'limit': 1},
-                        headers={'User-Agent': 'Rugyeyo-Farm-API/1.0'}
+                        headers={'User-Agent': 'Rugyeyo-Farm-API/1.0'},
+                        timeout=5  # Add timeout to prevent hanging
                     )
                     if resp.status_code == 200:
                         data = resp.json()
@@ -155,8 +156,11 @@ class FarmerRegistration(models.Model):
                             lon = data[0].get('lon')
                             if lat and lon:
                                 self.gps_coordinates = f"{lat},{lon}"
-            except Exception:
-
+            except Exception as e:
+                # Log the error but don't fail the save operation
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.warning(f"Failed to fetch GPS coordinates: {str(e)}")
                 pass
 
         super().save(*args, **kwargs)
