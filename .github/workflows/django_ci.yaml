@@ -1,0 +1,58 @@
+# .github/workflows/django_ci.yml
+
+name: Django CI/CD
+
+on:
+  push:
+    branches: [ "main" ] 
+  pull_request:
+    branches: [ "main" ]  
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    env:
+      DJANGO_SECRET_KEY: 'test-secret-key-for-ci-only-not-for-production'
+      DEBUG: 'True'
+      DB_NAME: ':memory:'
+      DB_USER: 'test_user'
+      DB_PASSWORD: 'test_password'
+      DB_HOST: 'localhost'
+      DB_PORT: '5432'
+      DB_URL: 'sqlite:///:memory:'
+      DJANGO_SETTINGS_MODULE: 'api.settings'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Create test settings override
+      run: |
+        cat > test_settings.py << 'EOF'
+        from api.settings import *
+
+        # Override database settings for CI testing
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.sqlite3',
+                'NAME': ':memory:',
+            }
+        }
+        EOF
+
+    - name: Run Migrations
+      run: python manage.py migrate --settings=test_settings
+
+    - name: Run Tests
+      run: python manage.py test --settings=test_settings
