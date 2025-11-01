@@ -250,6 +250,7 @@ def reset_pin_view(request):
 
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])  # Add this line!
 # Note: This view requires authentication (JWT token in header)
 def me_view(request):
     """
