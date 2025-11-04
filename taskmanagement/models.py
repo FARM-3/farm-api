@@ -33,3 +33,40 @@ class Season(models.Model):
         """Check if season is currently active"""
         today = timezone.now().date()
         return self.start_date <= today <= self.end_date
+    
+class Task(models.Model):
+    title = models.CharField(max_length=200)
+    description = models.TextField()
+    status = models.CharField(max_length=50)
+    priority = models.CharField(max_length=50)
+    assigned_to = models.ForeignKey(
+        User, 
+        on_delete=models.CASCADE, 
+        related_name='assigned_tasks',
+        limit_choices_to={'role': 'block_champion'},
+        help_text="Block Champion assigned to this task"
+    )
+    # Creator - Can be Farm Manager (assigning) or Block Champion (self-created)
+    created_by = models.ForeignKey(
+        User, 
+        on_delete=models.CASCADE, 
+        related_name='created_tasks',
+        help_text="Farm Manager or Block Champion who created the task"
+    )
+    due_date = models.DateField()
+    completed_at = models.DateTimeField(null=True, blank=True)
+    season = models.ForeignKey(
+        Season, 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True,
+        related_name='tasks',
+        help_text="Link task to a seasonal calendar"
+    )
+
+    block = models.ForeignKey(
+    'production.Block',
+    on_delete=models.CASCADE,
+    related_name='tasks',
+    help_text="Farm block where this task is to be performed"
+)
