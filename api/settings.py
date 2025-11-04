@@ -43,22 +43,15 @@ SECRET_KEY = config("DJANGO_SECRET_KEY", default='django-insecure-fallback-key-c
 # SECURITY WARNING: don't run with debug turned on in production
 DEBUG = config('DEBUG', default=True, cast=bool) 
 
-if DEBUG:
-    # 🌟 LOCAL DEVELOPMENT SETTINGS 🌟
-    # If DEBUG is True, automatically allow 127.0.0.1 and localhost.
-    ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+# Get allowed hosts from environment, with fallback for local development
+ALLOWED_HOSTS_STRING = config('ALLOWED_HOSTS', default='')
+
+if ALLOWED_HOSTS_STRING:
+    # Use hosts from environment variable (works for both dev and production)
+    ALLOWED_HOSTS = [host.strip() for host in ALLOWED_HOSTS_STRING.split(',')]
 else:
-    # 🌍 PRODUCTION (RENDER) SETTINGS 🌍
-    
-    # Get the comma-separated host string from the environment variable (Render)
-    RENDER_HOSTS_STRING = config('ALLOWED_HOSTS', default='')
-    
-    # Assign the split list to the actual Django setting
-    if RENDER_HOSTS_STRING:
-        ALLOWED_HOSTS = RENDER_HOSTS_STRING.split(',')
-    else:
-        # Prevent an error if the environment variable is completely missing/empty
-        ALLOWED_HOSTS = []
+    # Fallback to localhost only if no ALLOWED_HOSTS configured
+    ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 
 # Application definition
 INSTALLED_APPS = [
