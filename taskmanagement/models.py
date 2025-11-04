@@ -70,3 +70,47 @@ class Task(models.Model):
     related_name='tasks',
     help_text="Farm block where this task is to be performed"
 )
+    location = models.CharField(
+    max_length=200, 
+    blank=True,
+    help_text="Specific location details within the block"
+)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['-due_date', '-priority']
+        verbose_name = "Task"
+        verbose_name_plural = "Tasks"
+        indexes = [
+            models.Index(fields=['assigned_to', 'status']),
+            models.Index(fields=['due_date', 'status']),
+        ]
+
+    def __str__(self):
+        return f"{self.title} - {self.assigned_to.phone} ({self.get_status_display()})"
+    
+    def save(self, *args, **kwargs):
+        # Auto-set completed_at when status changes to COMPLETED
+        if self.status == 'COMPLETED' and not self.completed_at:
+            self.completed_at = timezone.now()
+        elif self.status != 'COMPLETED' and self.completed_at:
+            # Reset completed_at if status changes from completed
+            self.completed_at = None
+        super().save(*args, **kwargs)
+    
+    @property
+    def is_overdue(self):
+        """Check if task is overdue"""
+        if self.status == 'COMPLETED':
+            return False
+        return self.due_date < timezone.now().date()
+    
+    @property
+    def days_until_due(self):
+        """Calculate days until due date"""
+        if self.status == 'COMPLETED':
+            return None
+        delta = self.due_date - timezone.now().date()
+        return delta.days
+
