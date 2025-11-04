@@ -46,7 +46,7 @@ DEBUG = config('DEBUG', default=True, cast=bool)
 if DEBUG:
     # 🌟 LOCAL DEVELOPMENT SETTINGS 🌟
     # If DEBUG is True, automatically allow 127.0.0.1 and localhost.
-    ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+    ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '142.93.94.236']
 else:
     # 🌍 PRODUCTION (RENDER) SETTINGS 🌍
     
