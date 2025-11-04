@@ -114,3 +114,23 @@ class Task(models.Model):
         delta = self.due_date - timezone.now().date()
         return delta.days
 
+class Taskcomment(models.Model):
+    task = models.ForeignKey(
+        Task, 
+        on_delete=models.CASCADE, 
+        related_name='comments'
+    )
+    user = models.ForeignKey(
+        User, 
+        on_delete=models.CASCADE
+    )
+    comment = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = "Task Comment"
+        verbose_name_plural = "Task Comments"
+    
+    def __str__(self):
+        return f"Comment by {self.user.phone} on {self.task.title}"
