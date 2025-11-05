@@ -127,7 +127,6 @@ class TaskUpdateSerializer(serializers.ModelSerializer):
             )
         return value
 
-
 class TaskListSerializer(serializers.ModelSerializer):
     """Lightweight serializer for task lists"""
     assigned_to_name = serializers.CharField(source='assigned_to.name', read_only=True)
