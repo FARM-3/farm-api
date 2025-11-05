@@ -35,7 +35,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = config("DJANGO_SECRET_KEY")
+SECRET_KEY = config("DJANGO_SECRET_KEY", default='django-insecure-fallback-key-change-in-production')
 
 
 
@@ -43,22 +43,15 @@ SECRET_KEY = config("DJANGO_SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production
 DEBUG = config('DEBUG', default=True, cast=bool) 
 
-if DEBUG:
-    # 🌟 LOCAL DEVELOPMENT SETTINGS 🌟
-    # If DEBUG is True, automatically allow 127.0.0.1 and localhost.
-    ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '142.93.94.236']
+# Get allowed hosts from environment, with fallback for local development
+ALLOWED_HOSTS_STRING = config('ALLOWED_HOSTS', default='')
+
+if ALLOWED_HOSTS_STRING:
+    # Use hosts from environment variable (works for both dev and production)
+    ALLOWED_HOSTS = [host.strip() for host in ALLOWED_HOSTS_STRING.split(',')]
 else:
-    # 🌍 PRODUCTION (RENDER) SETTINGS 🌍
-    
-    # Get the comma-separated host string from the environment variable (Render)
-    RENDER_HOSTS_STRING = config('ALLOWED_HOSTS', default='')
-    
-    # Assign the split list to the actual Django setting
-    if RENDER_HOSTS_STRING:
-        ALLOWED_HOSTS = RENDER_HOSTS_STRING.split(',')
-    else:
-        # Prevent an error if the environment variable is completely missing/empty
-        ALLOWED_HOSTS = []
+    # Fallback to localhost only if no ALLOWED_HOSTS configured
+    ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 
 # Application definition
 INSTALLED_APPS = [
@@ -77,6 +70,7 @@ INSTALLED_APPS = [
     'production',
     "processing",
     "users",
+    "taskmanagement",
 
 ]
 
@@ -246,18 +240,29 @@ WSGI_APPLICATION = "api.wsgi.application"
 env = environ.Env()
 environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 
-
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": env("DB_NAME"),
-        "USER": env("DB_USER"),
-        "PASSWORD": env("DB_PASSWORD"),
-        "HOST": env("DB_HOST"),
-        "PORT": env("DB_PORT"),
-        "DATABASE_URL": env("DB_URL"),
+# Try to use DATABASE_URL if available (for Render), otherwise use individual settings
+if env("DB_URL", default=None):
+    # Use DATABASE_URL for production (Render provides this)
+    import dj_database_url
+    DATABASES = {
+        "default": dj_database_url.config(
+            default=env("DB_URL"),
+            conn_max_age=600,
+            conn_health_checks=True,
+        )
     }
-}
+else:
+    # Use individual settings for local development
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": env("DB_NAME"),
+            "USER": env("DB_USER"),
+            "PASSWORD": env("DB_PASSWORD"),
+            "HOST": env("DB_HOST"),
+            "PORT": env("DB_PORT"),
+        }
+    }
 
 
 # Password validation

@@ -5,46 +5,6 @@ import requests
 
 # Create your models here.
 class FarmerRegistration(models.Model):
-    """GENDER_CHOICES = [
-        ('MALE', 'Male'),
-        ('FEMALE', 'Female'),
-        ('OTHER', 'Other'),
-    ]
-
-    FARMER_TYPE_CHOICES = [
-        ('COOPERATIVE', 'Co-operative Farmer'),
-        ('INDIVIDUAL', 'Individual Farmer'),
-    ]
-    COFFEE_VARIETY_CHOICES = [
-        ('ARABICA', 'Arabica'),
-        ('ROBUSTA', 'Robusta'),
-        ('LAIBERICA', 'Laiberica'),
-        # Add a default 'None' or 'Other' option if necessary
-    ]
-    LAND_OWNERSHIP_CHOICES = [
-        ('FREEHOLD', 'Freehold'),
-        ('MAILO', 'Mailo'),
-        ('CUSTOMARY', 'Customary'),
-        ('LEASEHOLD', 'Leasehold'),
-    ]
-    SEEDLING_SOURCE_CHOICES = [
-        ('NURSERY', 'Nursery'),
-        ('GOVERNMENT', 'Government'),
-        ('CO-OPERATIVES', 'Co-operatives'),
-        ('OTHER', 'Other'),
-    ]
-    STANDARD_PRACTICES_CHOICES = [
-        ('BENDING', 'Bending'),
-        ('PRUNING', 'Pruning'),
-        ('WEEDING', 'Weeding'),
-        ('STUMPING', 'Stumping'),
-        ('STEMING', 'Steming'),
-        ('MULCHING', 'Mulching'),
-    ]
-    FERTILIZER_CHOICES = [
-        ('ORGANIC', 'Organic'),
-        ('INORGANIC', 'Inorganic'),
-    ]"""
     first_name = models.CharField(max_length=100)              
     last_name = models.CharField(max_length=100)             
     gender = models.CharField(max_length=10, blank=False)  
@@ -198,8 +158,7 @@ class FarmerHarvest(models.Model):
     price_per_kg = models.IntegerField(null=True)               # Price per kg of the harvest
     amount_paid = models.CharField(max_length=100, null=True)         # Amount paid to the farmer
     paid_by = models.CharField(max_length=100, null=True)             # Entity that made the payment
-    harvest_id = models.CharField(max_length=100, primary_key=True)          # Unique identifier for the harvest
-    no_of_bags = models.IntegerField(null=True)               # Number of bags delivered
+    harvest_id = models.CharField(max_length=100, primary_key=True)          # Unique identifier for the harvest               # Number of bags delivered
 
     def __str__(self):
         return f"{self.name} ({self.harvest_id})"
