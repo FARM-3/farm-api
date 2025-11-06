@@ -51,7 +51,7 @@ if ALLOWED_HOSTS_STRING:
     ALLOWED_HOSTS = [host.strip() for host in ALLOWED_HOSTS_STRING.split(',')]
 else:
     # Fallback to localhost only if no ALLOWED_HOSTS configured
-    ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+    ALLOWED_HOSTS = ['142.93.94.236', '127.0.0.1', 'localhost']
 
 # Application definition
 INSTALLED_APPS = [
