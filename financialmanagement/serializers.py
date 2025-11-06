@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from drf_spectacular.utils import extend_schema_field
-from .models import Sale, Wage, Expense, Balancesheet, Staff
+from .models import Sale, Wage, Expense, Balancesheet, Staff, Setprice
 
 class StaffSerializer(serializers.ModelSerializer):
     """
@@ -180,3 +180,14 @@ class StaffListSerializer(serializers.ModelSerializer):
     
     def get_full_name(self, obj):
         return obj.get_full_name()
+
+class SetpriceSerializer(serializers.ModelSerializer):
+    """
+    Serializer for Setprice model
+    Handles serialization/deserialization of price per KG for production and farmer
+    """
+
+    class Meta:
+        model = Setprice
+        fields = '__all__'  # Includes both prices and id
+        read_only_fields = []  # All fields editable
