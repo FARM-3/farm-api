@@ -26,6 +26,7 @@ COPY . /app/
 # Expose the port Gunicorn will listen on (Django's default)
 EXPOSE 8000
 
+
 # Define the command to run your application using Gunicorn
 # Gunicorn listens on 0.0.0.0:8000
 # IMPORTANT: Replace 'rug_api.wsgi:application' with the actual path to your project's WSGI file if your top-level project folder is named differently.
