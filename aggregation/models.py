@@ -155,7 +155,8 @@ class FarmerHarvest(models.Model):
     coffee_type = models.CharField(max_length=100, null=True)       # Type of coffee
     weight_on_delivery = models.IntegerField(null=True)         # Weight of the harvest
     date_of_delivery = models.CharField(max_length=100, null=True)    # Date of delivery
-    location_of_delivery = models.CharField(max_length=100, null=True)  # Location of delivery
+    location_of_delivery = models.CharField(max_length=100, null=True, blank=True)  # Location of delivery (address)
+    gps_coordinates_delivery = models.CharField(max_length=100, null=True, blank=True)  # GPS coordinates from device (lat,lon)
     price_per_kg = models.IntegerField(null=True)               # Price per kg of the harvest
     amount_paid = models.CharField(max_length=100, null=True)         # Amount paid to the farmer
     paid_by = models.CharField(max_length=100, null=True)             # Entity that made the payment
@@ -163,5 +164,39 @@ class FarmerHarvest(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.harvest_id})"
-               
+
+    def save(self, *args, **kwargs):
+        # Auto-populate location_of_delivery from GPS coordinates if not provided
+        if self.gps_coordinates_delivery and not self.location_of_delivery:
+            try:
+                # Parse GPS coordinates
+                lat, lon = self.gps_coordinates_delivery.split(',')
+                lat, lon = lat.strip(), lon.strip()
+
+                # Use reverse geocoding to get address
+                resp = requests.get(
+                    'https://nominatim.openstreetmap.org/reverse',
+                    params={
+                        'lat': lat,
+                        'lon': lon,
+                        'format': 'json'
+                    },
+                    headers={'User-Agent': 'Rugyeyo-Farm-API/1.0'},
+                    timeout=5
+                )
+                if resp.status_code == 200:
+                    data = resp.json()
+                    # Extract readable address
+                    display_name = data.get('display_name', '')
+                    if display_name:
+                        self.location_of_delivery = display_name
+            except Exception as e:
+                # Log the error but don't fail the save operation
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.warning(f"Failed to reverse geocode delivery location: {str(e)}")
+                pass
+
+        super().save(*args, **kwargs)
+
     
