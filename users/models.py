@@ -16,17 +16,18 @@ class UserManager(BaseUserManager):
     Provides methods to create regular users and superusers.
     """
     
-    def create_user(self, phone, pin, role="block_champion", security_question="", security_answer="", is_staff=False, is_superuser=False):
+    def create_user(self, phone, pin, name="", role="block_champion", security_question="", security_answer="", is_staff=False, is_superuser=False):
         """
         Creates and saves a regular user with phone, pin, and security details.
-        
+
         Args:
             phone (str): User's phone number (acts as username)
             pin (str): 4-digit PIN for login
+            name (str): User's full name
             role (str): User role (manager, block_champion, etc.)
             security_question (str): Question for PIN reset
             security_answer (str): Answer to security question
-        
+
         Returns:
             User: The created user instance
         """
@@ -34,23 +35,24 @@ class UserManager(BaseUserManager):
             raise ValueError("Users must have a phone number")
         if not pin:
             raise ValueError("Users must have a PIN")
-        
+
         # Create user instance
         user = self.model(
             phone=phone,
+            name=name,
             role=role,
             security_question=security_question,
             is_staff=is_staff,
             is_superuser=is_superuser
         )
-        
+
         # Hash and store PIN securely (never store raw PIN)
         user.set_password(pin)
-        
+
         # Hash and store security answer securely
         if security_answer:
             user.set_security_answer(security_answer)
-        
+
         user.save(using=self._db)
         return user
     
@@ -144,7 +146,7 @@ class User(AbstractBaseUser):
     objects = UserManager()
     
     USERNAME_FIELD = "phone"      # Login with phone instead of username
-    REQUIRED_FIELDS = []          # Only phone + pin needed for createsuperuser
+    REQUIRED_FIELDS = ["name"]    # Name required for createsuperuser
     
     class Meta:
         verbose_name = "User"
