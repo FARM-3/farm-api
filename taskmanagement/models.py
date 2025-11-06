@@ -114,7 +114,7 @@ class Task(models.Model):
         delta = self.due_date - timezone.now().date()
         return delta.days
 
-class Taskcomment(models.Model):
+class TaskComment(models.Model):
     task = models.ForeignKey(
         Task, 
         on_delete=models.CASCADE, 

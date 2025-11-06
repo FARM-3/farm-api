@@ -2,7 +2,7 @@ from django.contrib import admin
 
 # Register your models here.
 from django.contrib import admin
-from .models import Season, Task, TaskComment, TaskAttachment
+from .models import Season, Task, TaskComment
 
 
 @admin.register(Season)
@@ -29,7 +29,3 @@ class TaskCommentAdmin(admin.ModelAdmin):
     readonly_fields = ['created_at']
 
 
-@admin.register(TaskAttachment)
-class TaskAttachmentAdmin(admin.ModelAdmin):
-    list_display = ['task', 'file_type', 'uploaded_by', 'uploaded_at']
-    readonly_fields = ['uploaded_at', 'file_type']
