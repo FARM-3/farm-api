@@ -324,3 +324,14 @@ class Balancesheet(models.Model):
         return f"{self.account_name} ({self.get_account_type_display()}): ${self.balance}"
 
 
+class Setprice(models.Model):
+    production_kgPrice = models.CharField(max_length=10)
+    farmer_kgPrice = models.CharField(max_length=10)
+
+    class Meta:
+        verbose_name = "Price Setting"
+        verbose_name_plural = "Price Settings"
+        ordering = ['-id']
+
+    def __str__(self):
+        return f"Production Price: {self.production_kgPrice}, Farmer Price: {self.farmer_kgPrice}"

@@ -11,13 +11,17 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from drf_spectacular.utils import extend_schema, OpenApiResponse
 from django.contrib.auth import logout
 from rest_framework.permissions import IsAuthenticated
-from .models import User
+from .models import User, SecurityQuestion, UserSecurityAnswer
 from .serializers import (
     UserSerializer,
     LoginSerializer,
     ResetPinSerializer,
-    SecurityQuestionSerializer
+    SecurityQuestionSerializer,
+    SecurityQuestionModelSerializer,
+    SetupSecurityAnswersSerializer,
+    VerifySecurityAnswersSerializer
 )
+import random
 
 
 # ============================================
@@ -295,10 +299,10 @@ def logout_view(request):
         # Delete the user's token
         if hasattr(request.user, 'auth_token'):
             request.user.auth_token.delete()
-        
+
         # Logout user
         logout(request)
-        
+
         return Response({
             'success': True,
             'message': 'Successfully logged out'
@@ -308,3 +312,279 @@ def logout_view(request):
             'success': False,
             'message': f'Logout failed: {str(e)}'
         }, status=status.HTTP_400_BAD_REQUEST)
+
+
+# ============================================
+# GET RANDOM SECURITY QUESTIONS VIEW
+# ============================================
+@extend_schema(
+    responses={200: OpenApiResponse(description="3 random security questions")}
+)
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def get_random_security_questions_view(request):
+    """
+    Get 3 random security questions for first-time user setup.
+
+    Endpoint: POST /api/users/random-security-questions/
+
+    Request body:
+        {
+            "phone": "0700000000"
+        }
+
+    Response (success):
+        {
+            "questions": [
+                {"id": 1, "text": "What was your mother's clan name?"},
+                {"id": 3, "text": "Which year did you start coffee farming?"},
+                {"id": 5, "text": "Who is your favourite musician?"}
+            ]
+        }
+
+    Response (failure):
+        {
+            "error": "User not found"
+        }
+    """
+
+    # Step 1: Validate phone number
+    from rest_framework import serializers as drf_serializers
+    phone = request.data.get('phone')
+
+    if not phone:
+        return Response(
+            {"error": "Phone number is required"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    # Step 2: Verify user exists
+    try:
+        user = User.objects.get(phone=phone)
+    except User.DoesNotExist:
+        return Response(
+            {"error": "User not found"},
+            status=status.HTTP_404_NOT_FOUND
+        )
+
+    # Step 3: Get 3 random active security questions
+    active_questions = SecurityQuestion.objects.filter(is_active=True)
+
+    if active_questions.count() < 3:
+        return Response(
+            {"error": "Not enough security questions available. Contact admin."},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    # Randomly select 3 questions
+    random_questions = random.sample(list(active_questions), 3)
+
+    # Step 4: Serialize and return
+    serializer = SecurityQuestionModelSerializer(random_questions, many=True)
+    return Response({
+        "questions": serializer.data
+    }, status=status.HTTP_200_OK)
+
+
+# ============================================
+# SETUP SECURITY ANSWERS VIEW (First Login)
+# ============================================
+@extend_schema(
+    request=SetupSecurityAnswersSerializer,
+    responses={200: OpenApiResponse(description="Security answers set successfully")}
+)
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def setup_security_answers_view(request):
+    """
+    User answers 3 security questions on first login and saves answers.
+
+    Endpoint: POST /api/users/setup-security-answers/
+
+    Request body:
+        {
+            "phone": "0700000000",
+            "answers": [
+                {"question_id": 1, "answer": "my mother's clan"},
+                {"question_id": 3, "answer": "2010"},
+                {"question_id": 5, "answer": "musician name"}
+            ]
+        }
+
+    Response (success):
+        {
+            "message": "Security answers set successfully",
+            "security_answers_set": true
+        }
+
+    Response (failure):
+        {
+            "error": "User not found"
+        }
+    """
+
+    # Step 1: Validate request
+    serializer = SetupSecurityAnswersSerializer(data=request.data)
+    if not serializer.is_valid():
+        return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    # Step 2: Extract validated data
+    phone = serializer.validated_data['phone']
+    answers = serializer.validated_data['answers']
+
+    # Step 3: Find user
+    try:
+        user = User.objects.get(phone=phone)
+    except User.DoesNotExist:
+        return Response(
+            {"error": "User not found"},
+            status=status.HTTP_404_NOT_FOUND
+        )
+
+    # Step 4: Verify all question IDs exist and are active
+    question_ids = [answer['question_id'] for answer in answers]
+    try:
+        questions = SecurityQuestion.objects.filter(
+            id__in=question_ids,
+            is_active=True
+        )
+
+        if questions.count() != len(question_ids):
+            return Response(
+                {"error": "One or more questions are invalid or inactive"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+    except Exception as e:
+        return Response(
+            {"error": f"Error validating questions: {str(e)}"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    # Step 5: Save answers for each question
+    try:
+        for answer_dict in answers:
+            question_id = answer_dict['question_id']
+            answer_text = answer_dict['answer']
+
+            question = SecurityQuestion.objects.get(id=question_id)
+
+            # Create or update the UserSecurityAnswer
+            user_answer, created = UserSecurityAnswer.objects.update_or_create(
+                user=user,
+                question=question,
+                defaults={'answer_hash': ''}  # Will be set below
+            )
+
+            # Hash and save the answer
+            user_answer.set_answer(answer_text)
+            user_answer.save()
+
+        # Step 6: Mark security answers as set
+        user.security_answers_set = True
+        user.save()
+
+        # Step 7: Return success
+        return Response({
+            "message": "Security answers set successfully",
+            "security_answers_set": True
+        }, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        return Response(
+            {"error": f"Error saving answers: {str(e)}"},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+
+# ============================================
+# VERIFY SECURITY ANSWERS VIEW (PIN Reset)
+# ============================================
+@extend_schema(
+    request=VerifySecurityAnswersSerializer,
+    responses={200: OpenApiResponse(description="PIN reset successful")}
+)
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def verify_security_answers_and_reset_pin_view(request):
+    """
+    User verifies 3 security answers to reset their PIN.
+
+    Endpoint: POST /api/users/verify-answers-reset-pin/
+
+    Request body:
+        {
+            "phone": "0700000000",
+            "answers": [
+                {"question_id": 1, "answer": "my mother's clan"},
+                {"question_id": 3, "answer": "2010"},
+                {"question_id": 5, "answer": "musician name"}
+            ],
+            "new_pin": "5678"
+        }
+
+    Response (success):
+        {
+            "message": "PIN reset successful. You can now login with your new PIN."
+        }
+
+    Response (failure):
+        {
+            "error": "One or more answers are incorrect"
+        }
+    """
+
+    # Step 1: Validate request
+    serializer = VerifySecurityAnswersSerializer(data=request.data)
+    if not serializer.is_valid():
+        return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    # Step 2: Extract validated data
+    phone = serializer.validated_data['phone']
+    answers = serializer.validated_data['answers']
+    new_pin = serializer.validated_data['new_pin']
+
+    # Step 3: Find user
+    try:
+        user = User.objects.get(phone=phone)
+    except User.DoesNotExist:
+        return Response(
+            {"error": "User not found"},
+            status=status.HTTP_404_NOT_FOUND
+        )
+
+    # Step 4: Verify all answers
+    for answer_dict in answers:
+        question_id = answer_dict['question_id']
+        answer_text = answer_dict['answer']
+
+        try:
+            question = SecurityQuestion.objects.get(id=question_id)
+            user_answer = UserSecurityAnswer.objects.get(user=user, question=question)
+
+            # Check if answer matches
+            if not user_answer.check_answer(answer_text):
+                return Response(
+                    {"error": "One or more answers are incorrect"},
+                    status=status.HTTP_401_UNAUTHORIZED
+                )
+
+        except (SecurityQuestion.DoesNotExist, UserSecurityAnswer.DoesNotExist):
+            return Response(
+                {"error": "Question or answer not found"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+    # Step 5: All answers verified - reset PIN
+    user.set_password(new_pin)
+    user.save()
+
+    # Step 6: Return success
+    return Response({
+        "message": "PIN reset successful. You can now login with your new PIN."
+    }, status=status.HTTP_200_OK)

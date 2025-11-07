@@ -122,7 +122,12 @@ class User(AbstractBaseUser):
         blank=True,
         help_text="Hashed security answer (never stored in plain text)"
     )
-    
+
+    security_answers_set = models.BooleanField(
+        default=False,
+        help_text="User has completed security questions setup on first login"
+    )
+
     # ---- Django Required Fields ----
     is_active = models.BooleanField(
         default=True,
@@ -189,7 +194,89 @@ class User(AbstractBaseUser):
     def has_perm(self, perm, obj=None):
         """Does the user have a specific permission?"""
         return self.is_superuser
-    
+
     def has_module_perms(self, app_label):
         """Does the user have permissions to view the app?"""
         return self.is_superuser
+
+
+# ============================================
+# SECURITY QUESTION MODEL
+# ============================================
+class SecurityQuestion(models.Model):
+    """
+    Predefined security questions for user setup.
+    These are system-wide questions that users will answer on first login.
+    """
+
+    text = models.CharField(
+        max_length=255,
+        unique=True,
+        help_text="The security question text"
+    )
+
+    is_active = models.BooleanField(
+        default=True,
+        help_text="Enable/disable this question for new users"
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Security Question"
+        verbose_name_plural = "Security Questions"
+        ordering = ["id"]
+
+    def __str__(self):
+        return self.text
+
+
+# ============================================
+# USER SECURITY ANSWER MODEL
+# ============================================
+class UserSecurityAnswer(models.Model):
+    """
+    Stores the user's security answers (hashed).
+    Each user can have up to 3 security answer records.
+    """
+
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='security_answers',
+        help_text="The user who answered the question"
+    )
+
+    question = models.ForeignKey(
+        SecurityQuestion,
+        on_delete=models.CASCADE,
+        help_text="The security question"
+    )
+
+    answer_hash = models.CharField(
+        max_length=128,
+        help_text="Hashed answer (never store in plain text)"
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "User Security Answer"
+        verbose_name_plural = "User Security Answers"
+        unique_together = ('user', 'question')  # One answer per question per user
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.user.phone} - {self.question.text[:50]}"
+
+    def set_answer(self, raw_answer):
+        """Hash and store the answer securely."""
+        from django.contrib.auth.hashers import make_password
+        self.answer_hash = make_password(raw_answer)
+
+    def check_answer(self, raw_answer):
+        """Check if provided answer matches the hashed answer."""
+        from django.contrib.auth.hashers import check_password
+        return check_password(raw_answer, self.answer_hash)

@@ -70,6 +70,7 @@ INSTALLED_APPS = [
     "processing",
     "users",
     "taskmanagement",
+    'activities', 
 
 ]
 

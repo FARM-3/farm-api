@@ -2,13 +2,14 @@ from django.shortcuts import render
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from .models import Balancesheet, Wage
-from .serializers import WageSerializer, SaleSerializer, ExpenseSerializer, BalancesheetSerializer, StaffSerializer
+from .serializers import WageSerializer, SaleSerializer, ExpenseSerializer, BalancesheetSerializer, StaffSerializer, SetpriceSerializer
 from .models import Sale, Expense, Staff   
 from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.db.models import Sum
 from datetime import datetime
+from users.permissions import IsSuperAdmin
 
 # Create your views here.
 class StaffViewSet(viewsets.ModelViewSet):
@@ -157,5 +158,36 @@ class FinancialSummaryView(APIView):
                 status=500
             )
 
-        
+from .models import Setprice
+from .serializers import SetpriceSerializer
 
+class SetpriceViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for managing price settings.
+    Only one record is active at a time (latest record determines current price).
+    """
+    queryset = Setprice.objects.all().order_by('-id')
+    serializer_class = SetpriceSerializer
+    permission_classes = [IsSuperAdmin]  # You can later restrict this to admins only
+
+    def create(self, request, *args, **kwargs):
+        """
+        Custom create: add a new price record.
+        The latest entry always represents the prevailing price.
+        """
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    @action(detail=False, methods=['get'])
+    def current(self, request):
+        """
+        Retrieve the current active price (the most recent Setprice entry).
+        Usage: GET /api/setprice/current/
+        """
+        current_price = Setprice.objects.order_by('-id').first()
+        if current_price:
+            serializer = self.get_serializer(current_price)
+            return Response(serializer.data)
+        return Response({"detail": "No price has been set yet."}, status=404)
