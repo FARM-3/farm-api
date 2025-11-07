@@ -77,6 +77,7 @@ INSTALLED_APPS = [
     'production',
     "processing",
     "users",
+    'activities', 
 
 ]
 
