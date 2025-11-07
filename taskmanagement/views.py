@@ -7,7 +7,7 @@ from django.contrib.auth import get_user_model
 from .models import Season, Task, TaskComment
 from .serializers import (
     SeasonSerializer, TaskSerializer, TaskCreateSerializer,
-    TaskUpdateSerializer, TaskCommentSerializer, TaskAttachmentSerializer,
+    TaskUpdateSerializer, TaskCommentSerializer,
     TaskListSerializer, BlockChampionSerializer
 )
 
@@ -77,8 +77,8 @@ class TaskViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         user = self.request.user
         queryset = Task.objects.select_related(
-            'assigned_to', 'created_by', 'season'
-        ).prefetch_related('comments', 'attachments')
+            'assigned_to', 'created_by', 'season', 'block'
+        ).prefetch_related('comments')
         
         # Block Champions only see their own tasks
         if user.role == 'block_champion':

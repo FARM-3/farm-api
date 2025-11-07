@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-from .models import Season, Task, TaskComment, TaskReminder
+from .models import Season, Task, TaskComment
 
 User = get_user_model()
 
@@ -60,20 +60,21 @@ class TaskSerializer(serializers.ModelSerializer):
     created_by = UserSerializer(read_only=True)
     assigned_to_phone = serializers.CharField(write_only=True, required=False)
     season_name = serializers.CharField(source='season.name', read_only=True)
+    block_name = serializers.CharField(source='block.name', read_only=True)
     comments = TaskCommentSerializer(many=True, read_only=True)
     is_overdue = serializers.BooleanField(read_only=True)
     days_until_due = serializers.IntegerField(read_only=True)
     status_display = serializers.CharField(source='get_status_display', read_only=True)
     priority_display = serializers.CharField(source='get_priority_display', read_only=True)
-    
+
     class Meta:
         model = Task
         fields = [
             'id', 'title', 'description', 'status', 'status_display',
             'priority', 'priority_display', 'assigned_to', 'assigned_to_phone',
-            'created_by', 'due_date', 'due_time', 'completed_at',
-            'season', 'season_name', 'block_name', 'location', 'crop_type',
-            'comments', 'attachments', 'is_overdue', 'days_until_due',
+            'created_by', 'due_date', 'completed_at',
+            'season', 'season_name', 'block', 'block_name', 'location',
+            'comments', 'is_overdue', 'days_until_due',
             'created_at', 'updated_at'
         ]
         read_only_fields = ['created_by', 'completed_at', 'created_at', 'updated_at']
@@ -81,13 +82,13 @@ class TaskSerializer(serializers.ModelSerializer):
 class TaskCreateSerializer(serializers.ModelSerializer):
     """Serializer for creating tasks"""
     assigned_to_phone = serializers.CharField(required=True)
-    
+
     class Meta:
         model = Task
         fields = [
             'title', 'description', 'status', 'priority',
-            'assigned_to_phone', 'due_date', 'due_time',
-            'season', 'block_name', 'location', 'crop_type'
+            'assigned_to_phone', 'due_date',
+            'season', 'block', 'location'
         ]
     
     def validate_assigned_to_phone(self, value):
@@ -131,10 +132,11 @@ class TaskListSerializer(serializers.ModelSerializer):
     """Lightweight serializer for task lists"""
     assigned_to_name = serializers.CharField(source='assigned_to.name', read_only=True)
     assigned_to_phone = serializers.CharField(source='assigned_to.phone', read_only=True)
+    block_name = serializers.CharField(source='block.name', read_only=True)
     is_overdue = serializers.BooleanField(read_only=True)
     status_display = serializers.CharField(source='get_status_display', read_only=True)
     priority_display = serializers.CharField(source='get_priority_display', read_only=True)
-    
+
     class Meta:
         model = Task
         fields = [

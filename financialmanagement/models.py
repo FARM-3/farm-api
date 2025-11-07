@@ -119,6 +119,7 @@ class Staff(models.Model):
     # Timestamp fields
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    monthly_salary = models.IntegerField(default=0)
     
     class Meta:
         ordering = ['last_name', 'first_name']
