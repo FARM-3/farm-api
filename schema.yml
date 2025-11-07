@@ -1,0 +1,6507 @@
+openapi: 3.0.3
+info:
+  title: Farm Management API
+  version: 1.0.0
+  description: API for farm management system
+paths:
+  /api/aggregation/farmer/:
+    get:
+      operationId: api_aggregation_farmer_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedFarmerRegistrationList'
+          description: ''
+    post:
+      operationId: api_aggregation_farmer_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FarmerRegistrationRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/FarmerRegistrationRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/FarmerRegistrationRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FarmerRegistration'
+          description: ''
+  /api/aggregation/farmer-harvest/:
+    get:
+      operationId: api_aggregation_farmer_harvest_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedFarmerHarvestList'
+          description: ''
+    post:
+      operationId: api_aggregation_farmer_harvest_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FarmerHarvestRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/FarmerHarvestRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/FarmerHarvestRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FarmerHarvest'
+          description: ''
+  /api/aggregation/farmer-harvest/{harvest_id}/:
+    get:
+      operationId: api_aggregation_farmer_harvest_retrieve
+      parameters:
+      - in: path
+        name: harvest_id
+        schema:
+          type: string
+        description: A unique value identifying this farmer harvest.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FarmerHarvest'
+          description: ''
+    put:
+      operationId: api_aggregation_farmer_harvest_update
+      parameters:
+      - in: path
+        name: harvest_id
+        schema:
+          type: string
+        description: A unique value identifying this farmer harvest.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FarmerHarvestRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/FarmerHarvestRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/FarmerHarvestRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FarmerHarvest'
+          description: ''
+    patch:
+      operationId: api_aggregation_farmer_harvest_partial_update
+      parameters:
+      - in: path
+        name: harvest_id
+        schema:
+          type: string
+        description: A unique value identifying this farmer harvest.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedFarmerHarvestRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedFarmerHarvestRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedFarmerHarvestRequest'
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FarmerHarvest'
+          description: ''
+    delete:
+      operationId: api_aggregation_farmer_harvest_destroy
+      parameters:
+      - in: path
+        name: harvest_id
+        schema:
+          type: string
+        description: A unique value identifying this farmer harvest.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '204':
+          description: No response body
+  /api/aggregation/farmer/{farmer_id}/:
+    get:
+      operationId: api_aggregation_farmer_retrieve
+      parameters:
+      - in: path
+        name: farmer_id
+        schema:
+          type: string
+        description: A unique value identifying this farmer registration.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FarmerRegistration'
+          description: ''
+    put:
+      operationId: api_aggregation_farmer_update
+      parameters:
+      - in: path
+        name: farmer_id
+        schema:
+          type: string
+        description: A unique value identifying this farmer registration.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FarmerRegistrationRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/FarmerRegistrationRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/FarmerRegistrationRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FarmerRegistration'
+          description: ''
+    patch:
+      operationId: api_aggregation_farmer_partial_update
+      parameters:
+      - in: path
+        name: farmer_id
+        schema:
+          type: string
+        description: A unique value identifying this farmer registration.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedFarmerRegistrationRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedFarmerRegistrationRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedFarmerRegistrationRequest'
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FarmerRegistration'
+          description: ''
+    delete:
+      operationId: api_aggregation_farmer_destroy
+      parameters:
+      - in: path
+        name: farmer_id
+        schema:
+          type: string
+        description: A unique value identifying this farmer registration.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '204':
+          description: No response body
+  /api/aggregation/reverse-geocode/:
+    post:
+      operationId: api_aggregation_reverse_geocode_create
+      description: |-
+        Convert GPS coordinates (latitude, longitude) to a human-readable address.
+        Expects JSON body: {"latitude": "0.3476", "longitude": "32.5825"}
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/balancesheet/:
+    get:
+      operationId: api_balancesheet_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedBalancesheetList'
+          description: ''
+    post:
+      operationId: api_balancesheet_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BalancesheetRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BalancesheetRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BalancesheetRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Balancesheet'
+          description: ''
+  /api/balancesheet/{id}/:
+    get:
+      operationId: api_balancesheet_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Account Balance.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Balancesheet'
+          description: ''
+    put:
+      operationId: api_balancesheet_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Account Balance.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BalancesheetRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BalancesheetRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BalancesheetRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Balancesheet'
+          description: ''
+    patch:
+      operationId: api_balancesheet_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Account Balance.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedBalancesheetRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedBalancesheetRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedBalancesheetRequest'
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Balancesheet'
+          description: ''
+    delete:
+      operationId: api_balancesheet_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Account Balance.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '204':
+          description: No response body
+  /api/blocks/blocks/:
+    get:
+      operationId: api_blocks_blocks_list
+      description: ViewSet for Block management
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedBlockList'
+          description: ''
+    post:
+      operationId: api_blocks_blocks_create
+      description: ViewSet for Block management
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BlockRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BlockRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BlockRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Block'
+          description: ''
+  /api/blocks/blocks/{block_id}/:
+    get:
+      operationId: api_blocks_blocks_retrieve
+      description: ViewSet for Block management
+      parameters:
+      - in: path
+        name: block_id
+        schema:
+          type: string
+        description: A unique value identifying this block.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Block'
+          description: ''
+    put:
+      operationId: api_blocks_blocks_update
+      description: ViewSet for Block management
+      parameters:
+      - in: path
+        name: block_id
+        schema:
+          type: string
+        description: A unique value identifying this block.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BlockRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BlockRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BlockRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Block'
+          description: ''
+    patch:
+      operationId: api_blocks_blocks_partial_update
+      description: ViewSet for Block management
+      parameters:
+      - in: path
+        name: block_id
+        schema:
+          type: string
+        description: A unique value identifying this block.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedBlockRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedBlockRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedBlockRequest'
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Block'
+          description: ''
+    delete:
+      operationId: api_blocks_blocks_destroy
+      description: ViewSet for Block management
+      parameters:
+      - in: path
+        name: block_id
+        schema:
+          type: string
+        description: A unique value identifying this block.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      responses:
+        '204':
+          description: No response body
+  /api/blocks/harvests/:
+    get:
+      operationId: api_blocks_harvests_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedHarvestsList'
+          description: ''
+    post:
+      operationId: api_blocks_harvests_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HarvestsRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/HarvestsRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/HarvestsRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Harvests'
+          description: ''
+  /api/blocks/harvests/{harvest_id}/:
+    get:
+      operationId: api_blocks_harvests_retrieve
+      parameters:
+      - in: path
+        name: harvest_id
+        schema:
+          type: string
+          description: 'Auto-generated ID: WorkerInitials + DDMM + P + SequenceCode'
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Harvests'
+          description: ''
+    put:
+      operationId: api_blocks_harvests_update
+      parameters:
+      - in: path
+        name: harvest_id
+        schema:
+          type: string
+          description: 'Auto-generated ID: WorkerInitials + DDMM + P + SequenceCode'
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HarvestsRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/HarvestsRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/HarvestsRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Harvests'
+          description: ''
+    patch:
+      operationId: api_blocks_harvests_partial_update
+      parameters:
+      - in: path
+        name: harvest_id
+        schema:
+          type: string
+          description: 'Auto-generated ID: WorkerInitials + DDMM + P + SequenceCode'
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedHarvestsRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedHarvestsRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedHarvestsRequest'
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Harvests'
+          description: ''
+    delete:
+      operationId: api_blocks_harvests_destroy
+      parameters:
+      - in: path
+        name: harvest_id
+        schema:
+          type: string
+          description: 'Auto-generated ID: WorkerInitials + DDMM + P + SequenceCode'
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '204':
+          description: No response body
+  /api/expenses/:
+    get:
+      operationId: api_expenses_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedExpenseList'
+          description: ''
+    post:
+      operationId: api_expenses_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExpenseRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ExpenseRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ExpenseRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Expense'
+          description: ''
+  /api/expenses/{id}/:
+    get:
+      operationId: api_expenses_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Expense.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Expense'
+          description: ''
+    put:
+      operationId: api_expenses_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Expense.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExpenseRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ExpenseRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ExpenseRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Expense'
+          description: ''
+    patch:
+      operationId: api_expenses_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Expense.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedExpenseRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedExpenseRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedExpenseRequest'
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Expense'
+          description: ''
+    delete:
+      operationId: api_expenses_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Expense.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '204':
+          description: No response body
+  /api/financial-summary/:
+    get:
+      operationId: api_financial_summary_retrieve
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/harvests/blocks/:
+    get:
+      operationId: api_harvests_blocks_list
+      description: ViewSet for Block management
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedBlockList'
+          description: ''
+    post:
+      operationId: api_harvests_blocks_create
+      description: ViewSet for Block management
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BlockRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BlockRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BlockRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Block'
+          description: ''
+  /api/harvests/blocks/{block_id}/:
+    get:
+      operationId: api_harvests_blocks_retrieve
+      description: ViewSet for Block management
+      parameters:
+      - in: path
+        name: block_id
+        schema:
+          type: string
+        description: A unique value identifying this block.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Block'
+          description: ''
+    put:
+      operationId: api_harvests_blocks_update
+      description: ViewSet for Block management
+      parameters:
+      - in: path
+        name: block_id
+        schema:
+          type: string
+        description: A unique value identifying this block.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BlockRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BlockRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BlockRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Block'
+          description: ''
+    patch:
+      operationId: api_harvests_blocks_partial_update
+      description: ViewSet for Block management
+      parameters:
+      - in: path
+        name: block_id
+        schema:
+          type: string
+        description: A unique value identifying this block.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedBlockRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedBlockRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedBlockRequest'
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Block'
+          description: ''
+    delete:
+      operationId: api_harvests_blocks_destroy
+      description: ViewSet for Block management
+      parameters:
+      - in: path
+        name: block_id
+        schema:
+          type: string
+        description: A unique value identifying this block.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      responses:
+        '204':
+          description: No response body
+  /api/harvests/harvests/:
+    get:
+      operationId: api_harvests_harvests_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedHarvestsList'
+          description: ''
+    post:
+      operationId: api_harvests_harvests_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HarvestsRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/HarvestsRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/HarvestsRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Harvests'
+          description: ''
+  /api/harvests/harvests/{harvest_id}/:
+    get:
+      operationId: api_harvests_harvests_retrieve
+      parameters:
+      - in: path
+        name: harvest_id
+        schema:
+          type: string
+          description: 'Auto-generated ID: WorkerInitials + DDMM + P + SequenceCode'
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Harvests'
+          description: ''
+    put:
+      operationId: api_harvests_harvests_update
+      parameters:
+      - in: path
+        name: harvest_id
+        schema:
+          type: string
+          description: 'Auto-generated ID: WorkerInitials + DDMM + P + SequenceCode'
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HarvestsRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/HarvestsRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/HarvestsRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Harvests'
+          description: ''
+    patch:
+      operationId: api_harvests_harvests_partial_update
+      parameters:
+      - in: path
+        name: harvest_id
+        schema:
+          type: string
+          description: 'Auto-generated ID: WorkerInitials + DDMM + P + SequenceCode'
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedHarvestsRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedHarvestsRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedHarvestsRequest'
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Harvests'
+          description: ''
+    delete:
+      operationId: api_harvests_harvests_destroy
+      parameters:
+      - in: path
+        name: harvest_id
+        schema:
+          type: string
+          description: 'Auto-generated ID: WorkerInitials + DDMM + P + SequenceCode'
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '204':
+          description: No response body
+  /api/processing/bagging/:
+    get:
+      operationId: api_processing_bagging_list
+      description: ViewSet for Bagging process (final stage)
+      parameters:
+      - in: query
+        name: date
+        schema:
+          type: string
+          format: date
+      - in: query
+        name: grade
+        schema:
+          type: string
+          enum:
+          - A
+          - B
+          - C
+        description: |-
+          Quality grade of the coffee
+
+          * `A` - Grade A
+          * `B` - Grade B
+          * `C` - Grade C
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedBaggingList'
+          description: ''
+    post:
+      operationId: api_processing_bagging_create
+      description: ViewSet for Bagging process (final stage)
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BaggingRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BaggingRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BaggingRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Bagging'
+          description: ''
+  /api/processing/bagging/{id}/:
+    get:
+      operationId: api_processing_bagging_retrieve
+      description: ViewSet for Bagging process (final stage)
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Bagging Process.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Bagging'
+          description: ''
+    put:
+      operationId: api_processing_bagging_update
+      description: ViewSet for Bagging process (final stage)
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Bagging Process.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BaggingRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BaggingRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BaggingRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Bagging'
+          description: ''
+    patch:
+      operationId: api_processing_bagging_partial_update
+      description: ViewSet for Bagging process (final stage)
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Bagging Process.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedBaggingRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedBaggingRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedBaggingRequest'
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Bagging'
+          description: ''
+    delete:
+      operationId: api_processing_bagging_destroy
+      description: ViewSet for Bagging process (final stage)
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Bagging Process.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '204':
+          description: No response body
+  /api/processing/bagging/summary/:
+    get:
+      operationId: api_processing_bagging_summary_retrieve
+      description: |-
+        Custom endpoint: /api/bagging/summary/
+        Returns final bagging statistics
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Bagging'
+          description: ''
+  /api/processing/fermenting/:
+    get:
+      operationId: api_processing_fermenting_list
+      description: |-
+        ViewSet for Fermenting process
+
+        Automatically provides these endpoints:
+        - GET /api/fermenting/ - List all records
+        - POST /api/fermenting/ - Create new record
+        - GET /api/fermenting/{id}/ - Get single record
+        - PUT /api/fermenting/{id}/ - Update record (full)
+        - PATCH /api/fermenting/{id}/ - Update record (partial)
+        - DELETE /api/fermenting/{id}/ - Delete record
+      parameters:
+      - in: query
+        name: date
+        schema:
+          type: string
+          format: date
+      - in: query
+        name: days
+        schema:
+          type: integer
+      - in: query
+        name: grade
+        schema:
+          type: string
+          enum:
+          - A
+          - B
+          - C
+        description: |-
+          Quality grade of the coffee
+
+          * `A` - Grade A
+          * `B` - Grade B
+          * `C` - Grade C
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedFermentingList'
+          description: ''
+    post:
+      operationId: api_processing_fermenting_create
+      description: |-
+        ViewSet for Fermenting process
+
+        Automatically provides these endpoints:
+        - GET /api/fermenting/ - List all records
+        - POST /api/fermenting/ - Create new record
+        - GET /api/fermenting/{id}/ - Get single record
+        - PUT /api/fermenting/{id}/ - Update record (full)
+        - PATCH /api/fermenting/{id}/ - Update record (partial)
+        - DELETE /api/fermenting/{id}/ - Delete record
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FermentingRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/FermentingRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/FermentingRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Fermenting'
+          description: ''
+  /api/processing/fermenting/{id}/:
+    get:
+      operationId: api_processing_fermenting_retrieve
+      description: |-
+        ViewSet for Fermenting process
+
+        Automatically provides these endpoints:
+        - GET /api/fermenting/ - List all records
+        - POST /api/fermenting/ - Create new record
+        - GET /api/fermenting/{id}/ - Get single record
+        - PUT /api/fermenting/{id}/ - Update record (full)
+        - PATCH /api/fermenting/{id}/ - Update record (partial)
+        - DELETE /api/fermenting/{id}/ - Delete record
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Fermenting Process.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Fermenting'
+          description: ''
+    put:
+      operationId: api_processing_fermenting_update
+      description: |-
+        ViewSet for Fermenting process
+
+        Automatically provides these endpoints:
+        - GET /api/fermenting/ - List all records
+        - POST /api/fermenting/ - Create new record
+        - GET /api/fermenting/{id}/ - Get single record
+        - PUT /api/fermenting/{id}/ - Update record (full)
+        - PATCH /api/fermenting/{id}/ - Update record (partial)
+        - DELETE /api/fermenting/{id}/ - Delete record
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Fermenting Process.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FermentingRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/FermentingRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/FermentingRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Fermenting'
+          description: ''
+    patch:
+      operationId: api_processing_fermenting_partial_update
+      description: |-
+        ViewSet for Fermenting process
+
+        Automatically provides these endpoints:
+        - GET /api/fermenting/ - List all records
+        - POST /api/fermenting/ - Create new record
+        - GET /api/fermenting/{id}/ - Get single record
+        - PUT /api/fermenting/{id}/ - Update record (full)
+        - PATCH /api/fermenting/{id}/ - Update record (partial)
+        - DELETE /api/fermenting/{id}/ - Delete record
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Fermenting Process.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedFermentingRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedFermentingRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedFermentingRequest'
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Fermenting'
+          description: ''
+    delete:
+      operationId: api_processing_fermenting_destroy
+      description: |-
+        ViewSet for Fermenting process
+
+        Automatically provides these endpoints:
+        - GET /api/fermenting/ - List all records
+        - POST /api/fermenting/ - Create new record
+        - GET /api/fermenting/{id}/ - Get single record
+        - PUT /api/fermenting/{id}/ - Update record (full)
+        - PATCH /api/fermenting/{id}/ - Update record (partial)
+        - DELETE /api/fermenting/{id}/ - Delete record
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Fermenting Process.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '204':
+          description: No response body
+  /api/processing/sundrying/:
+    get:
+      operationId: api_processing_sundrying_list
+      description: |-
+        ViewSet for Sundrying process
+        Includes weather and moisture tracking
+      parameters:
+      - in: query
+        name: date
+        schema:
+          type: string
+          format: date
+      - in: query
+        name: grade
+        schema:
+          type: string
+          enum:
+          - A
+          - B
+          - C
+        description: |-
+          Quality grade of the coffee
+
+          * `A` - Grade A
+          * `B` - Grade B
+          * `C` - Grade C
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: weather
+        schema:
+          type: string
+          enum:
+          - cloudy
+          - raining
+          - sunny
+        description: |-
+          Weather conditions during drying
+
+          * `sunny` - Sunny
+          * `raining` - Raining
+          * `cloudy` - Cloudy
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedSundryingList'
+          description: ''
+    post:
+      operationId: api_processing_sundrying_create
+      description: |-
+        ViewSet for Sundrying process
+        Includes weather and moisture tracking
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SundryingRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SundryingRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SundryingRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sundrying'
+          description: ''
+  /api/processing/sundrying/{id}/:
+    get:
+      operationId: api_processing_sundrying_retrieve
+      description: |-
+        ViewSet for Sundrying process
+        Includes weather and moisture tracking
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Sundrying Process.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sundrying'
+          description: ''
+    put:
+      operationId: api_processing_sundrying_update
+      description: |-
+        ViewSet for Sundrying process
+        Includes weather and moisture tracking
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Sundrying Process.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SundryingRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SundryingRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SundryingRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sundrying'
+          description: ''
+    patch:
+      operationId: api_processing_sundrying_partial_update
+      description: |-
+        ViewSet for Sundrying process
+        Includes weather and moisture tracking
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Sundrying Process.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedSundryingRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedSundryingRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedSundryingRequest'
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sundrying'
+          description: ''
+    delete:
+      operationId: api_processing_sundrying_destroy
+      description: |-
+        ViewSet for Sundrying process
+        Includes weather and moisture tracking
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Sundrying Process.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '204':
+          description: No response body
+  /api/processing/sundrying/by_weather/:
+    get:
+      operationId: api_processing_sundrying_by_weather_retrieve
+      description: |-
+        Custom endpoint: /api/sundrying/by_weather/
+        Groups sundrying records by weather conditions
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sundrying'
+          description: ''
+  /api/processing/washing/:
+    get:
+      operationId: api_processing_washing_list
+      description: |-
+        ViewSet for Washing process
+        Provides full CRUD operations
+      parameters:
+      - in: query
+        name: date
+        schema:
+          type: string
+          format: date
+      - in: query
+        name: grade
+        schema:
+          type: string
+          enum:
+          - A
+          - B
+          - C
+        description: |-
+          Quality grade of the coffee
+
+          * `A` - Grade A
+          * `B` - Grade B
+          * `C` - Grade C
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedWashingList'
+          description: ''
+    post:
+      operationId: api_processing_washing_create
+      description: |-
+        ViewSet for Washing process
+        Provides full CRUD operations
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WashingRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/WashingRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/WashingRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Washing'
+          description: ''
+  /api/processing/washing/{id}/:
+    get:
+      operationId: api_processing_washing_retrieve
+      description: |-
+        ViewSet for Washing process
+        Provides full CRUD operations
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Washing Process.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Washing'
+          description: ''
+    put:
+      operationId: api_processing_washing_update
+      description: |-
+        ViewSet for Washing process
+        Provides full CRUD operations
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Washing Process.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WashingRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/WashingRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/WashingRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Washing'
+          description: ''
+    patch:
+      operationId: api_processing_washing_partial_update
+      description: |-
+        ViewSet for Washing process
+        Provides full CRUD operations
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Washing Process.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedWashingRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedWashingRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedWashingRequest'
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Washing'
+          description: ''
+    delete:
+      operationId: api_processing_washing_destroy
+      description: |-
+        ViewSet for Washing process
+        Provides full CRUD operations
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Washing Process.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '204':
+          description: No response body
+  /api/processing/washing/summary/:
+    get:
+      operationId: api_processing_washing_summary_retrieve
+      description: 'Custom endpoint: /api/washing/summary/'
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Washing'
+          description: ''
+  /api/sales/:
+    get:
+      operationId: api_sales_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedSaleList'
+          description: ''
+    post:
+      operationId: api_sales_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SaleRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SaleRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SaleRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sale'
+          description: ''
+  /api/sales/{id}/:
+    get:
+      operationId: api_sales_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Sale Record.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sale'
+          description: ''
+    put:
+      operationId: api_sales_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Sale Record.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SaleRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SaleRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SaleRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sale'
+          description: ''
+    patch:
+      operationId: api_sales_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Sale Record.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedSaleRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedSaleRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedSaleRequest'
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sale'
+          description: ''
+    delete:
+      operationId: api_sales_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Sale Record.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '204':
+          description: No response body
+  /api/setprice/:
+    get:
+      operationId: api_setprice_list
+      description: |-
+        ViewSet for managing price settings.
+        Only one record is active at a time (latest record determines current price).
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedSetpriceList'
+          description: ''
+    post:
+      operationId: api_setprice_create
+      description: |-
+        Custom create: add a new price record.
+        The latest entry always represents the prevailing price.
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SetpriceRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SetpriceRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SetpriceRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Setprice'
+          description: ''
+  /api/setprice/{id}/:
+    get:
+      operationId: api_setprice_retrieve
+      description: |-
+        ViewSet for managing price settings.
+        Only one record is active at a time (latest record determines current price).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Price Setting.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Setprice'
+          description: ''
+    put:
+      operationId: api_setprice_update
+      description: |-
+        ViewSet for managing price settings.
+        Only one record is active at a time (latest record determines current price).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Price Setting.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SetpriceRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SetpriceRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SetpriceRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Setprice'
+          description: ''
+    patch:
+      operationId: api_setprice_partial_update
+      description: |-
+        ViewSet for managing price settings.
+        Only one record is active at a time (latest record determines current price).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Price Setting.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedSetpriceRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedSetpriceRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedSetpriceRequest'
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Setprice'
+          description: ''
+    delete:
+      operationId: api_setprice_destroy
+      description: |-
+        ViewSet for managing price settings.
+        Only one record is active at a time (latest record determines current price).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Price Setting.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      responses:
+        '204':
+          description: No response body
+  /api/setprice/current/:
+    get:
+      operationId: api_setprice_current_retrieve
+      description: |-
+        Retrieve the current active price (the most recent Setprice entry).
+        Usage: GET /api/setprice/current/
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Setprice'
+          description: ''
+  /api/staff/:
+    get:
+      operationId: api_staff_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedStaffList'
+          description: ''
+    post:
+      operationId: api_staff_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StaffRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/StaffRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/StaffRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Staff'
+          description: ''
+  /api/staff/{staff_id}/:
+    get:
+      operationId: api_staff_retrieve
+      parameters:
+      - in: path
+        name: staff_id
+        schema:
+          type: string
+          description: 'Auto-generated ID: RF + 3-digit number'
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Staff'
+          description: ''
+    put:
+      operationId: api_staff_update
+      parameters:
+      - in: path
+        name: staff_id
+        schema:
+          type: string
+          description: 'Auto-generated ID: RF + 3-digit number'
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StaffRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/StaffRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/StaffRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Staff'
+          description: ''
+    patch:
+      operationId: api_staff_partial_update
+      parameters:
+      - in: path
+        name: staff_id
+        schema:
+          type: string
+          description: 'Auto-generated ID: RF + 3-digit number'
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedStaffRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedStaffRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedStaffRequest'
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Staff'
+          description: ''
+    delete:
+      operationId: api_staff_destroy
+      parameters:
+      - in: path
+        name: staff_id
+        schema:
+          type: string
+          description: 'Auto-generated ID: RF + 3-digit number'
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '204':
+          description: No response body
+  /api/token/:
+    post:
+      operationId: api_token_create
+      description: |-
+        Takes a set of user credentials and returns an access and refresh JSON web
+        token pair to prove the authentication of those credentials.
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPairRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPairRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPairRequest'
+        required: true
+      security:
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenObtainPair'
+          description: ''
+  /api/token/refresh/:
+    post:
+      operationId: api_token_refresh_create
+      description: |-
+        Takes a refresh type JSON web token and returns an access type JSON web
+        token if the refresh token is valid.
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+        required: true
+      security:
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenRefresh'
+          description: ''
+  /api/users/login/:
+    post:
+      operationId: api_users_login_create
+      description: |-
+        API endpoint for user login.
+
+        Endpoint: POST /api/users/login/
+
+        Request body:
+            {
+                "phone": "0700000000",
+                "pin": "1234"
+            }
+
+        Response (success):
+            {
+                "message": "Login successful",
+                "user": {
+                    "id": 1,
+                    "name": "John Doe",
+                    "phone": "0700000000",
+                    "role": "manager",
+                    "role_display": "Farm Manager"
+                },
+                "access": "eyJ0eXAiOiJKV1...",  # JWT token for auth
+                "refresh": "eyJ0eXAiOiJKV1..."   # Refresh token
+            }
+
+        Response (failure):
+            {
+                "error": "Invalid phone number or PIN"
+            }
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '200':
+          description: Login successful
+  /api/users/logout/:
+    post:
+      operationId: api_users_logout_create
+      description: Logout endpoint - terminates session and deletes token
+      tags:
+      - api
+      security:
+      - Bearer: []
+      responses:
+        '200':
+          description: Logout successful
+  /api/users/me/:
+    get:
+      operationId: api_users_me_retrieve
+      description: |-
+        Get current logged-in user's information.
+        Requires JWT token in Authorization header.
+
+        Endpoint: GET /api/users/me/
+
+        Headers:
+            Authorization: Bearer <access_token>
+
+        Response:
+            {
+                "id": 1,
+                "name": "John Doe",
+                "phone": "0700000000",
+                "role": "manager",
+                "role_display": "Farm Manager"
+            }
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+  /api/users/random-security-questions/:
+    post:
+      operationId: api_users_random_security_questions_create
+      description: |-
+        Get 3 random security questions for first-time user setup.
+
+        Endpoint: POST /api/users/random-security-questions/
+
+        Request body:
+            {
+                "phone": "0700000000"
+            }
+
+        Response (success):
+            {
+                "questions": [
+                    {"id": 1, "text": "What was your mother's clan name?"},
+                    {"id": 3, "text": "Which year did you start coffee farming?"},
+                    {"id": 5, "text": "Who is your favourite musician?"}
+                ]
+            }
+
+        Response (failure):
+            {
+                "error": "User not found"
+            }
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '200':
+          description: 3 random security questions
+  /api/users/reset-pin/:
+    post:
+      operationId: api_users_reset_pin_create
+      description: |-
+        Reset user's PIN using security question.
+
+        Endpoint: POST /api/users/reset-pin/
+
+        Request body:
+            {
+                "phone": "0700000000",
+                "security_answer": "maria",
+                "new_pin": "5678"
+            }
+
+        Response (success):
+            {
+                "message": "PIN reset successful. You can now login with your new PIN."
+            }
+
+        Response (failure):
+            {
+                "error": "Incorrect security answer"
+            }
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResetPinRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ResetPinRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ResetPinRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '200':
+          description: PIN reset successful
+  /api/users/security-question/:
+    post:
+      operationId: api_users_security_question_create
+      description: |-
+        Get user's security question (needed before PIN reset).
+
+        Endpoint: POST /api/users/security-question/
+
+        Request body:
+            {
+                "phone": "0700000000"
+            }
+
+        Response (success):
+            {
+                "phone": "0700000000",
+                "security_question": "What is your mother's name?"
+            }
+
+        Response (failure):
+            {
+                "error": "User not found"
+            }
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SecurityQuestionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SecurityQuestionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SecurityQuestionRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '200':
+          description: Security question retrieved
+  /api/users/setup-security-answers/:
+    post:
+      operationId: api_users_setup_security_answers_create
+      description: |-
+        User answers 3 security questions on first login and saves answers.
+
+        Endpoint: POST /api/users/setup-security-answers/
+
+        Request body:
+            {
+                "phone": "0700000000",
+                "answers": [
+                    {"question_id": 1, "answer": "my mother's clan"},
+                    {"question_id": 3, "answer": "2010"},
+                    {"question_id": 5, "answer": "musician name"}
+                ]
+            }
+
+        Response (success):
+            {
+                "message": "Security answers set successfully",
+                "security_answers_set": true
+            }
+
+        Response (failure):
+            {
+                "error": "User not found"
+            }
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SetupSecurityAnswersRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SetupSecurityAnswersRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SetupSecurityAnswersRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '200':
+          description: Security answers set successfully
+  /api/users/token/refresh/:
+    post:
+      operationId: api_users_token_refresh_create
+      description: |-
+        Takes a refresh type JSON web token and returns an access type JSON web
+        token if the refresh token is valid.
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+        required: true
+      security:
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenRefresh'
+          description: ''
+  /api/users/verify-answers-reset-pin/:
+    post:
+      operationId: api_users_verify_answers_reset_pin_create
+      description: |-
+        User verifies 3 security answers to reset their PIN.
+
+        Endpoint: POST /api/users/verify-answers-reset-pin/
+
+        Request body:
+            {
+                "phone": "0700000000",
+                "answers": [
+                    {"question_id": 1, "answer": "my mother's clan"},
+                    {"question_id": 3, "answer": "2010"},
+                    {"question_id": 5, "answer": "musician name"}
+                ],
+                "new_pin": "5678"
+            }
+
+        Response (success):
+            {
+                "message": "PIN reset successful. You can now login with your new PIN."
+            }
+
+        Response (failure):
+            {
+                "error": "One or more answers are incorrect"
+            }
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifySecurityAnswersRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/VerifySecurityAnswersRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/VerifySecurityAnswersRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '200':
+          description: PIN reset successful
+  /api/wages/:
+    get:
+      operationId: api_wages_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedWageList'
+          description: ''
+    post:
+      operationId: api_wages_create
+      description: |-
+        Create a new wage payment record
+        Accepts employee_name as free text
+        Optionally links to staff if staff_id is provided in 'staff' field
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WageRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/WageRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/WageRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Wage'
+          description: ''
+  /api/wages/{id}/:
+    get:
+      operationId: api_wages_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Wage Payment.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Wage'
+          description: ''
+    put:
+      operationId: api_wages_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Wage Payment.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WageRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/WageRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/WageRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Wage'
+          description: ''
+    patch:
+      operationId: api_wages_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Wage Payment.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedWageRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedWageRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedWageRequest'
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Wage'
+          description: ''
+    delete:
+      operationId: api_wages_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Wage Payment.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '204':
+          description: No response body
+  /api/wages/by_employee/:
+    get:
+      operationId: api_wages_by_employee_retrieve
+      description: |-
+        Get wages filtered by employee staff_id
+        Usage: /wages/by_employee/?staff_id=RF001
+      tags:
+      - api
+      security:
+      - jwtAuth: []
+      - Bearer:
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Wage'
+          description: ''
+components:
+  schemas:
+    AccountTypeEnum:
+      enum:
+      - A
+      - L
+      - E
+      type: string
+      description: |-
+        * `A` - Asset
+        * `L` - Liability
+        * `E` - Equity
+    Bagging:
+      type: object
+      description: Serializer for Bagging model (final stage)
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        processing_id:
+          type: string
+          description: Unique ID for this bagging batch (e.g., BAG-2024-001)
+          maxLength: 50
+        name:
+          type: string
+          description: Descriptive name for this batch
+          maxLength: 100
+        grade:
+          allOf:
+          - $ref: '#/components/schemas/GradeEnum'
+          description: |-
+            Quality grade of the coffee
+
+            * `A` - Grade A
+            * `B` - Grade B
+            * `C` - Grade C
+        moisture_content:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          description: Final moisture content percentage (0-100%)
+        date:
+          type: string
+          format: date
+          description: Date when bagging occurred
+        weight:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          description: Final weight in kg
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - date
+      - grade
+      - id
+      - moisture_content
+      - name
+      - processing_id
+      - updated_at
+      - weight
+    BaggingRequest:
+      type: object
+      description: Serializer for Bagging model (final stage)
+      properties:
+        processing_id:
+          type: string
+          minLength: 1
+          description: Unique ID for this bagging batch (e.g., BAG-2024-001)
+          maxLength: 50
+        name:
+          type: string
+          minLength: 1
+          description: Descriptive name for this batch
+          maxLength: 100
+        grade:
+          allOf:
+          - $ref: '#/components/schemas/GradeEnum'
+          description: |-
+            Quality grade of the coffee
+
+            * `A` - Grade A
+            * `B` - Grade B
+            * `C` - Grade C
+        moisture_content:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          description: Final moisture content percentage (0-100%)
+        date:
+          type: string
+          format: date
+          description: Date when bagging occurred
+        weight:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          description: Final weight in kg
+      required:
+      - date
+      - grade
+      - moisture_content
+      - name
+      - processing_id
+      - weight
+    Balancesheet:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        account_name:
+          type: string
+          description: Name of the account (e.g., 'Cash', 'Accounts Receivable', etc.)
+          maxLength: 100
+        account_type:
+          $ref: '#/components/schemas/AccountTypeEnum'
+        account_type_display:
+          type: string
+          readOnly: true
+        balance:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,13}(?:\.\d{0,2})?$
+          description: The current balance of this account.
+        last_updated:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - account_name
+      - account_type
+      - account_type_display
+      - id
+      - last_updated
+    BalancesheetRequest:
+      type: object
+      properties:
+        account_name:
+          type: string
+          minLength: 1
+          description: Name of the account (e.g., 'Cash', 'Accounts Receivable', etc.)
+          maxLength: 100
+        account_type:
+          $ref: '#/components/schemas/AccountTypeEnum'
+        balance:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,13}(?:\.\d{0,2})?$
+          description: The current balance of this account.
+      required:
+      - account_name
+      - account_type
+    BlankEnum:
+      enum:
+      - ''
+    Block:
+      type: object
+      description: Serializer for Block model
+      properties:
+        block_id:
+          type: string
+          maxLength: 50
+        no_of_trees:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        date_planted:
+          type: string
+          format: date
+        type_of_coffee:
+          type: string
+          maxLength: 100
+        source_of_seedling:
+          type: string
+          maxLength: 200
+        type_of_seedling:
+          type: string
+          maxLength: 200
+        age_of_seedling:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        fertilizers:
+          type: string
+          maxLength: 255
+        fertilizer_names:
+          type: string
+          nullable: true
+          description: Comma-separated list of fertilizer names
+        use_pesticides:
+          type: string
+          maxLength: 255
+        pesticides_list:
+          type: string
+          nullable: true
+        standard_practices:
+          type: string
+          maxLength: 255
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - age_of_seedling
+      - block_id
+      - created_at
+      - date_planted
+      - no_of_trees
+      - source_of_seedling
+      - standard_practices
+      - type_of_coffee
+      - type_of_seedling
+      - updated_at
+      - use_pesticides
+    BlockRequest:
+      type: object
+      description: Serializer for Block model
+      properties:
+        block_id:
+          type: string
+          minLength: 1
+          maxLength: 50
+        no_of_trees:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        date_planted:
+          type: string
+          format: date
+        type_of_coffee:
+          type: string
+          minLength: 1
+          maxLength: 100
+        source_of_seedling:
+          type: string
+          minLength: 1
+          maxLength: 200
+        type_of_seedling:
+          type: string
+          minLength: 1
+          maxLength: 200
+        age_of_seedling:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        fertilizers:
+          type: string
+          minLength: 1
+          maxLength: 255
+        fertilizer_names:
+          type: string
+          nullable: true
+          description: Comma-separated list of fertilizer names
+        use_pesticides:
+          type: string
+          minLength: 1
+          maxLength: 255
+        pesticides_list:
+          type: string
+          nullable: true
+        standard_practices:
+          type: string
+          minLength: 1
+          maxLength: 255
+      required:
+      - age_of_seedling
+      - block_id
+      - date_planted
+      - no_of_trees
+      - source_of_seedling
+      - standard_practices
+      - type_of_coffee
+      - type_of_seedling
+      - use_pesticides
+    CherryColour051Enum:
+      enum:
+      - red
+      - green
+      - Yellow
+      - Black
+      type: string
+      description: |-
+        * `red` - Red
+        * `green` - Green
+        * `Yellow` - Yellow
+        * `Black` - Black
+    Expense:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        expense_name:
+          type: string
+          maxLength: 50
+        category:
+          type: string
+          maxLength: 50
+        item:
+          type: string
+          maxLength: 50
+        supplier:
+          type: string
+          maxLength: 50
+        description:
+          type: string
+          maxLength: 255
+        amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        date:
+          type: string
+          format: date
+        location:
+          type: string
+          maxLength: 100
+      required:
+      - amount
+      - category
+      - date
+      - description
+      - expense_name
+      - id
+      - item
+      - location
+      - supplier
+    ExpenseRequest:
+      type: object
+      properties:
+        expense_name:
+          type: string
+          minLength: 1
+          maxLength: 50
+        category:
+          type: string
+          minLength: 1
+          maxLength: 50
+        item:
+          type: string
+          minLength: 1
+          maxLength: 50
+        supplier:
+          type: string
+          minLength: 1
+          maxLength: 50
+        description:
+          type: string
+          minLength: 1
+          maxLength: 255
+        amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        date:
+          type: string
+          format: date
+        location:
+          type: string
+          minLength: 1
+          maxLength: 100
+      required:
+      - amount
+      - category
+      - date
+      - description
+      - expense_name
+      - item
+      - location
+      - supplier
+    FarmerHarvest:
+      type: object
+      properties:
+        harvest_id:
+          type: string
+          maxLength: 100
+        name:
+          type: string
+          maxLength: 100
+        coffee_type:
+          type: string
+          nullable: true
+          maxLength: 100
+        weight_on_delivery:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          nullable: true
+        date_of_delivery:
+          type: string
+          nullable: true
+          maxLength: 100
+        location_of_delivery:
+          type: string
+          nullable: true
+          maxLength: 100
+        gps_coordinates_delivery:
+          type: string
+          nullable: true
+          maxLength: 100
+        price_per_kg:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          nullable: true
+        amount_paid:
+          type: string
+          nullable: true
+          maxLength: 100
+        paid_by:
+          type: string
+          nullable: true
+          maxLength: 100
+      required:
+      - harvest_id
+      - name
+    FarmerHarvestRequest:
+      type: object
+      properties:
+        harvest_id:
+          type: string
+          minLength: 1
+          maxLength: 100
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        coffee_type:
+          type: string
+          nullable: true
+          minLength: 1
+          maxLength: 100
+        weight_on_delivery:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          nullable: true
+        date_of_delivery:
+          type: string
+          nullable: true
+          minLength: 1
+          maxLength: 100
+        location_of_delivery:
+          type: string
+          nullable: true
+          maxLength: 100
+        gps_coordinates_delivery:
+          type: string
+          nullable: true
+          maxLength: 100
+        price_per_kg:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          nullable: true
+        amount_paid:
+          type: string
+          nullable: true
+          minLength: 1
+          maxLength: 100
+        paid_by:
+          type: string
+          nullable: true
+          minLength: 1
+          maxLength: 100
+      required:
+      - harvest_id
+      - name
+    FarmerRegistration:
+      type: object
+      properties:
+        farmer_id:
+          type: string
+          maxLength: 100
+        first_name:
+          type: string
+          maxLength: 100
+        last_name:
+          type: string
+          maxLength: 100
+        gender:
+          type: string
+          maxLength: 10
+        nin:
+          type: string
+          nullable: true
+          description: Enter 14 characters (A–Z, 0–9); leave empty if not available
+          pattern: ^[A-Z0-9]{14}$
+          maxLength: 14
+        date_of_birth:
+          type: string
+          format: date
+        contact:
+          type: string
+          nullable: true
+          maxLength: 20
+        email:
+          type: string
+          format: email
+          nullable: true
+          maxLength: 100
+        farmer_type:
+          type: string
+          maxLength: 15
+        started_coffee_farming_year:
+          type: integer
+          maximum: 2147483647
+          minimum: 2010
+          nullable: true
+          description: Enter the year you started coffee farming (optional)
+        district:
+          type: string
+          maxLength: 100
+        sub_county:
+          type: string
+          maxLength: 100
+        parish:
+          type: string
+          maxLength: 100
+        village:
+          type: string
+          maxLength: 100
+        gps_coordinates:
+          type: string
+          maxLength: 100
+        nearest_landmark:
+          type: string
+          maxLength: 100
+        coffee_variety:
+          type: string
+          maxLength: 100
+        number_of_trees:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        ownership_of_trees:
+          type: boolean
+        planted_date:
+          type: string
+          format: date
+          nullable: true
+        land_ownership:
+          type: string
+          maxLength: 100
+        spacing_between_trees:
+          type: string
+          maxLength: 100
+        defforestation_status:
+          type: boolean
+        source_of_seedlings:
+          type: string
+          maxLength: 100
+        type_of_seedlings:
+          type: string
+          maxLength: 100
+        age_of_seedlings:
+          type: string
+          maxLength: 100
+        standard_practices:
+          type: boolean
+        irrigation_source:
+          type: string
+          maxLength: 100
+        fertilizers:
+          type: string
+          maxLength: 100
+        pesticide:
+          type: string
+          maxLength: 100
+      required:
+      - age_of_seedlings
+      - coffee_variety
+      - date_of_birth
+      - farmer_id
+      - farmer_type
+      - fertilizers
+      - first_name
+      - gender
+      - irrigation_source
+      - land_ownership
+      - last_name
+      - pesticide
+      - source_of_seedlings
+      - spacing_between_trees
+      - type_of_seedlings
+    FarmerRegistrationRequest:
+      type: object
+      properties:
+        farmer_id:
+          type: string
+          minLength: 1
+          maxLength: 100
+        first_name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        last_name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        gender:
+          type: string
+          minLength: 1
+          maxLength: 10
+        nin:
+          type: string
+          nullable: true
+          description: Enter 14 characters (A–Z, 0–9); leave empty if not available
+          pattern: ^[A-Z0-9]{14}$
+          maxLength: 14
+        date_of_birth:
+          type: string
+          format: date
+        contact:
+          type: string
+          nullable: true
+          maxLength: 20
+        email:
+          type: string
+          format: email
+          nullable: true
+          maxLength: 100
+        farmer_type:
+          type: string
+          minLength: 1
+          maxLength: 15
+        started_coffee_farming_year:
+          type: integer
+          maximum: 2147483647
+          minimum: 2010
+          nullable: true
+          description: Enter the year you started coffee farming (optional)
+        district:
+          type: string
+          maxLength: 100
+        sub_county:
+          type: string
+          maxLength: 100
+        parish:
+          type: string
+          maxLength: 100
+        village:
+          type: string
+          maxLength: 100
+        gps_coordinates:
+          type: string
+          maxLength: 100
+        nearest_landmark:
+          type: string
+          maxLength: 100
+        coffee_variety:
+          type: string
+          minLength: 1
+          maxLength: 100
+        number_of_trees:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        ownership_of_trees:
+          type: boolean
+        planted_date:
+          type: string
+          format: date
+          nullable: true
+        land_ownership:
+          type: string
+          minLength: 1
+          maxLength: 100
+        spacing_between_trees:
+          type: string
+          minLength: 1
+          maxLength: 100
+        defforestation_status:
+          type: boolean
+        source_of_seedlings:
+          type: string
+          minLength: 1
+          maxLength: 100
+        type_of_seedlings:
+          type: string
+          minLength: 1
+          maxLength: 100
+        age_of_seedlings:
+          type: string
+          minLength: 1
+          maxLength: 100
+        standard_practices:
+          type: boolean
+        irrigation_source:
+          type: string
+          minLength: 1
+          maxLength: 100
+        fertilizers:
+          type: string
+          minLength: 1
+          maxLength: 100
+        pesticide:
+          type: string
+          minLength: 1
+          maxLength: 100
+      required:
+      - age_of_seedlings
+      - coffee_variety
+      - date_of_birth
+      - farmer_id
+      - farmer_type
+      - fertilizers
+      - first_name
+      - gender
+      - irrigation_source
+      - land_ownership
+      - last_name
+      - pesticide
+      - source_of_seedlings
+      - spacing_between_trees
+      - type_of_seedlings
+    Fermenting:
+      type: object
+      description: |-
+        Serializer for Fermenting model
+        Includes all fields plus the calculated weight_loss property
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        processing_id:
+          type: string
+          description: Unique ID for this fermentation batch (e.g., FERM-2024-001)
+          maxLength: 50
+        days:
+          type: integer
+          maximum: 2147483647
+          minimum: 1
+          description: Number of days for fermentation
+        name:
+          type: string
+          description: Descriptive name for this batch
+          maxLength: 100
+        grade:
+          allOf:
+          - $ref: '#/components/schemas/GradeEnum'
+          description: |-
+            Quality grade of the coffee
+
+            * `A` - Grade A
+            * `B` - Grade B
+            * `C` - Grade C
+        cherry_colour:
+          nullable: true
+          description: |-
+            Cherry colour
+
+            * `red` - Red
+            * `green` - Green
+            * `Yellow` - yellow
+            * `Black` - Black
+          oneOf:
+          - $ref: '#/components/schemas/FermentingCherryColourEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        date:
+          type: string
+          format: date
+        weight_before:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          description: Weight in kg before fermentation
+        weight_after:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          description: Weight in kg after fermentation
+        weight_loss:
+          type: number
+          format: double
+          description: Calculate weight loss during fermentation
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - days
+      - grade
+      - id
+      - name
+      - processing_id
+      - updated_at
+      - weight_after
+      - weight_before
+      - weight_loss
+    FermentingCherryColourEnum:
+      enum:
+      - red
+      - green
+      - Yellow
+      - Black
+      type: string
+      description: |-
+        * `red` - Red
+        * `green` - Green
+        * `Yellow` - yellow
+        * `Black` - Black
+    FermentingRequest:
+      type: object
+      description: |-
+        Serializer for Fermenting model
+        Includes all fields plus the calculated weight_loss property
+      properties:
+        processing_id:
+          type: string
+          minLength: 1
+          description: Unique ID for this fermentation batch (e.g., FERM-2024-001)
+          maxLength: 50
+        days:
+          type: integer
+          maximum: 2147483647
+          minimum: 1
+          description: Number of days for fermentation
+        name:
+          type: string
+          minLength: 1
+          description: Descriptive name for this batch
+          maxLength: 100
+        grade:
+          allOf:
+          - $ref: '#/components/schemas/GradeEnum'
+          description: |-
+            Quality grade of the coffee
+
+            * `A` - Grade A
+            * `B` - Grade B
+            * `C` - Grade C
+        cherry_colour:
+          nullable: true
+          description: |-
+            Cherry colour
+
+            * `red` - Red
+            * `green` - Green
+            * `Yellow` - yellow
+            * `Black` - Black
+          oneOf:
+          - $ref: '#/components/schemas/FermentingCherryColourEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        date:
+          type: string
+          format: date
+        weight_before:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          description: Weight in kg before fermentation
+        weight_after:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          description: Weight in kg after fermentation
+      required:
+      - days
+      - grade
+      - name
+      - processing_id
+      - weight_after
+      - weight_before
+    GradeEnum:
+      enum:
+      - A
+      - B
+      - C
+      type: string
+      description: |-
+        * `A` - Grade A
+        * `B` - Grade B
+        * `C` - Grade C
+    Harvests:
+      type: object
+      description: |-
+        Serializer for Harvests model
+        Handles serialization/deserialization of harvest data
+      properties:
+        harvest_id:
+          type: string
+          readOnly: true
+        worker_name:
+          type: string
+          description: Name of the worker delivering the harvest
+          maxLength: 100
+        block_id:
+          type: string
+          description: Block identifier where coffee was harvested
+          maxLength: 10
+        weight_on_delivery:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          description: Weight of harvest in kg (2 decimal places)
+        date_of_delivery:
+          type: string
+          format: date
+          description: Date when harvest was delivered
+        amount_paid:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          description: Amount paid to worker
+        paid_by:
+          type: string
+          description: Staff member who processed the payment
+          maxLength: 100
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - amount_paid
+      - block_id
+      - created_at
+      - date_of_delivery
+      - harvest_id
+      - paid_by
+      - updated_at
+      - weight_on_delivery
+      - worker_name
+    HarvestsRequest:
+      type: object
+      description: |-
+        Serializer for Harvests model
+        Handles serialization/deserialization of harvest data
+      properties:
+        worker_name:
+          type: string
+          minLength: 1
+          description: Name of the worker delivering the harvest
+          maxLength: 100
+        block_id:
+          type: string
+          minLength: 1
+          description: Block identifier where coffee was harvested
+          maxLength: 10
+        weight_on_delivery:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          description: Weight of harvest in kg (2 decimal places)
+        date_of_delivery:
+          type: string
+          format: date
+          description: Date when harvest was delivered
+        amount_paid:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          description: Amount paid to worker
+        paid_by:
+          type: string
+          minLength: 1
+          description: Staff member who processed the payment
+          maxLength: 100
+      required:
+      - amount_paid
+      - block_id
+      - date_of_delivery
+      - paid_by
+      - weight_on_delivery
+      - worker_name
+    LoginRequest:
+      type: object
+      description: |-
+        Serializer for user login.
+        Validates phone number and PIN format.
+      properties:
+        phone:
+          type: string
+          minLength: 1
+          description: User's phone number
+        pin:
+          type: string
+          writeOnly: true
+          minLength: 4
+          description: 4-digit PIN
+          maxLength: 4
+      required:
+      - phone
+      - pin
+    NullEnum:
+      enum:
+      - null
+    PaginatedBaggingList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Bagging'
+    PaginatedBalancesheetList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Balancesheet'
+    PaginatedBlockList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Block'
+    PaginatedExpenseList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Expense'
+    PaginatedFarmerHarvestList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/FarmerHarvest'
+    PaginatedFarmerRegistrationList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/FarmerRegistration'
+    PaginatedFermentingList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Fermenting'
+    PaginatedHarvestsList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Harvests'
+    PaginatedSaleList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Sale'
+    PaginatedSetpriceList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Setprice'
+    PaginatedStaffList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Staff'
+    PaginatedSundryingList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Sundrying'
+    PaginatedWageList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Wage'
+    PaginatedWashingList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Washing'
+    PatchedBaggingRequest:
+      type: object
+      description: Serializer for Bagging model (final stage)
+      properties:
+        processing_id:
+          type: string
+          minLength: 1
+          description: Unique ID for this bagging batch (e.g., BAG-2024-001)
+          maxLength: 50
+        name:
+          type: string
+          minLength: 1
+          description: Descriptive name for this batch
+          maxLength: 100
+        grade:
+          allOf:
+          - $ref: '#/components/schemas/GradeEnum'
+          description: |-
+            Quality grade of the coffee
+
+            * `A` - Grade A
+            * `B` - Grade B
+            * `C` - Grade C
+        moisture_content:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          description: Final moisture content percentage (0-100%)
+        date:
+          type: string
+          format: date
+          description: Date when bagging occurred
+        weight:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          description: Final weight in kg
+    PatchedBalancesheetRequest:
+      type: object
+      properties:
+        account_name:
+          type: string
+          minLength: 1
+          description: Name of the account (e.g., 'Cash', 'Accounts Receivable', etc.)
+          maxLength: 100
+        account_type:
+          $ref: '#/components/schemas/AccountTypeEnum'
+        balance:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,13}(?:\.\d{0,2})?$
+          description: The current balance of this account.
+    PatchedBlockRequest:
+      type: object
+      description: Serializer for Block model
+      properties:
+        block_id:
+          type: string
+          minLength: 1
+          maxLength: 50
+        no_of_trees:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        date_planted:
+          type: string
+          format: date
+        type_of_coffee:
+          type: string
+          minLength: 1
+          maxLength: 100
+        source_of_seedling:
+          type: string
+          minLength: 1
+          maxLength: 200
+        type_of_seedling:
+          type: string
+          minLength: 1
+          maxLength: 200
+        age_of_seedling:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        fertilizers:
+          type: string
+          minLength: 1
+          maxLength: 255
+        fertilizer_names:
+          type: string
+          nullable: true
+          description: Comma-separated list of fertilizer names
+        use_pesticides:
+          type: string
+          minLength: 1
+          maxLength: 255
+        pesticides_list:
+          type: string
+          nullable: true
+        standard_practices:
+          type: string
+          minLength: 1
+          maxLength: 255
+    PatchedExpenseRequest:
+      type: object
+      properties:
+        expense_name:
+          type: string
+          minLength: 1
+          maxLength: 50
+        category:
+          type: string
+          minLength: 1
+          maxLength: 50
+        item:
+          type: string
+          minLength: 1
+          maxLength: 50
+        supplier:
+          type: string
+          minLength: 1
+          maxLength: 50
+        description:
+          type: string
+          minLength: 1
+          maxLength: 255
+        amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        date:
+          type: string
+          format: date
+        location:
+          type: string
+          minLength: 1
+          maxLength: 100
+    PatchedFarmerHarvestRequest:
+      type: object
+      properties:
+        harvest_id:
+          type: string
+          minLength: 1
+          maxLength: 100
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        coffee_type:
+          type: string
+          nullable: true
+          minLength: 1
+          maxLength: 100
+        weight_on_delivery:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          nullable: true
+        date_of_delivery:
+          type: string
+          nullable: true
+          minLength: 1
+          maxLength: 100
+        location_of_delivery:
+          type: string
+          nullable: true
+          maxLength: 100
+        gps_coordinates_delivery:
+          type: string
+          nullable: true
+          maxLength: 100
+        price_per_kg:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          nullable: true
+        amount_paid:
+          type: string
+          nullable: true
+          minLength: 1
+          maxLength: 100
+        paid_by:
+          type: string
+          nullable: true
+          minLength: 1
+          maxLength: 100
+    PatchedFarmerRegistrationRequest:
+      type: object
+      properties:
+        farmer_id:
+          type: string
+          minLength: 1
+          maxLength: 100
+        first_name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        last_name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        gender:
+          type: string
+          minLength: 1
+          maxLength: 10
+        nin:
+          type: string
+          nullable: true
+          description: Enter 14 characters (A–Z, 0–9); leave empty if not available
+          pattern: ^[A-Z0-9]{14}$
+          maxLength: 14
+        date_of_birth:
+          type: string
+          format: date
+        contact:
+          type: string
+          nullable: true
+          maxLength: 20
+        email:
+          type: string
+          format: email
+          nullable: true
+          maxLength: 100
+        farmer_type:
+          type: string
+          minLength: 1
+          maxLength: 15
+        started_coffee_farming_year:
+          type: integer
+          maximum: 2147483647
+          minimum: 2010
+          nullable: true
+          description: Enter the year you started coffee farming (optional)
+        district:
+          type: string
+          maxLength: 100
+        sub_county:
+          type: string
+          maxLength: 100
+        parish:
+          type: string
+          maxLength: 100
+        village:
+          type: string
+          maxLength: 100
+        gps_coordinates:
+          type: string
+          maxLength: 100
+        nearest_landmark:
+          type: string
+          maxLength: 100
+        coffee_variety:
+          type: string
+          minLength: 1
+          maxLength: 100
+        number_of_trees:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        ownership_of_trees:
+          type: boolean
+        planted_date:
+          type: string
+          format: date
+          nullable: true
+        land_ownership:
+          type: string
+          minLength: 1
+          maxLength: 100
+        spacing_between_trees:
+          type: string
+          minLength: 1
+          maxLength: 100
+        defforestation_status:
+          type: boolean
+        source_of_seedlings:
+          type: string
+          minLength: 1
+          maxLength: 100
+        type_of_seedlings:
+          type: string
+          minLength: 1
+          maxLength: 100
+        age_of_seedlings:
+          type: string
+          minLength: 1
+          maxLength: 100
+        standard_practices:
+          type: boolean
+        irrigation_source:
+          type: string
+          minLength: 1
+          maxLength: 100
+        fertilizers:
+          type: string
+          minLength: 1
+          maxLength: 100
+        pesticide:
+          type: string
+          minLength: 1
+          maxLength: 100
+    PatchedFermentingRequest:
+      type: object
+      description: |-
+        Serializer for Fermenting model
+        Includes all fields plus the calculated weight_loss property
+      properties:
+        processing_id:
+          type: string
+          minLength: 1
+          description: Unique ID for this fermentation batch (e.g., FERM-2024-001)
+          maxLength: 50
+        days:
+          type: integer
+          maximum: 2147483647
+          minimum: 1
+          description: Number of days for fermentation
+        name:
+          type: string
+          minLength: 1
+          description: Descriptive name for this batch
+          maxLength: 100
+        grade:
+          allOf:
+          - $ref: '#/components/schemas/GradeEnum'
+          description: |-
+            Quality grade of the coffee
+
+            * `A` - Grade A
+            * `B` - Grade B
+            * `C` - Grade C
+        cherry_colour:
+          nullable: true
+          description: |-
+            Cherry colour
+
+            * `red` - Red
+            * `green` - Green
+            * `Yellow` - yellow
+            * `Black` - Black
+          oneOf:
+          - $ref: '#/components/schemas/FermentingCherryColourEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        date:
+          type: string
+          format: date
+        weight_before:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          description: Weight in kg before fermentation
+        weight_after:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          description: Weight in kg after fermentation
+    PatchedHarvestsRequest:
+      type: object
+      description: |-
+        Serializer for Harvests model
+        Handles serialization/deserialization of harvest data
+      properties:
+        worker_name:
+          type: string
+          minLength: 1
+          description: Name of the worker delivering the harvest
+          maxLength: 100
+        block_id:
+          type: string
+          minLength: 1
+          description: Block identifier where coffee was harvested
+          maxLength: 10
+        weight_on_delivery:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          description: Weight of harvest in kg (2 decimal places)
+        date_of_delivery:
+          type: string
+          format: date
+          description: Date when harvest was delivered
+        amount_paid:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          description: Amount paid to worker
+        paid_by:
+          type: string
+          minLength: 1
+          description: Staff member who processed the payment
+          maxLength: 100
+    PatchedSaleRequest:
+      type: object
+      properties:
+        customer_name:
+          type: string
+          nullable: true
+          maxLength: 100
+        item:
+          type: string
+          minLength: 1
+          maxLength: 50
+        rate:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        quantity:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        date_of_payment:
+          type: string
+          format: date
+        method_of_payment:
+          type: string
+          minLength: 1
+          maxLength: 20
+    PatchedSetpriceRequest:
+      type: object
+      description: |-
+        Serializer for Setprice model
+        Handles serialization/deserialization of price per KG for production and farmer
+      properties:
+        production_kgPrice:
+          type: string
+          minLength: 1
+          maxLength: 10
+        farmer_kgPrice:
+          type: string
+          minLength: 1
+          maxLength: 10
+    PatchedStaffRequest:
+      type: object
+      description: |-
+        Serializer for Staff model
+        Handles serialization/deserialization of staff data
+      properties:
+        first_name:
+          type: string
+          minLength: 1
+          description: Staff member's first name
+          maxLength: 100
+        last_name:
+          type: string
+          minLength: 1
+          description: Staff member's last name
+          maxLength: 100
+        nin:
+          type: string
+          minLength: 1
+          description: National ID Number (unique identifier)
+          pattern: ^[A-Z0-9]+$
+          maxLength: 20
+        district:
+          type: string
+          minLength: 1
+          description: District where staff member resides
+          maxLength: 100
+        sub_county:
+          type: string
+          minLength: 1
+          description: Sub-county where staff member resides
+          maxLength: 100
+        parish:
+          type: string
+          minLength: 1
+          description: Parish where staff member resides
+          maxLength: 100
+        village:
+          type: string
+          minLength: 1
+          description: Village where staff member resides
+          maxLength: 100
+        gender:
+          type: string
+          minLength: 1
+          description: Gender of a worker
+          maxLength: 100
+        date_hired:
+          type: string
+          format: date
+          description: Date when staff member was hired
+        employment_type:
+          type: string
+          minLength: 1
+          description: Type of employment contract
+          maxLength: 100
+        is_active:
+          type: boolean
+          description: Whether the staff member is currently active
+    PatchedSundryingRequest:
+      type: object
+      description: |-
+        Serializer for Sundrying model
+        Includes weather and moisture tracking
+      properties:
+        name:
+          type: string
+          minLength: 1
+          description: Descriptive name for this batch
+          maxLength: 100
+        grade:
+          allOf:
+          - $ref: '#/components/schemas/GradeEnum'
+          description: |-
+            Quality grade of the coffee
+
+            * `A` - Grade A
+            * `B` - Grade B
+            * `C` - Grade C
+        cherry_colour:
+          nullable: true
+          description: |-
+            Cherry colour
+
+            * `red` - Red
+            * `green` - Green
+            * `Yellow` - Yellow
+            * `Black` - Black
+          oneOf:
+          - $ref: '#/components/schemas/CherryColour051Enum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        weather:
+          allOf:
+          - $ref: '#/components/schemas/WeatherEnum'
+          description: |-
+            Weather conditions during drying
+
+            * `sunny` - Sunny
+            * `raining` - Raining
+            * `cloudy` - Cloudy
+        temperature:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          description: Temperature in Celsius
+        moisture_content:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          description: Moisture content percentage (0-100%)
+        date:
+          type: string
+          format: date
+        weight_before:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          description: Weight in kg before drying
+        weight_after:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          description: Weight in kg after drying
+    PatchedWageRequest:
+      type: object
+      properties:
+        employee_name:
+          type: string
+          nullable: true
+          description: Employee name (can be any name)
+          maxLength: 255
+        staff:
+          type: string
+          minLength: 1
+          description: Link to registered staff member (optional)
+          nullable: true
+        days_worked:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        amount_paid:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        date_of_payment:
+          type: string
+          format: date
+        monthly_pay:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        deduction:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        noted_reason:
+          type: string
+          maxLength: 255
+    PatchedWashingRequest:
+      type: object
+      description: Serializer for Washing model
+      properties:
+        name:
+          type: string
+          minLength: 1
+          description: Descriptive name for this batch
+          maxLength: 100
+        grade:
+          allOf:
+          - $ref: '#/components/schemas/GradeEnum'
+          description: |-
+            Quality grade of the coffee
+
+            * `A` - Grade A
+            * `B` - Grade B
+            * `C` - Grade C
+        cherry_colour:
+          nullable: true
+          description: |-
+            Cherry colour
+
+            * `red` - Red
+            * `green` - Green
+            * `Yellow` - Yellow
+            * `Black` - Black
+          oneOf:
+          - $ref: '#/components/schemas/CherryColour051Enum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        date:
+          type: string
+          format: date
+        weight_before:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          description: Weight in kg before washing
+        weight_after:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          description: Weight in kg after washing
+    ResetPinRequest:
+      type: object
+      description: |-
+        Serializer for PIN reset using security question.
+        User must provide correct security answer to reset PIN.
+      properties:
+        phone:
+          type: string
+          minLength: 1
+          description: User's phone number
+        security_answer:
+          type: string
+          writeOnly: true
+          minLength: 1
+          description: Answer to security question
+        new_pin:
+          type: string
+          writeOnly: true
+          minLength: 4
+          description: New 4-digit PIN
+          maxLength: 4
+      required:
+      - new_pin
+      - phone
+      - security_answer
+    RoleEnum:
+      enum:
+      - manager
+      - block_champion
+      - admin
+      - superadmin
+      type: string
+      description: |-
+        * `manager` - Farm Manager
+        * `block_champion` - Block Champion
+        * `admin` - Admin
+        * `superadmin` - Super Admin
+    Sale:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        customer_name:
+          type: string
+          nullable: true
+          maxLength: 100
+        item:
+          type: string
+          maxLength: 50
+        rate:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        quantity:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        total_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          readOnly: true
+        amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        date_of_payment:
+          type: string
+          format: date
+        status:
+          type: string
+          readOnly: true
+        balance:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          readOnly: true
+        method_of_payment:
+          type: string
+          maxLength: 20
+      required:
+      - amount
+      - balance
+      - date_of_payment
+      - id
+      - item
+      - method_of_payment
+      - quantity
+      - rate
+      - status
+      - total_amount
+    SaleRequest:
+      type: object
+      properties:
+        customer_name:
+          type: string
+          nullable: true
+          maxLength: 100
+        item:
+          type: string
+          minLength: 1
+          maxLength: 50
+        rate:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        quantity:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        date_of_payment:
+          type: string
+          format: date
+        method_of_payment:
+          type: string
+          minLength: 1
+          maxLength: 20
+      required:
+      - amount
+      - date_of_payment
+      - item
+      - method_of_payment
+      - quantity
+      - rate
+    SecurityQuestionRequest:
+      type: object
+      description: |-
+        Serializer for retrieving a user's security question.
+        Used before PIN reset so user knows what question to answer.
+      properties:
+        phone:
+          type: string
+          minLength: 1
+          description: User's phone number
+      required:
+      - phone
+    Setprice:
+      type: object
+      description: |-
+        Serializer for Setprice model
+        Handles serialization/deserialization of price per KG for production and farmer
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        production_kgPrice:
+          type: string
+          maxLength: 10
+        farmer_kgPrice:
+          type: string
+          maxLength: 10
+      required:
+      - farmer_kgPrice
+      - id
+      - production_kgPrice
+    SetpriceRequest:
+      type: object
+      description: |-
+        Serializer for Setprice model
+        Handles serialization/deserialization of price per KG for production and farmer
+      properties:
+        production_kgPrice:
+          type: string
+          minLength: 1
+          maxLength: 10
+        farmer_kgPrice:
+          type: string
+          minLength: 1
+          maxLength: 10
+      required:
+      - farmer_kgPrice
+      - production_kgPrice
+    SetupSecurityAnswersRequest:
+      type: object
+      description: |-
+        Serializer for setting up security answers during first login.
+        User receives 3 random questions and must answer all of them.
+      properties:
+        phone:
+          type: string
+          minLength: 1
+          description: User's phone number
+        answers:
+          type: array
+          items:
+            type: object
+            additionalProperties:
+              type: string
+              minLength: 1
+            description: Dict with 'question_id' and 'answer' keys
+          description: List of {question_id, answer} pairs
+      required:
+      - answers
+      - phone
+    Staff:
+      type: object
+      description: |-
+        Serializer for Staff model
+        Handles serialization/deserialization of staff data
+      properties:
+        staff_id:
+          type: string
+          readOnly: true
+        full_name:
+          type: string
+          readOnly: true
+        full_address:
+          type: string
+          readOnly: true
+        first_name:
+          type: string
+          description: Staff member's first name
+          maxLength: 100
+        last_name:
+          type: string
+          description: Staff member's last name
+          maxLength: 100
+        nin:
+          type: string
+          description: National ID Number (unique identifier)
+          pattern: ^[A-Z0-9]+$
+          maxLength: 20
+        district:
+          type: string
+          description: District where staff member resides
+          maxLength: 100
+        sub_county:
+          type: string
+          description: Sub-county where staff member resides
+          maxLength: 100
+        parish:
+          type: string
+          description: Parish where staff member resides
+          maxLength: 100
+        village:
+          type: string
+          description: Village where staff member resides
+          maxLength: 100
+        gender:
+          type: string
+          description: Gender of a worker
+          maxLength: 100
+        date_hired:
+          type: string
+          format: date
+          description: Date when staff member was hired
+        employment_type:
+          type: string
+          description: Type of employment contract
+          maxLength: 100
+        is_active:
+          type: boolean
+          description: Whether the staff member is currently active
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - date_hired
+      - district
+      - employment_type
+      - first_name
+      - full_address
+      - full_name
+      - gender
+      - last_name
+      - nin
+      - parish
+      - staff_id
+      - sub_county
+      - updated_at
+      - village
+    StaffRequest:
+      type: object
+      description: |-
+        Serializer for Staff model
+        Handles serialization/deserialization of staff data
+      properties:
+        first_name:
+          type: string
+          minLength: 1
+          description: Staff member's first name
+          maxLength: 100
+        last_name:
+          type: string
+          minLength: 1
+          description: Staff member's last name
+          maxLength: 100
+        nin:
+          type: string
+          minLength: 1
+          description: National ID Number (unique identifier)
+          pattern: ^[A-Z0-9]+$
+          maxLength: 20
+        district:
+          type: string
+          minLength: 1
+          description: District where staff member resides
+          maxLength: 100
+        sub_county:
+          type: string
+          minLength: 1
+          description: Sub-county where staff member resides
+          maxLength: 100
+        parish:
+          type: string
+          minLength: 1
+          description: Parish where staff member resides
+          maxLength: 100
+        village:
+          type: string
+          minLength: 1
+          description: Village where staff member resides
+          maxLength: 100
+        gender:
+          type: string
+          minLength: 1
+          description: Gender of a worker
+          maxLength: 100
+        date_hired:
+          type: string
+          format: date
+          description: Date when staff member was hired
+        employment_type:
+          type: string
+          minLength: 1
+          description: Type of employment contract
+          maxLength: 100
+        is_active:
+          type: boolean
+          description: Whether the staff member is currently active
+      required:
+      - date_hired
+      - district
+      - employment_type
+      - first_name
+      - gender
+      - last_name
+      - nin
+      - parish
+      - sub_county
+      - village
+    Sundrying:
+      type: object
+      description: |-
+        Serializer for Sundrying model
+        Includes weather and moisture tracking
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        processing_id:
+          type: string
+          readOnly: true
+          description: 'Auto-generated: DRY-{DDMMYY}-{SEQ}'
+        name:
+          type: string
+          description: Descriptive name for this batch
+          maxLength: 100
+        grade:
+          allOf:
+          - $ref: '#/components/schemas/GradeEnum'
+          description: |-
+            Quality grade of the coffee
+
+            * `A` - Grade A
+            * `B` - Grade B
+            * `C` - Grade C
+        cherry_colour:
+          nullable: true
+          description: |-
+            Cherry colour
+
+            * `red` - Red
+            * `green` - Green
+            * `Yellow` - Yellow
+            * `Black` - Black
+          oneOf:
+          - $ref: '#/components/schemas/CherryColour051Enum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        weather:
+          allOf:
+          - $ref: '#/components/schemas/WeatherEnum'
+          description: |-
+            Weather conditions during drying
+
+            * `sunny` - Sunny
+            * `raining` - Raining
+            * `cloudy` - Cloudy
+        temperature:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          description: Temperature in Celsius
+        moisture_content:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          description: Moisture content percentage (0-100%)
+        date:
+          type: string
+          format: date
+        weight_before:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          description: Weight in kg before drying
+        weight_after:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          description: Weight in kg after drying
+        weight_loss:
+          type: number
+          format: double
+          description: Calculate weight loss during sundrying
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - grade
+      - id
+      - moisture_content
+      - name
+      - processing_id
+      - temperature
+      - updated_at
+      - weather
+      - weight_after
+      - weight_before
+      - weight_loss
+    SundryingRequest:
+      type: object
+      description: |-
+        Serializer for Sundrying model
+        Includes weather and moisture tracking
+      properties:
+        name:
+          type: string
+          minLength: 1
+          description: Descriptive name for this batch
+          maxLength: 100
+        grade:
+          allOf:
+          - $ref: '#/components/schemas/GradeEnum'
+          description: |-
+            Quality grade of the coffee
+
+            * `A` - Grade A
+            * `B` - Grade B
+            * `C` - Grade C
+        cherry_colour:
+          nullable: true
+          description: |-
+            Cherry colour
+
+            * `red` - Red
+            * `green` - Green
+            * `Yellow` - Yellow
+            * `Black` - Black
+          oneOf:
+          - $ref: '#/components/schemas/CherryColour051Enum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        weather:
+          allOf:
+          - $ref: '#/components/schemas/WeatherEnum'
+          description: |-
+            Weather conditions during drying
+
+            * `sunny` - Sunny
+            * `raining` - Raining
+            * `cloudy` - Cloudy
+        temperature:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          description: Temperature in Celsius
+        moisture_content:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          description: Moisture content percentage (0-100%)
+        date:
+          type: string
+          format: date
+        weight_before:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          description: Weight in kg before drying
+        weight_after:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          description: Weight in kg after drying
+      required:
+      - grade
+      - moisture_content
+      - name
+      - temperature
+      - weather
+      - weight_after
+      - weight_before
+    TokenObtainPair:
+      type: object
+      properties:
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+          readOnly: true
+      required:
+      - access
+      - refresh
+    TokenObtainPairRequest:
+      type: object
+      properties:
+        phone:
+          type: string
+          writeOnly: true
+          minLength: 1
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+      required:
+      - password
+      - phone
+    TokenRefresh:
+      type: object
+      properties:
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+      required:
+      - access
+      - refresh
+    TokenRefreshRequest:
+      type: object
+      properties:
+        refresh:
+          type: string
+          minLength: 1
+      required:
+      - refresh
+    User:
+      type: object
+      description: |-
+        Serializer for User model.
+        Used to return user information in API responses.
+        NEVER includes sensitive data like PIN or security answer.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          description: User's full name
+          maxLength: 100
+        phone:
+          type: string
+          description: Phone number used for login
+          maxLength: 20
+        role:
+          allOf:
+          - $ref: '#/components/schemas/RoleEnum'
+          description: |-
+            User's role in the system
+
+            * `manager` - Farm Manager
+            * `block_champion` - Block Champion
+            * `admin` - Admin
+            * `superadmin` - Super Admin
+        role_display:
+          type: string
+          readOnly: true
+        security_question:
+          type: string
+          description: Question for PIN reset (e.g., 'What is your mother's name?')
+          maxLength: 200
+        is_active:
+          type: boolean
+          description: User can login if active
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - phone
+      - role_display
+    VerifySecurityAnswersRequest:
+      type: object
+      description: |-
+        Serializer for verifying security answers during PIN reset.
+        User must answer all 3 security questions correctly.
+      properties:
+        phone:
+          type: string
+          minLength: 1
+          description: User's phone number
+        answers:
+          type: array
+          items:
+            type: object
+            additionalProperties:
+              type: string
+              minLength: 1
+            description: Dict with 'question_id' and 'answer' keys
+          description: List of {question_id, answer} pairs
+        new_pin:
+          type: string
+          writeOnly: true
+          minLength: 4
+          description: New 4-digit PIN
+          maxLength: 4
+      required:
+      - answers
+      - new_pin
+      - phone
+    Wage:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        employee_name:
+          type: string
+          nullable: true
+          description: Employee name (can be any name)
+          maxLength: 255
+        staff:
+          type: string
+          description: Link to registered staff member (optional)
+          nullable: true
+        staff_id:
+          type: string
+          readOnly: true
+          nullable: true
+        staff_full_name:
+          type: string
+          readOnly: true
+          nullable: true
+        days_worked:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        amount_paid:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        date_of_payment:
+          type: string
+          format: date
+        monthly_pay:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        deduction:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        noted_reason:
+          type: string
+          maxLength: 255
+        net_salary:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          readOnly: true
+      required:
+      - amount_paid
+      - date_of_payment
+      - days_worked
+      - id
+      - monthly_pay
+      - net_salary
+      - staff_full_name
+      - staff_id
+    WageRequest:
+      type: object
+      properties:
+        employee_name:
+          type: string
+          nullable: true
+          description: Employee name (can be any name)
+          maxLength: 255
+        staff:
+          type: string
+          minLength: 1
+          description: Link to registered staff member (optional)
+          nullable: true
+        days_worked:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        amount_paid:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        date_of_payment:
+          type: string
+          format: date
+        monthly_pay:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        deduction:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        noted_reason:
+          type: string
+          maxLength: 255
+      required:
+      - amount_paid
+      - date_of_payment
+      - days_worked
+      - monthly_pay
+    Washing:
+      type: object
+      description: Serializer for Washing model
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        processing_id:
+          type: string
+          readOnly: true
+          description: 'Auto-generated: WASH-{DDMMYY}-{SEQ}'
+        name:
+          type: string
+          description: Descriptive name for this batch
+          maxLength: 100
+        grade:
+          allOf:
+          - $ref: '#/components/schemas/GradeEnum'
+          description: |-
+            Quality grade of the coffee
+
+            * `A` - Grade A
+            * `B` - Grade B
+            * `C` - Grade C
+        cherry_colour:
+          nullable: true
+          description: |-
+            Cherry colour
+
+            * `red` - Red
+            * `green` - Green
+            * `Yellow` - Yellow
+            * `Black` - Black
+          oneOf:
+          - $ref: '#/components/schemas/CherryColour051Enum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        date:
+          type: string
+          format: date
+        weight_before:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          description: Weight in kg before washing
+        weight_after:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          description: Weight in kg after washing
+        weight_loss:
+          type: number
+          format: double
+          description: Calculate weight loss during washing
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - grade
+      - id
+      - name
+      - processing_id
+      - updated_at
+      - weight_after
+      - weight_before
+      - weight_loss
+    WashingRequest:
+      type: object
+      description: Serializer for Washing model
+      properties:
+        name:
+          type: string
+          minLength: 1
+          description: Descriptive name for this batch
+          maxLength: 100
+        grade:
+          allOf:
+          - $ref: '#/components/schemas/GradeEnum'
+          description: |-
+            Quality grade of the coffee
+
+            * `A` - Grade A
+            * `B` - Grade B
+            * `C` - Grade C
+        cherry_colour:
+          nullable: true
+          description: |-
+            Cherry colour
+
+            * `red` - Red
+            * `green` - Green
+            * `Yellow` - Yellow
+            * `Black` - Black
+          oneOf:
+          - $ref: '#/components/schemas/CherryColour051Enum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        date:
+          type: string
+          format: date
+        weight_before:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          description: Weight in kg before washing
+        weight_after:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          description: Weight in kg after washing
+      required:
+      - grade
+      - name
+      - weight_after
+      - weight_before
+    WeatherEnum:
+      enum:
+      - sunny
+      - raining
+      - cloudy
+      type: string
+      description: |-
+        * `sunny` - Sunny
+        * `raining` - Raining
+        * `cloudy` - Cloudy
+  securitySchemes:
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
