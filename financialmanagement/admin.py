@@ -11,11 +11,9 @@ class WageAdmin(admin.ModelAdmin):
     list_display = (
         'employee_name', 
         'date_of_payment', 
-        'monthly_pay', 
-        'deduction', 
+        'days_missed', 
         'amount_paid', 
-        '__str__',
-        'calculate_net_salary' 
+        '__str__', 
     )
 
     list_filter = ('date_of_payment', 'employee_name')
