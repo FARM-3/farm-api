@@ -7,7 +7,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('financialmanagement', '0009_staff_monthly_salary'),
-        ('financialmanagement', '0010_merge_0002_alter_sale_customer_name_0009_setprice'),
+        ('financialmanagement', '0009_setprice'),
     ]
 
     operations = [
