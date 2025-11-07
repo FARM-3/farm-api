@@ -86,6 +86,12 @@ urlpatterns = [
 
     # ---- Security Questions for PIN Reset ----
     path(
+        'user-security-questions/',
+        views.get_user_security_questions_view,
+        name='user-security-questions'
+    ),
+
+    path(
         'verify-answers-reset-pin/',
         views.verify_security_answers_and_reset_pin_view,
         name='verify-answers-reset-pin'
