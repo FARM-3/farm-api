@@ -40,11 +40,8 @@ class WageViewSet(viewsets.ModelViewSet):
             wage_data = {
                 'employee_name': employee_name,
                 'date_of_payment': request.data.get('date_of_payment'),
-                'days_worked': int(request.data.get('days_worked', 0)),
-                'monthly_pay': float(request.data.get('monthly_pay')) if request.data.get('monthly_pay') else None,
+                'days_missed': int(request.data.get('days_missed', 0)),
                 'amount_paid': float(request.data.get('amount_paid', 0)),
-                'deduction': float(request.data.get('deduction', 0)),
-                'noted_reason': request.data.get('noted_reason', ''),
             }
 
             # Optional: if a staff field is provided, link to registered staff

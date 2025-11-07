@@ -62,10 +62,7 @@ class WageSerializer(serializers.ModelSerializer):
     staff_full_name = serializers.CharField(source='staff.get_full_name', read_only=True, allow_null=True)
 
     @extend_schema_field(serializers.DecimalField(max_digits=10, decimal_places=2))
-    def get_net_salary(self, obj):
-        return obj.calculate_net_salary
-
-    net_salary = serializers.SerializerMethodField()
+    
 
     class Meta:
         model = Wage
@@ -75,16 +72,12 @@ class WageSerializer(serializers.ModelSerializer):
             'staff',
             'staff_id',
             'staff_full_name',
-            'days_worked',
+            'days_missed',
             'amount_paid',
             'date_of_payment',
-            'monthly_pay',
-            'deduction',
-            'noted_reason',
-            'net_salary'
         )
 
-        read_only_fields = ('net_salary', 'staff_id', 'staff_full_name')
+        read_only_fields = ('staff_id', 'staff_full_name')
 
 class SaleSerializer(serializers.ModelSerializer):
     class Meta:
