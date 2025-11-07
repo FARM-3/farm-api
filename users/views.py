@@ -500,6 +500,90 @@ def setup_security_answers_view(request):
 
 
 # ============================================
+# GET USER'S SECURITY QUESTIONS FOR PIN RESET
+# ============================================
+@extend_schema(
+    request=SecurityQuestionSerializer,
+    responses={200: OpenApiResponse(description="User's security questions")}
+)
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def get_user_security_questions_view(request):
+    """
+    Get the specific 3 security questions that a user answered during first login.
+    Used for PIN reset - user answers the SAME questions they set up initially.
+
+    Endpoint: POST /api/users/user-security-questions/
+
+    Request body:
+        {
+            "phone": "0700000000"
+        }
+
+    Response (success):
+        {
+            "questions": [
+                {"id": 1, "text": "What was your mother's clan name?"},
+                {"id": 3, "text": "Which year did you start coffee farming?"},
+                {"id": 5, "text": "Who is your favourite musician?"}
+            ]
+        }
+
+    Response (failure):
+        {
+            "error": "User not found" or "User has not set up security questions"
+        }
+    """
+
+    # Step 1: Validate request
+    serializer = SecurityQuestionSerializer(data=request.data)
+    if not serializer.is_valid():
+        return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    phone = serializer.validated_data['phone']
+
+    # Step 2: Find user
+    try:
+        user = User.objects.get(phone=phone)
+    except User.DoesNotExist:
+        return Response(
+            {"error": "User not found"},
+            status=status.HTTP_404_NOT_FOUND
+        )
+
+    # Step 3: Check if user has set up security answers
+    if not user.security_answers_set:
+        return Response(
+            {"error": "User has not set up security questions yet"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    # Step 4: Get the user's specific security answers (not random)
+    user_answers = UserSecurityAnswer.objects.filter(user=user)
+
+    if user_answers.count() == 0:
+        return Response(
+            {"error": "No security questions found for this user"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    # Step 5: Return the QUESTIONS (not answers) that the user answered
+    questions = []
+    for answer_record in user_answers:
+        questions.append({
+            "id": answer_record.question.id,
+            "text": answer_record.question.text
+        })
+
+    return Response({
+        "questions": questions
+    }, status=status.HTTP_200_OK)
+
+
+# ============================================
 # VERIFY SECURITY ANSWERS VIEW (PIN Reset)
 # ============================================
 @extend_schema(
