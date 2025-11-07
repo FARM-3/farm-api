@@ -5,7 +5,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from django import forms
-from .models import User
+from .models import User, SecurityQuestion, UserSecurityAnswer
 
 
 # ============================================
@@ -147,6 +147,7 @@ class UserAdmin(BaseUserAdmin):
         'role',
         'is_active',
         'has_security_question',
+        'has_security_answers_setup',
         'created_at'
     ]
     
@@ -174,9 +175,14 @@ class UserAdmin(BaseUserAdmin):
         }),
         
         # Security Section
-        ('PIN Reset Security', {
+        ('PIN Reset Security (Legacy)', {
             'fields': ('security_question', 'security_answer_raw'),
-            'description': 'Set security question and answer for PIN reset'
+            'description': 'Legacy single security question (now using 3-question system)'
+        }),
+
+        ('Security Answers Setup', {
+            'fields': ('security_answers_set',),
+            'description': 'Multi-question security setup (users answer 3 questions on first login)'
         }),
         
         # Admin Permissions (only for superusers)
@@ -207,6 +213,11 @@ class UserAdmin(BaseUserAdmin):
     def has_security_question(self, obj):
         """Show if user has set up security question."""
         return bool(obj.security_question)
+
+    @admin.display(boolean=True, description='Security Answers Set')
+    def has_security_answers_setup(self, obj):
+        """Show if user has completed 3-question security setup."""
+        return obj.security_answers_set
     
     # ---- Permissions ----
     def has_delete_permission(self, request, obj=None):
@@ -221,6 +232,77 @@ class UserAdmin(BaseUserAdmin):
         if obj:  # Editing existing user
             return ['phone']
         return []
+
+
+# ============================================
+# SECURITY QUESTION ADMIN
+# ============================================
+
+@admin.register(SecurityQuestion)
+class SecurityQuestionAdmin(admin.ModelAdmin):
+    """
+    Admin interface for managing security questions.
+    Admins can add, edit, enable/disable questions.
+    """
+
+    list_display = ['text', 'is_active', 'created_at']
+    list_filter = ['is_active', 'created_at']
+    search_fields = ['text']
+    readonly_fields = ['created_at', 'updated_at']
+
+    fieldsets = (
+        ('Question', {
+            'fields': ('text', 'is_active')
+        }),
+        ('Timestamps', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+
+    ordering = ['-created_at']
+
+
+# ============================================
+# USER SECURITY ANSWER ADMIN
+# ============================================
+
+@admin.register(UserSecurityAnswer)
+class UserSecurityAnswerAdmin(admin.ModelAdmin):
+    """
+    Admin interface for viewing user security answers.
+    Admins can view which users have answered which questions.
+    Answers are always hashed - never displayed in plain text.
+    """
+
+    list_display = ['user', 'question', 'created_at']
+    list_filter = ['user', 'question', 'created_at']
+    search_fields = ['user__phone', 'user__name', 'question__text']
+    readonly_fields = ['user', 'question', 'answer_hash', 'created_at', 'updated_at']
+
+    fieldsets = (
+        ('Information', {
+            'fields': ('user', 'question')
+        }),
+        ('Answer', {
+            'fields': ('answer_hash',),
+            'description': 'Answer is stored securely hashed - never in plain text'
+        }),
+        ('Timestamps', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+
+    ordering = ['-created_at']
+
+    def has_add_permission(self, request):
+        """Prevent manual addition of answers - only via API."""
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        """Prevent deletion of answers."""
+        return False
 
 
 # ============================================

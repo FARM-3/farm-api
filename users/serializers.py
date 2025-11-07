@@ -1,6 +1,6 @@
 # users/serializers.py
 from rest_framework import serializers
-from .models import User
+from .models import User, SecurityQuestion, UserSecurityAnswer
 import re
 
 
@@ -144,8 +144,136 @@ class SecurityQuestionSerializer(serializers.Serializer):
     Serializer for retrieving a user's security question.
     Used before PIN reset so user knows what question to answer.
     """
-    
+
     phone = serializers.CharField(
         required=True,
         help_text="User's phone number"
     )
+
+
+# ============================================
+# SECURITY QUESTION MODEL SERIALIZER
+# ============================================
+class SecurityQuestionModelSerializer(serializers.ModelSerializer):
+    """
+    Serializer for SecurityQuestion model.
+    Used to return security questions for first login setup.
+    """
+
+    class Meta:
+        model = SecurityQuestion
+        fields = ['id', 'text']
+        read_only_fields = ['id', 'text']
+
+
+# ============================================
+# SETUP SECURITY ANSWERS SERIALIZER
+# ============================================
+class SetupSecurityAnswersSerializer(serializers.Serializer):
+    """
+    Serializer for setting up security answers during first login.
+    User receives 3 random questions and must answer all of them.
+    """
+
+    phone = serializers.CharField(
+        required=True,
+        help_text="User's phone number"
+    )
+
+    answers = serializers.ListField(
+        child=serializers.DictField(
+            child=serializers.CharField(),
+            help_text="Dict with 'question_id' and 'answer' keys"
+        ),
+        help_text="List of {question_id, answer} pairs"
+    )
+
+    def validate_answers(self, value):
+        """
+        Validate that exactly 3 answers are provided.
+        """
+        if len(value) != 3:
+            raise serializers.ValidationError(
+                f"Must provide exactly 3 answers, got {len(value)}"
+            )
+
+        # Validate each answer has required fields
+        for idx, answer_dict in enumerate(value):
+            if 'question_id' not in answer_dict:
+                raise serializers.ValidationError(
+                    f"Answer {idx + 1} missing 'question_id'"
+                )
+            if 'answer' not in answer_dict:
+                raise serializers.ValidationError(
+                    f"Answer {idx + 1} missing 'answer'"
+                )
+
+            # Normalize and validate answer text
+            answer_dict['answer'] = answer_dict['answer'].strip().lower()
+
+        return value
+
+
+# ============================================
+# VERIFY SECURITY ANSWERS SERIALIZER (for PIN reset)
+# ============================================
+class VerifySecurityAnswersSerializer(serializers.Serializer):
+    """
+    Serializer for verifying security answers during PIN reset.
+    User must answer all 3 security questions correctly.
+    """
+
+    phone = serializers.CharField(
+        required=True,
+        help_text="User's phone number"
+    )
+
+    answers = serializers.ListField(
+        child=serializers.DictField(
+            child=serializers.CharField(),
+            help_text="Dict with 'question_id' and 'answer' keys"
+        ),
+        help_text="List of {question_id, answer} pairs"
+    )
+
+    new_pin = serializers.CharField(
+        required=True,
+        write_only=True,
+        min_length=4,
+        max_length=4,
+        help_text="New 4-digit PIN"
+    )
+
+    def validate_answers(self, value):
+        """
+        Validate that exactly 3 answers are provided.
+        """
+        if len(value) != 3:
+            raise serializers.ValidationError(
+                f"Must provide exactly 3 answers, got {len(value)}"
+            )
+
+        for idx, answer_dict in enumerate(value):
+            if 'question_id' not in answer_dict:
+                raise serializers.ValidationError(
+                    f"Answer {idx + 1} missing 'question_id'"
+                )
+            if 'answer' not in answer_dict:
+                raise serializers.ValidationError(
+                    f"Answer {idx + 1} missing 'answer'"
+                )
+
+            # Normalize answer
+            answer_dict['answer'] = answer_dict['answer'].strip().lower()
+
+        return value
+
+    def validate_new_pin(self, value):
+        """
+        Ensure new PIN is exactly 4 numeric digits.
+        """
+        if not re.match(r'^\d{4}$', value):
+            raise serializers.ValidationError(
+                "PIN must be exactly 4 numeric digits"
+            )
+        return value

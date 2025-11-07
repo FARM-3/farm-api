@@ -10,12 +10,15 @@ URL patterns for the users app.
 All these URLs will be prefixed with /api/users/ in the main project urls.py
 
 Available endpoints:
-- POST /api/users/login/              → Login with phone + PIN
-- POST /api/users/logout/             → Logout and invalidate session/token
-- POST /api/users/security-question/  → Get security question
-- POST /api/users/reset-pin/          → Reset PIN with security answer
-- POST /api/users/token/refresh/      → Refresh JWT access token
-- GET  /api/users/me/                 → Get current user info (requires auth)
+- POST /api/users/login/                          → Login with phone + PIN
+- POST /api/users/logout/                         → Logout and invalidate session/token
+- POST /api/users/security-question/              → Get security question
+- POST /api/users/reset-pin/                      → Reset PIN with security answer
+- POST /api/users/token/refresh/                  → Refresh JWT access token
+- GET  /api/users/me/                             → Get current user info (requires auth)
+- POST /api/users/random-security-questions/      → Get 3 random security questions (first login)
+- POST /api/users/setup-security-answers/         → Setup security answers (first login)
+- POST /api/users/verify-answers-reset-pin/       → Verify answers and reset PIN
 
 """
 
@@ -66,5 +69,25 @@ urlpatterns = [
         'logout/',
         views.logout_view,
         name='logout'
+    ),
+
+    # ---- Security Questions Setup (First Login) ----
+    path(
+        'random-security-questions/',
+        views.get_random_security_questions_view,
+        name='random-security-questions'
+    ),
+
+    path(
+        'setup-security-answers/',
+        views.setup_security_answers_view,
+        name='setup-security-answers'
+    ),
+
+    # ---- Security Questions for PIN Reset ----
+    path(
+        'verify-answers-reset-pin/',
+        views.verify_security_answers_and_reset_pin_view,
+        name='verify-answers-reset-pin'
     ),
 ]
