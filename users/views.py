@@ -571,8 +571,9 @@ def get_user_security_questions_view(request):
         )
 
     # Step 5: Return the QUESTIONS (not answers) that the user answered
+    # Return only the first 3 for consistency with first-time login flow
     questions = []
-    for answer_record in user_answers:
+    for answer_record in user_answers[:3]:  # Limit to first 3
         questions.append({
             "id": answer_record.question.id,
             "text": answer_record.question.text
