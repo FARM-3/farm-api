@@ -192,12 +192,9 @@ class Wage(models.Model):
         help_text="Link to registered staff member (optional)"
     )
 
-    days_worked = models.IntegerField()
+    days_missed = models.IntegerField( help_text="Number of days a staff member missed", default=0)
     amount_paid = models.IntegerField()
     date_of_payment = models.DateField()
-    monthly_pay = models.IntegerField()
-    deduction = models.IntegerField(default=0)
-    noted_reason = models.CharField(max_length=255, default="", blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
 
@@ -210,22 +207,20 @@ class Wage(models.Model):
         name = self.employee_name if self.employee_name else "Unknown"
         return f"Wages for {name} - {self.amount_paid}"
 
-    @property
-    def calculate_net_salary(self):
-        # Ensure correct precedence and fallback to 0 when values are falsy
-        return (self.amount_paid or 0) - (self.deduction or 0)
-    
     def save(self, *args, **kwargs):
         """
         Override save to add any custom logic
         """
+
+        if self.staff:
+            daily_rate = self.staff.monthly_salary / 30
+            self.amount_paid = int(daily_rate * (30 - self.days_missed))
+
         # Ensure values are not negative
         if self.amount_paid < 0:
             raise ValueError("Amount paid cannot be negative")
-        if self.deduction < 0:
-            raise ValueError("Deduction cannot be negative")
-        if self.days_worked < 0:
-            raise ValueError("Days worked cannot be negative")
+        if self.days_missed < 0:
+            raise ValueError("Days missed cannot be negative")
             
         super().save(*args, **kwargs)
     
