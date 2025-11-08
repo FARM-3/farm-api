@@ -1,4 +1,4 @@
-from django.db import models
+from django.db import models, transaction
 from decimal import Decimal
 from django.core.validators import RegexValidator
 
@@ -145,20 +145,31 @@ class Staff(models.Model):
         Generate staff ID in format: RF + 3-digit number
         - RF: Prefix for staff
         - 3-digit number: Sequential number starting from 001
+        Uses atomic transaction to prevent duplicate IDs
         """
-        # Get the count of all staff to determine sequence
-        count = Staff.objects.count()
+        with transaction.atomic():
+            # Use select_for_update to lock the table and prevent race conditions
+            latest_staff = Staff.objects.select_for_update().order_by('-staff_id').first()
 
-        # Generate 3-digit number (001, 002, ..., 999)
-        sequence_number = count + 1  # Start from 1
+            if latest_staff and latest_staff.staff_id.startswith('RF'):
+                try:
+                    # Extract the number from the last staff_id (e.g., "RF003" -> 3)
+                    last_number = int(latest_staff.staff_id[2:])
+                    sequence_number = last_number + 1
+                except (ValueError, IndexError):
+                    # Fallback if extraction fails
+                    sequence_number = Staff.objects.count() + 1
+            else:
+                # If no staff exists, start from 1
+                sequence_number = Staff.objects.count() + 1
 
-        # Format as 3-digit with leading zeros
-        formatted_number = f"{sequence_number:03d}"
+            # Generate 3-digit number (001, 002, ..., 999)
+            formatted_number = f"{sequence_number:03d}"
 
-        # Combine prefix and number
-        staff_id = f"RF{formatted_number}"
+            # Combine prefix and number
+            staff_id = f"RF{formatted_number}"
 
-        return staff_id
+            return staff_id
     
     def get_full_name(self):
         """
