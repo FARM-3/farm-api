@@ -26,10 +26,11 @@ class UserSerializer(serializers.ModelSerializer):
             'role',
             'role_display',
             'security_question',  # Question is OK to show, answer is NOT
+            'security_answers_set',  # Flag to indicate if user has set up security questions
             'is_active',
             'created_at'
         ]
-        read_only_fields = ['id', 'created_at']
+        read_only_fields = ['id', 'created_at', 'security_answers_set']
 
 
 # ============================================
