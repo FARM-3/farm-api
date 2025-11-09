@@ -50,6 +50,10 @@ urlpatterns = [
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 ]
 
+# Serve static files during development and in production if DEBUG is True
+if settings.DEBUG:
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+
 # Available endpoints for users app:
     # - POST /api/users/login/
     # - POST /api/users/security-question/
