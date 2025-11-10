@@ -2,6 +2,11 @@ from django.db import models
 from django.core.validators import RegexValidator, MinValueValidator, MaxValueValidator
 import random
 import requests
+import qrcode
+from io import BytesIO
+from django.core.files import File
+from django.core.files.base import ContentFile
+import base64
 
 # Create your models here.
 class FarmerRegistration(models.Model):
@@ -60,36 +65,61 @@ class FarmerRegistration(models.Model):
     gps_coordinates = models.CharField(max_length=100, blank=True) # GPS coordinates
     nearest_landmark = models.CharField(max_length=100, blank=True) # Nearest landmark
     farmer_id = models.CharField(max_length=100, primary_key=True)          # Unique identifier for the farmer
+    qr_code = models.TextField(blank=True, null=True)  # Base64 encoded QR code image
 
     def __str__(self):
         return f"{self.first_name} {self.last_name} ({self.farmer_id or 'New'})"
 
     def save(self, *args, **kwargs):
-        
+
         self.full_clean()
 
-        
+
         if not self.farmer_id:
-            
-            
+
+
             first_initial = self.first_name[0].upper() if self.first_name else 'X'
             last_initial = self.last_name[0].upper() if self.last_name else 'X'
-            
+
             # Generate 3 random digits
             random_digits = ''.join(random.choices('0123456789', k=3))
-            
+
             # Assemble the unique ID
             new_unique_id = f"{first_initial}{last_initial}{random_digits}A"
-            
+
             # Check if this generated ID already exists in the database
-            
+
             while FarmerRegistration.objects.filter(farmer_id=new_unique_id).exists():
-                
+
                 random_digits = ''.join(random.choices('0123456789', k=3))
                 new_unique_id = f"{first_initial}{last_initial}{random_digits}A"
-            
+
             # Assign the unique ID
             self.farmer_id = new_unique_id
+
+        # Generate QR code if farmer_id exists and qr_code doesn't
+        if self.farmer_id and not self.qr_code:
+            # Create QR code instance
+            qr = qrcode.QRCode(
+                version=1,
+                error_correction=qrcode.constants.ERROR_CORRECT_L,
+                box_size=10,
+                border=4,
+            )
+            qr.add_data(self.farmer_id)
+            qr.make(fit=True)
+
+            # Create an image from the QR Code
+            img = qr.make_image(fill_color="black", back_color="white")
+
+            # Save image to a BytesIO buffer
+            buffer = BytesIO()
+            img.save(buffer, format='PNG')
+            buffer.seek(0)
+
+            # Encode to base64
+            img_base64 = base64.b64encode(buffer.getvalue()).decode('utf-8')
+            self.qr_code = f"data:image/png;base64,{img_base64}"
         
         
         if not self.gps_coordinates:

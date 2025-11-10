@@ -222,17 +222,12 @@ class Wage(models.Model):
         """
         Override save to add any custom logic
         """
-
-        if self.staff:
-            daily_rate = self.staff.monthly_salary / 30
-            self.amount_paid = int(daily_rate * (30 - self.days_missed))
-
         # Ensure values are not negative
         if self.amount_paid < 0:
             raise ValueError("Amount paid cannot be negative")
         if self.days_missed < 0:
             raise ValueError("Days missed cannot be negative")
-            
+
         super().save(*args, **kwargs)
     
 class Sale(models.Model):
