@@ -268,51 +268,84 @@ class Sundrying(models.Model):
 
 class Bagging(models.Model):
     """
-    Final stage: Bagging process
-    Tracks coffee batches during final packaging
+    Final stage in coffee processing - records bagging details for traceability
     """
-    processing_id = models.CharField(
-        max_length=50,
-        unique=True,
-        help_text="Unique ID for this bagging batch (e.g., BAG-2024-001)"
-    )
-    
-    name = models.CharField(
+    lot_id = models.CharField(
         max_length=100,
-        help_text="Descriptive name for this batch"
+        unique=True,
+        db_index=True,
+        help_text="Unique identifier for the coffee lot"
     )
-    
-    grade = models.CharField(
-        max_length=1,
-        choices=GRADE_CHOICES,
-        help_text="Quality grade of the coffee"
-    )
-    
-    moisture_content = models.DecimalField(
-        max_digits=5,
-        decimal_places=2,
-        validators=[MinValueValidator(0), MaxValueValidator(100)],
-        help_text="Final moisture content percentage (0-100%)"
-    )
-    
-    date = models.DateField(
-        help_text="Date when bagging occurred"
-    )
-    
     weight = models.DecimalField(
         max_digits=10,
         decimal_places=2,
-        validators=[MinValueValidator(0)],
-        help_text="Final weight in kg"
+        validators=[MinValueValidator(0.01)],
+        help_text="Total weight in kilograms"
     )
-    
+    moisture = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        validators=[MinValueValidator(0), MinValueValidator(100)],
+        help_text="Moisture content percentage"
+    )
+    number_of_bags = models.PositiveIntegerField(
+        validators=[MinValueValidator(1)],
+        help_text="Total number of bags"
+    )
+    bagging_date = models.DateTimeField(
+        default=timezone.now,
+        help_text="Date and time when bagging was completed"
+    )
+    bagged_by = models.CharField(
+        max_length=200,
+        help_text="Name of the person/team who performed bagging"
+    )
+    notes = models.TextField(
+        blank=True,
+        null=True,
+        help_text="Additional notes or observations"
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    
+
     class Meta:
-        ordering = ['-date']
-        verbose_name = "Bagging Process"
-        verbose_name_plural = "Bagging Processes"
-    
+        ordering = ['-bagging_date']
+        verbose_name = 'Bagging Record'
+        verbose_name_plural = 'Bagging Records'
+        indexes = [
+            models.Index(fields=['-bagging_date']),
+            models.Index(fields=['lot_id']),
+        ]
+
     def __str__(self):
-        return f"{self.processing_id} - {self.name}"
+        return f"Lot {self.lot_id} - {self.number_of_bags} bags ({self.weight}kg)"
+
+    @property
+    def average_weight_per_bag(self):
+        """Calculate average weight per bag"""
+        if self.number_of_bags > 0:
+            return round(self.weight / self.number_of_bags, 2)
+        return 0
+
+    def clean(self):
+        """Validate data before saving"""
+        from django.core.exceptions import ValidationError
+        
+        if self.moisture < 0 or self.moisture > 100:
+            raise ValidationError({
+                'moisture': 'Moisture content must be between 0 and 100 percent'
+            })
+        
+        if self.weight <= 0:
+            raise ValidationError({
+                'weight': 'Weight must be greater than 0'
+            })
+        
+        if self.number_of_bags <= 0:
+            raise ValidationError({
+                'number_of_bags': 'Number of bags must be at least 1'
+            })
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
