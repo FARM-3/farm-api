@@ -10,21 +10,15 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        # STEP A: Manually perform the casting first using RunSQL
-        migrations.RunSQL(
-            # The SQL to convert the column type with the USING clause
-            "ALTER TABLE aggregation_farmerharvest ALTER COLUMN amount_paid TYPE numeric USING amount_paid::numeric;",
-        ),
-        # STEP B: Alter the field parameters (max_digits, etc.)
+        # Alter the field parameters (max_digits, etc.)
         migrations.AlterField(
             model_name='farmerharvest',
             name='amount_paid',
             field=models.DecimalField(
-                decimal_places=2, 
-                help_text='Amount paid to the farmer', 
-                max_digits=15, 
+                decimal_places=2,
+                help_text='Amount paid to the farmer',
+                max_digits=15,
                 null=True
-                # IMPORTANT: DO NOT include 'using' here!
             ),
         ),
     ]
