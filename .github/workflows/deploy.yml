@@ -17,6 +17,7 @@ jobs:
           host: ${{ secrets.DO_HOST }}
           username: ${{ secrets.DO_USER }}
           key: ${{ secrets.DO_SSH_KEY }}
+          passphrase: ""
           script: |
             cd /home/rugyeyo/backend
             git pull origin main
