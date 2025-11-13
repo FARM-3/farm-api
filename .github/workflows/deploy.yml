@@ -1,5 +1,6 @@
 name: Deploy to Digital Ocean
 
+# Automatically deploy when code is pushed to main branch
 on:
   push:
     branches:
