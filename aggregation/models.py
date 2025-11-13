@@ -164,7 +164,7 @@ class FarmerHarvest(models.Model):
     gps_coordinates_delivery = models.CharField(max_length=100, null=True, blank=True)  # GPS coordinates from device (lat,lon)
     price_per_kg = models.IntegerField(null=True)               # Price per kg of the harvest
     amount_paid = models.DecimalField(
-        max_digits=10,
+        max_digits=15,
         decimal_places=2,
         null=True,
         help_text="Amount paid to the farmer"
