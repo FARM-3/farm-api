@@ -153,12 +153,22 @@ class FarmerRegistration(models.Model):
 class FarmerHarvest(models.Model):
     name = models.CharField(max_length=100)
     coffee_type = models.CharField(max_length=100, null=True)       # Type of coffee
-    weight_on_delivery = models.IntegerField(null=True)         # Weight of the harvest
-    date_of_delivery = models.CharField(max_length=100, null=True)    # Date of delivery
+    weight_on_delivery = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        help_text="Weight of harvest in kg (2 decimal places)"
+    )         # Weight of the harvest
+    date_of_delivery = models.DateField(null=True)    # Date of delivery
     location_of_delivery = models.CharField(max_length=100, null=True, blank=True)  # Location of delivery (address)
     gps_coordinates_delivery = models.CharField(max_length=100, null=True, blank=True)  # GPS coordinates from device (lat,lon)
     price_per_kg = models.IntegerField(null=True)               # Price per kg of the harvest
-    amount_paid = models.CharField(max_length=100, null=True)         # Amount paid to the farmer
+    amount_paid = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        help_text="Amount paid to the farmer"
+    )         # Amount paid to the farmer
     paid_by = models.CharField(max_length=100, null=True)             # Entity that made the payment
     harvest_id = models.CharField(max_length=100, primary_key=True)          # Unique identifier for the harvest               # Number of bags delivered
 
@@ -197,6 +207,33 @@ class FarmerHarvest(models.Model):
                 logger.warning(f"Failed to reverse geocode delivery location: {str(e)}")
                 pass
 
+        # Check if this is a new harvest (create) or an update
+        is_new = self.pk is None
+
         super().save(*args, **kwargs)
+
+        # Auto-create an expense record when a farmer harvest is first created
+        if is_new:
+            try:
+                from financialmanagement.models import Expense
+                from decimal import Decimal
+
+                # Create an expense record using only existing Expense model fields
+                Expense.objects.create(
+                    expense_name=f"Aggregation - {self.name}",
+                    category="Feed/Seed",
+                    item=self.coffee_type or "Coffee",
+                    supplier=self.name,
+                    description=f"{self.weight_on_delivery}kg of {self.coffee_type or 'coffee'} from {self.name}",
+                    amount=Decimal(str(self.amount_paid)) if self.amount_paid else Decimal('0.00'),
+                    date=self.date_of_delivery,
+                    location=self.location_of_delivery or "Farm"
+                )
+            except Exception as e:
+                # Log the error but don't fail the harvest save
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.warning(f"Failed to auto-create expense for harvest {self.harvest_id}: {str(e)}")
+                pass
 
     

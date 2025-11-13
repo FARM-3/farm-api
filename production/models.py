@@ -88,11 +88,38 @@ class Harvests(models.Model):
 
     def save(self, *args, **kwargs):
         """
-        Override save to auto-generate harvest_id before saving
+        Override save to auto-generate harvest_id before saving and auto-create an expense
         """
+        is_new = not self.harvest_id or not self.pk
+
         if not self.harvest_id:
             self.harvest_id = self.generate_harvest_id()
+
         super().save(*args, **kwargs)
+
+        # Auto-create an expense record when a production harvest is first created
+        if is_new:
+            try:
+                from financialmanagement.models import Expense
+                from decimal import Decimal
+
+                # Create an expense record using only existing Expense model fields
+                Expense.objects.create(
+                    expense_name=f"Production - {self.worker_name}",
+                    category="Feed/Seed",
+                    item="Coffee",
+                    supplier=self.worker_name,
+                    description=f"Production harvest: {self.weight_on_delivery}kg from block {self.block_id}",
+                    amount=Decimal(str(self.amount_paid)) if self.amount_paid else Decimal('0.00'),
+                    date=self.date_of_delivery,
+                    location=self.block_id or "Farm"
+                )
+            except Exception as e:
+                # Log the error but don't fail the harvest save
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.warning(f"Failed to auto-create expense for harvest {self.harvest_id}: {str(e)}")
+                pass
 
     def generate_harvest_id(self):
         """

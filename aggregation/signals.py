@@ -39,17 +39,17 @@ def log_harvest_activity(sender, instance, created, **kwargs):
     """
     if created:
         action = Activity.ACTION_CREATED
-        object_repr = f"Harvest: {instance.weight_on_delivery}kg from {instance.worker_name or 'Worker'}"
+        object_repr = f"Harvest: {instance.weight_on_delivery}kg from {instance.name or 'Farmer'}"
     else:
         action = Activity.ACTION_UPDATED
-        object_repr = f"Harvest: {instance.weight_on_delivery}kg from {instance.worker_name or 'Worker'}"
+        object_repr = f"Harvest: {instance.weight_on_delivery}kg from {instance.name or 'Farmer'}"
 
     content_type = ContentType.objects.get_for_model(FarmerHarvest)
     Activity.objects.create(
         user=None,  # Will be populated from request context if available
         action=action,
         content_type=content_type,
-        object_id=instance.id,
+        object_id=instance.harvest_id,  # FIXED: Use harvest_id as primary key
         object_repr=object_repr,
     )
 
@@ -75,12 +75,12 @@ def log_harvest_deletion(sender, instance, **kwargs):
     """
     Log when a FarmerHarvest is deleted.
     """
-    object_repr = f"Harvest: {instance.weight_on_delivery}kg from {instance.worker_name or 'Worker'}"
+    object_repr = f"Harvest: {instance.weight_on_delivery}kg from {instance.name or 'Farmer'}"
     content_type = ContentType.objects.get_for_model(FarmerHarvest)
     Activity.objects.create(
         user=None,
         action=Activity.ACTION_DELETED,
         content_type=content_type,
-        object_id=instance.id,
+        object_id=instance.harvest_id,  # FIXED: Use harvest_id as primary key
         object_repr=object_repr,
     )
