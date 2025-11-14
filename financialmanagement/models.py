@@ -256,7 +256,10 @@ class Sale(models.Model):
 
     def get_customer_name(self):
         """Return the customer's full name"""
-        return f"{self.first_name} {self.last_name}".strip() 
+        first = self.first_name or ""
+        last = self.last_name or ""
+        full_name = f"{first} {last}".strip()
+        return full_name if full_name else "N/A" 
 
     def save(self, *args, **kwargs):
         self.total_amount = self.rate * self.quantity
