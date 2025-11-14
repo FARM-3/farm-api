@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(python manage.py runserver:*)"
+      "Bash(python manage.py runserver:*)",
+      "Bash(. venv/Scripts/activate)",
+      "Bash(python manage.py migrate:*)"
     ],
     "deny": [],
     "ask": []
