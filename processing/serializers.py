@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Fermenting,Washing,Sundrying,Bagging
+from .models import Fermenting, Washing, Drying, Bagging
 
 class FermentingSerializer(serializers.ModelSerializer):
     """
@@ -53,52 +53,62 @@ class WashingSerializer(serializers.ModelSerializer):
         read_only_fields = ['created_at', 'updated_at']     
     
 
-class SundryingSerializer(serializers.ModelSerializer):
+class DryingSerializer(serializers.ModelSerializer):
     """
-    Serializer for Sundrying model
-    Includes weather and moisture tracking
+    Serializer for Drying model
+    Tracks daily drying progress with auto-calculated fields
+    All auto-generated fields are read-only
     """
-    weight_loss = serializers.ReadOnlyField()
-    
+
     class Meta:
-        model = Sundrying
+        model = Drying
         fields = [
             'id',
+            # User-provided fields
             'processing_id',
-            'name',
-            'grade',
-            'cherry_colour',
-            'weather',
-            'temperature',
-            'moisture_content',
+            'lot_id',
             'date',
+            'weather_condition',
+            'moisture_content',
+            'weight',
+            'moisture_before',
             'weight_before',
-            'weight_after',
-            'weight_loss',
+            # Auto-generated fields (read-only)
+            'processing_type',
+            'type_of_coffee',
+            'days',
+            'moisture_deviation',
+            'rate_of_drying',
+            'rate_of_weightloss',
+            'outturn',
+            'outturn_deviation',
+            # Metadata
             'created_at',
             'updated_at'
         ]
-        read_only_fields = ['created_at', 'updated_at']
-    
-    def validate(self, data):
+        read_only_fields = [
+            'lot_id',
+            'processing_type',
+            'type_of_coffee',
+            'days',
+            'moisture_deviation',
+            'rate_of_drying',
+            'rate_of_weightloss',
+            'outturn',
+            'outturn_deviation',
+            'created_at',
+            'updated_at'
+        ]
+
+    def validate_moisture_content(self, value):
         """
-        Validate weight and moisture content
+        Validate that moisture content is in valid range
         """
-        # Check weight consistency
-        if 'weight_before' in data and 'weight_after' in data:
-            if data['weight_after'] > data['weight_before']:
-                raise serializers.ValidationError(
-                    "Weight after sundrying cannot exceed weight before"
-                )
-        
-        # Moisture content should be within reasonable range
-        if 'moisture_content' in data:
-            if data['moisture_content'] < 0 or data['moisture_content'] > 100:
-                raise serializers.ValidationError(
-                    "Moisture content must be between 0 and 100%"
-                )
-        
-        return data
+        if value < 0 or value > 100:
+            raise serializers.ValidationError(
+                "Moisture content must be between 0 and 100%"
+            )
+        return value
     
 class BaggingSerializer(serializers.ModelSerializer):
     """

@@ -294,6 +294,8 @@ class Expense(models.Model):
     supplier = models.CharField(max_length=50)
     description = models.CharField(max_length=255)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
+    unit_cost = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    quantity = models.IntegerField(null=True, blank=True)
     date = models.DateField()
     location = models.CharField(max_length=100)
 

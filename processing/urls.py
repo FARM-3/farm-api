@@ -3,7 +3,7 @@ from rest_framework.routers import DefaultRouter
 from .views import (
     FermentingViewSet,
     WashingViewSet,
-    SundryingViewSet,
+    DryingViewSet,
     BaggingViewSet
 )
 
@@ -15,7 +15,7 @@ router = DefaultRouter()
 # The second is the ViewSet class
 router.register(r'fermenting', FermentingViewSet, basename='fermenting')
 router.register(r'washing', WashingViewSet, basename='washing')
-router.register(r'sundrying', SundryingViewSet, basename='sundrying')
+router.register(r'drying', DryingViewSet, basename='drying')
 router.register(r'bagging', BaggingViewSet, basename='bagging')
 
 

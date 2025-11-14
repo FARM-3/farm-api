@@ -115,6 +115,15 @@ class SetpriceViewSet(viewsets.ModelViewSet):
     serializer_class = SetpriceSerializer
     permission_classes = [IsSuperAdmin]  # You can later restrict this to admins only
 
+    def get_permissions(self):
+        """
+        Allow anyone to read prices (GET, retrieve, list, current),
+        but only SuperAdmins can create/update/delete.
+        """
+        if self.action in ['list', 'retrieve', 'current']:
+            return [AllowAny()]
+        return [IsSuperAdmin()]
+
     def create(self, request, *args, **kwargs):
         """
         Custom create: add a new price record.

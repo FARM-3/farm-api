@@ -8,11 +8,11 @@ from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 
 from aggregation import models
-from .models import Fermenting,Washing,Sundrying,Bagging
+from .models import Fermenting, Washing, Drying, Bagging
 from .serializers import (
     FermentingSerializer,
     WashingSerializer,
-    SundryingSerializer,
+    DryingSerializer,
     BaggingSerializer
 
 )
@@ -100,36 +100,19 @@ class WashingViewSet(viewsets.ModelViewSet):
         })
     
 
-class SundryingViewSet(viewsets.ModelViewSet):
+class DryingViewSet(viewsets.ModelViewSet):
     """
-    ViewSet for Sundrying process
-    Includes weather and moisture tracking
+    ViewSet for Drying process
+    Includes daily drying progress tracking with auto-calculated fields
     """
-    queryset = Sundrying.objects.all()
-    serializer_class = SundryingSerializer
-    
+    queryset = Drying.objects.all()
+    serializer_class = DryingSerializer
+
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ['grade', 'weather', 'date']
-    search_fields = ['processing_id', 'name']
-    ordering_fields = ['date', 'temperature', 'moisture_content', 'created_at']
-    ordering = ['-date']
-    
-    @action(detail=False, methods=['get'])
-    def by_weather(self, request):
-        """
-        Custom endpoint: /api/sundrying/by_weather/
-        Groups sundrying records by weather conditions
-        """
-        from django.db.models import Count, Avg
-        
-        weather_stats = self.get_queryset().values('weather').annotate(
-            count=Count('id'),
-            avg_temperature=Avg('temperature'),
-            avg_moisture=Avg('moisture_content'),
-            avg_weight_loss=Avg(models.F('weight_before') - models.F('weight_after'))
-        )
-        
-        return Response(weather_stats)
+    filterset_fields = ['processing_id', 'lot_id', 'date']
+    search_fields = ['processing_id', 'lot_id']
+    ordering_fields = ['date', 'moisture_content', 'moisture_deviation', 'outturn', 'created_at']
+    ordering = ['-date', '-lot_id']
     
 
 class BaggingViewSet(viewsets.ModelViewSet):

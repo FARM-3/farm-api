@@ -23,6 +23,10 @@ RUN pip install -r requirements.txt
 # Copy the rest of the application code into the container
 COPY . /app/
 
+# Collect static files (CSS, JS, images for Django admin and DRF)
+# This gathers all static files into STATIC_ROOT directory for production serving
+RUN python manage.py collectstatic --noinput --clear
+
 # Expose the port Gunicorn will listen on (Django's default)
 EXPOSE 8000
 
