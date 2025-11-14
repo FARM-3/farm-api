@@ -27,7 +27,7 @@ def log_farmer_activity(sender, instance, created, **kwargs):
         user=None,  # Will be populated from request context if available
         action=action,
         content_type=content_type,
-        object_id=instance.id,
+        object_id=instance.farmer_id,  # FIXED: Use farmer_id as primary key (not id)
         object_repr=object_repr,
     )
 
@@ -65,7 +65,7 @@ def log_farmer_deletion(sender, instance, **kwargs):
         user=None,
         action=Activity.ACTION_DELETED,
         content_type=content_type,
-        object_id=instance.id,
+        object_id=instance.farmer_id,  # FIXED: Use farmer_id as primary key (not id)
         object_repr=object_repr,
     )
 
