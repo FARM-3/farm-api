@@ -1,11 +1,11 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.views.generic import ListView
 from .models import FarmerRegistration
 from .models import FarmerHarvest
 from .serializers import FarmerRegistrationSerializer
 from .serializers import FarmerHarvestSerializer
 from rest_framework import viewsets
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, action
 from rest_framework.response import Response
 from rest_framework import status
 import requests
@@ -21,6 +21,33 @@ class FarmerListView(ListView):
 class FarmerViewSet(viewsets.ModelViewSet):
     queryset = FarmerRegistration.objects.all()
     serializer_class = FarmerRegistrationSerializer
+
+    @action(detail=False, methods=['post'], url_path='scan-qr')
+    def scan_qr(self, request):
+        """
+        Scan QR code and retrieve farmer details.
+        Expects JSON body: {"farmer_id": "RF003"}
+        """
+        farmer_id = request.data.get('farmer_id')
+
+        if not farmer_id:
+            return Response(
+                {'error': 'farmer_id is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            farmer = get_object_or_404(FarmerRegistration, farmer_id=farmer_id)
+            serializer = self.get_serializer(farmer)
+            return Response({
+                'success': True,
+                'farmer': serializer.data
+            })
+        except Exception as e:
+            return Response(
+                {'error': f'Farmer not found: {str(e)}'},
+                status=status.HTTP_404_NOT_FOUND
+            )
 
 class FarmerHarvestListView(ListView):
     model = FarmerHarvest

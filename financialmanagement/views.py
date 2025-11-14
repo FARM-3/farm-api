@@ -22,58 +22,6 @@ class WageViewSet(viewsets.ModelViewSet):
     serializer_class = WageSerializer
     permission_classes = [AllowAny]
 
-    def create(self, request, *args, **kwargs):
-        """
-        Create a new wage payment record
-        Accepts employee_name as free text
-        Optionally links to staff if staff_id is provided in 'staff' field
-        """
-        employee_name = request.data.get('employee_name')
-
-        if not employee_name:
-            return Response(
-                {'error': 'Employee name is required'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        try:
-            wage_data = {
-                'employee_name': employee_name,
-                'date_of_payment': request.data.get('date_of_payment'),
-                'days_missed': int(request.data.get('days_missed', 0)),
-                'amount_paid': float(request.data.get('amount_paid', 0)),
-            }
-
-            # Optional: if a staff field is provided, link to registered staff
-            staff_id = request.data.get('staff')
-            if staff_id:
-                try:
-                    staff = Staff.objects.get(staff_id=staff_id)
-                    wage_data['staff'] = staff.staff_id
-                except Staff.DoesNotExist:
-                    pass  # Just ignore if staff not found, still create the wage record
-
-            serializer = self.get_serializer(data=wage_data)
-            serializer.is_valid(raise_exception=True)
-            self.perform_create(serializer)
-
-            headers = self.get_success_headers(serializer.data)
-            return Response(
-                serializer.data,
-                status=status.HTTP_201_CREATED,
-                headers=headers
-            )
-
-        except ValueError as e:
-            return Response(
-                {'error': f'Invalid number format: {str(e)}'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        except Exception as e:
-            return Response(
-                {'error': str(e)},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
     @action(detail=False, methods=['get'])
     def by_employee(self, request):
         """
@@ -93,7 +41,7 @@ class WageViewSet(viewsets.ModelViewSet):
         
 class SaleViewSet(viewsets.ModelViewSet):
 
-    queryset = Sale.objects.all().order_by('-date_of_payment', 'customer_name')
+    queryset = Sale.objects.all().order_by('-date_of_payment', 'last_name', 'first_name')
     serializer_class = SaleSerializer
     permission_classes = [AllowAny]
 

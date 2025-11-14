@@ -22,22 +22,23 @@ class WageAdmin(admin.ModelAdmin):
 
 class SaleAdmin(admin.ModelAdmin):
     list_display = (
-        'customer_name', 
-        'item', 
-        'rate', 
-        'quantity', 
-        'total_amount', 
-        'amount', 
-        'date_of_payment', 
-        'status', 
-        'balance', 
+        'first_name',
+        'last_name',
+        'item',
+        'rate',
+        'quantity',
+        'total_amount',
+        'amount',
+        'date_of_payment',
+        'status',
+        'balance',
         'method_of_payment',
         '__str__'
     )
 
-    list_filter = ('date_of_payment', 'customer_name', 'status')
+    list_filter = ('date_of_payment', 'last_name', 'status')
 
-    search_fields = ('customer_name', 'item', 'method_of_payment')
+    search_fields = ('first_name', 'last_name', 'item', 'method_of_payment')
 
 class ExpenseAdmin(admin.ModelAdmin):
     list_display = (
