@@ -23,6 +23,208 @@ WEATHER_CHOICES = [
 ]
 
 
+class Ripeness(models.Model):
+    """
+    Quality Control - Ripeness Test
+    First step of processing: tests the ripeness of coffee cherries
+    Measures percentage of red cherries in a sample
+    """
+    # Foreign key to Harvests (production app)
+    harvest = models.OneToOneField(
+        'production.Harvests',
+        on_delete=models.CASCADE,
+        primary_key=True,
+        related_name='ripeness_test',
+        help_text="Harvest batch being tested for ripeness"
+    )
+
+    # Test date
+    date = models.DateField(
+        default=timezone.now,
+        help_text="Date when ripeness test was performed"
+    )
+
+    # Sample size (default 100 cherries)
+    sample_size = models.PositiveIntegerField(
+        default=100,
+        validators=[MinValueValidator(1)],
+        help_text="Total number of cherries in sample (default: 100)"
+    )
+
+    # Number of red cherries counted
+    no_of_redcherry = models.PositiveIntegerField(
+        validators=[MinValueValidator(0)],
+        help_text="Number of red cherries found in the sample"
+    )
+
+    # Ripeness score (auto-calculated percentage)
+    ripeness_score = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        editable=False,
+        validators=[MinValueValidator(0), MaxValueValidator(100)],
+        help_text="Auto-calculated: (no_of_redcherry / sample_size) * 100"
+    )
+
+    # Metadata timestamps
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-date']
+        verbose_name = "Ripeness Test"
+        verbose_name_plural = "Ripeness Tests"
+
+    def __str__(self):
+        return f"{self.harvest.harvest_id} - Ripeness: {self.ripeness_score}%"
+
+    def save(self, *args, **kwargs):
+        """Auto-calculate ripeness_score before saving"""
+        # Calculate ripeness percentage
+        if self.sample_size > 0:
+            self.ripeness_score = (self.no_of_redcherry / self.sample_size) * 100
+        else:
+            self.ripeness_score = 0
+
+        super().save(*args, **kwargs)
+
+    def clean(self):
+        """Validate that no_of_redcherry doesn't exceed sample_size"""
+        from django.core.exceptions import ValidationError
+        if self.no_of_redcherry > self.sample_size:
+            raise ValidationError({
+                'no_of_redcherry': f'Number of red cherries ({self.no_of_redcherry}) cannot exceed sample size ({self.sample_size})'
+            })
+
+
+class Floating(models.Model):
+    """
+    Quality Control - Floating Test
+    Second step: separates coffee into grades based on floating behavior
+    Grade A: netweight (sinkers), Grade B: floaters
+    """
+    # Primary key: auto-generated grade_id (format: GRA1411A00 or GRB1010B22)
+    grade_id = models.CharField(
+        max_length=20,
+        unique=True,
+        editable=False,
+        primary_key=True,
+        help_text="Auto-generated: GR{A/B}{DDMM}{Letter}{00-99} (e.g., GRA1411A00)"
+    )
+
+    # Foreign key to Harvests (production app)
+    harvest = models.ForeignKey(
+        'production.Harvests',
+        on_delete=models.CASCADE,
+        related_name='floating_tests',
+        help_text="Harvest batch being tested for floating"
+    )
+
+    # Grade (A for netweight/sinkers, B for floaters)
+    # No choices - frontend will handle validation
+    grade = models.CharField(
+        max_length=50,
+        help_text="Grade classification (e.g., A for netweight, B for floaters)"
+    )
+
+    # Weight after floating test
+    weight = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        validators=[MinValueValidator(0)],
+        help_text="Weight in kg after floating test"
+    )
+
+    # Test date
+    date = models.DateField(
+        default=timezone.now,
+        help_text="Date when floating test was performed"
+    )
+
+    # Ripeness score (auto-filled from related Ripeness test)
+    ripeness_score = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(0), MaxValueValidator(100)],
+        help_text="Auto-filled from ripeness test of same harvest"
+    )
+
+    # Metadata timestamps
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-date']
+        verbose_name = "Floating Test"
+        verbose_name_plural = "Floating Tests"
+
+    def __str__(self):
+        return f"{self.grade_id} - Grade {self.grade} ({self.weight}kg)"
+
+    def save(self, *args, **kwargs):
+        """
+        Auto-generate grade_id and auto-fill ripeness_score before saving
+        """
+        # Auto-generate grade_id if not exists
+        if not self.grade_id:
+            self.grade_id = self.generate_grade_id()
+
+        # Auto-fill ripeness_score from related Ripeness test
+        if not self.ripeness_score:
+            try:
+                ripeness_test = Ripeness.objects.get(harvest=self.harvest)
+                self.ripeness_score = ripeness_test.ripeness_score
+            except Ripeness.DoesNotExist:
+                # No ripeness test found - leave as None
+                pass
+
+        super().save(*args, **kwargs)
+
+    def generate_grade_id(self):
+        """
+        Generate grade_id in format: GR{A/B}{DDMM}{Letter}{00-99}
+
+        Examples:
+            - GRA1411A00: Grade A, Nov 14 (14th day, 11th month), first entry (A00)
+            - GRB1010B22: Grade B, Oct 10, entry B22
+
+        Sequential logic:
+            - Letter: A-Z (26 letters)
+            - Number: 00-99 (100 numbers)
+            - Total per day per grade: 26 * 100 = 2600 entries
+        """
+        # Extract grade letter (first letter of grade, uppercase)
+        # If grade is "A" or "a", use 'A'. If "B" or "b", use 'B'
+        grade_letter = self.grade[0].upper() if self.grade else 'A'
+
+        # Get date in DDMM format (day and month)
+        date_str = self.date.strftime('%d%m')
+
+        # Get count of Floating entries for this grade on this date
+        same_day_count = Floating.objects.filter(
+            grade__istartswith=grade_letter,
+            date=self.date
+        ).count()
+
+        # Calculate sequential code (Letter + 00-99)
+        # Position in sequence (0-2599)
+        position = same_day_count % 2600  # Reset after 2600 entries
+
+        # Calculate letter index (A-Z, 26 letters)
+        letter_index = position // 100  # Which letter (0-25)
+        number = position % 100  # Which number (0-99)
+
+        sequence_letter = chr(65 + letter_index)  # 65 is ASCII for 'A'
+        sequence_number = f"{number:02d}"  # Format as 2 digits with leading zero
+
+        # Combine: GR + {A/B} + DDMM + Letter + 00-99
+        grade_id = f"GR{grade_letter}{date_str}{sequence_letter}{sequence_number}"
+
+        return grade_id
+
+
 class Fermenting(models.Model):
     """
     First stage: Fermenting process
