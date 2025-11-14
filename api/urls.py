@@ -46,6 +46,7 @@ urlpatterns = [
     path('api/adminuser/', include('adminuser.urls')),  # Include adminuser app URLs for admin authentication
     path('api/tasks/', include('taskmanagement.urls')),  # Include taskmanagement app URLs
     path('api/activities/', include('activities.urls')),  # Include activities app URLs for activity logging
+    path('api/farmtours/', include('farmtours.urls')),  # Include farmtours app URLs for farm tour bookings
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'), # API schema (to view apis for frontend)
     path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'), # Swagger UI for API docs
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
