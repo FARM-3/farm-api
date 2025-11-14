@@ -231,8 +231,9 @@ class Wage(models.Model):
         super().save(*args, **kwargs)
     
 class Sale(models.Model):
-    
-    customer_name = models.CharField(max_length=100, null=True, blank=True)
+
+    first_name = models.CharField(max_length=100, null=True, blank=True)
+    last_name = models.CharField(max_length=100, null=True, blank=True)
     batch_id = models.CharField(max_length=20, null=True, blank=True)
     item = models.CharField(max_length=50)
     rate = models.DecimalField(max_digits=10, decimal_places=2)
@@ -247,10 +248,15 @@ class Sale(models.Model):
     class Meta:
         verbose_name = "Sale Record"
         verbose_name_plural = "Sale Records"
-        ordering = ['-date_of_payment', 'customer_name']
+        ordering = ['-date_of_payment', 'last_name', 'first_name']
 
     def __str__(self):
-        return f"Sale to {self.customer_name} of {self.item}"
+        customer_name = f"{self.first_name} {self.last_name}".strip() 
+        return f"Sale to {customer_name} of {self.item}"
+
+    def get_customer_name(self):
+        """Return the customer's full name"""
+        return f"{self.first_name} {self.last_name}".strip() 
 
     def save(self, *args, **kwargs):
         self.total_amount = self.rate * self.quantity
@@ -279,7 +285,7 @@ class Receipt(models.Model):
         ordering = ['-date_issued', 'receipt_number']
 
     def __str__(self):
-        return f"Receipt {self.receipt_number} for {self.sale.customer_name}"
+        return f"Receipt {self.receipt_number} for {self.sale.get_customer_name()}"
 
 class Expense(models.Model):
     expense_name = models.CharField(max_length=50)

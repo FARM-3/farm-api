@@ -80,15 +80,21 @@ class WageSerializer(serializers.ModelSerializer):
         read_only_fields = ('staff_id', 'staff_full_name')
 
 class SaleSerializer(serializers.ModelSerializer):
+    customer_name = serializers.SerializerMethodField()
+
     class Meta:
         model = Sale
         fields = [
-            'id', 'customer_name', 'item', 'rate', 'quantity', 
-            'total_amount', 'amount', 'date_of_payment', 
+            'id', 'first_name', 'last_name', 'customer_name', 'item', 'rate', 'quantity',
+            'total_amount', 'amount', 'date_of_payment',
             'status', 'balance', 'method_of_payment'
         ]
-    
-        read_only_fields = ['total_amount', 'status', 'balance']
+
+        read_only_fields = ['total_amount', 'status', 'balance', 'customer_name']
+
+    def get_customer_name(self, obj):
+        """Return the customer's full name for backward compatibility"""
+        return obj.get_customer_name()
 
 class ExpenseSerializer(serializers.ModelSerializer):
     class Meta:
