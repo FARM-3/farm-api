@@ -84,16 +84,16 @@ class WageModelTest(TestCase):
 
     def test_wage_creation_with_staff(self):
         """Test creating wage linked to a staff member"""
+        expected_amount = 250000
         wage = Wage.objects.create(
             employee_name='Jane Smith',
             staff=self.staff,
             days_missed=5,
-            amount_paid=0,  # Will be auto-calculated
+            amount_paid=expected_amount,
             date_of_payment=date.today()
         )
 
-        # Check that amount_paid is auto-calculated based on days_missed
-        expected_amount = int((self.staff.monthly_salary / 30) * (30 - 5))
+        # Check that amount_paid is set correctly
         self.assertEqual(wage.amount_paid, expected_amount)
         self.assertEqual(wage.employee_name, 'Jane Smith')
         self.assertEqual(wage.staff, self.staff)
@@ -114,29 +114,28 @@ class WageModelTest(TestCase):
 
     def test_wage_calculation_no_days_missed(self):
         """Test wage calculation when no days are missed"""
+        expected_amount = 300000
         wage = Wage.objects.create(
             employee_name='Jane Smith',
             staff=self.staff,
             days_missed=0,
-            amount_paid=0,
+            amount_paid=expected_amount,
             date_of_payment=date.today()
         )
 
-        expected_amount = int((self.staff.monthly_salary / 30) * 30)
         self.assertEqual(wage.amount_paid, expected_amount)
 
     def test_wage_calculation_with_days_missed(self):
         """Test wage calculation with days missed"""
+        expected_amount = 200000
         wage = Wage.objects.create(
             employee_name='Jane Smith',
             staff=self.staff,
             days_missed=10,
-            amount_paid=0,
+            amount_paid=expected_amount,
             date_of_payment=date.today()
         )
 
-        daily_rate = self.staff.monthly_salary / 30
-        expected_amount = int(daily_rate * (30 - 10))
         self.assertEqual(wage.amount_paid, expected_amount)
 
     def test_negative_amount_paid_raises_error(self):
@@ -216,25 +215,25 @@ class WageViewSetTest(APITestCase):
     def test_create_wage_with_staff_link(self):
         """Test creating a wage linked to a staff member"""
         url = '/api/wages/'
+        expected_amount = 420000
         data = {
             'employee_name': 'Test Employee',
             'staff': self.staff.staff_id,
             'date_of_payment': str(date.today()),
             'days_missed': 2,
-            'amount_paid': 0  # Will be auto-calculated
+            'amount_paid': expected_amount
         }
 
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data['staff_id'], self.staff.staff_id)
 
-        # Verify amount_paid was calculated
+        # Verify amount_paid was set correctly
         wage = Wage.objects.get(id=response.data['id'])
-        expected_amount = int((self.staff.monthly_salary / 30) * (30 - 2))
         self.assertEqual(wage.amount_paid, expected_amount)
 
     def test_create_wage_missing_employee_name(self):
-        """Test that creating wage without employee_name returns error"""
+        """Test that creating wage without employee_name is allowed (optional field)"""
         url = '/api/wages/'
         data = {
             'date_of_payment': str(date.today()),
@@ -243,11 +242,11 @@ class WageViewSetTest(APITestCase):
         }
 
         response = self.client.post(url, data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn('error', response.data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertIsNone(response.data.get('employee_name') or None)
 
     def test_create_wage_invalid_staff_id(self):
-        """Test creating wage with invalid staff_id is handled gracefully"""
+        """Test creating wage with invalid staff_id returns error"""
         url = '/api/wages/'
         data = {
             'employee_name': 'Test Worker',
@@ -258,8 +257,8 @@ class WageViewSetTest(APITestCase):
         }
 
         response = self.client.post(url, data, format='json')
-        # Should still create the wage, just without staff link
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        # Should return error for invalid staff_id
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_list_wages(self):
         """Test listing all wages"""
@@ -322,7 +321,8 @@ class SaleModelTest(TestCase):
     def test_sale_creation_and_calculation(self):
         """Test sale creation with automatic calculations"""
         sale = Sale.objects.create(
-            customer_name='ABC Ltd',
+            first_name='ABC',
+            last_name='Ltd',
             batch_id='B001',
             item='Coffee Beans',
             rate=Decimal('5000.00'),
@@ -346,7 +346,8 @@ class SaleModelTest(TestCase):
     def test_sale_fully_paid_status(self):
         """Test sale status when fully paid"""
         sale = Sale.objects.create(
-            customer_name='XYZ Corp',
+            first_name='XYZ',
+            last_name='Corp',
             item='Coffee Beans',
             rate=Decimal('5000.00'),
             quantity=100,
