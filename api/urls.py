@@ -43,6 +43,7 @@ urlpatterns = [
     path('api/blocks/', include('production.urls')),
     path('api/processing/', include('processing.urls')),
     path('api/users/', include('users.urls')),  # Include users app URLs
+    path('api/adminuser/', include('adminuser.urls')),  # Include adminuser app URLs for admin authentication
     path('api/tasks/', include('taskmanagement.urls')),  # Include taskmanagement app URLs
     path('api/activities/', include('activities.urls')),  # Include activities app URLs for activity logging
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'), # API schema (to view apis for frontend)
