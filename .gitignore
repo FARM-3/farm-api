@@ -145,6 +145,9 @@ env.bak/
 venv.bak/
 node_modules/
 
+#Docker
+docker-compose.yml
+
 # Spyder project settings
 .spyderproject
 .spyproject

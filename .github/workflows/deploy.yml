@@ -20,6 +20,9 @@ jobs:
           passphrase: ""
           script: |
             cd /home/rugyeyo/backend
+            # Use GitHub token for git authentication (for private repos)
+            # Format: https://oauth2:TOKEN@github.com/owner/repo.git
+            git remote set-url origin https://oauth2:${{ secrets.GITHUB_TOKEN }}@github.com/Rugyeyo-Farm/api.git
             git pull origin main
             docker-compose -f /home/rugyeyo/docker-compose.yml down
             docker-compose -f /home/rugyeyo/docker-compose.yml up -d
