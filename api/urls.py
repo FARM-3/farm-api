@@ -37,16 +37,21 @@ urlpatterns = [
     path('', redirect_to_docs),
     path("admin/", admin.site.urls),
     path('api-auth/', include('rest_framework.urls')),
-    path('api/', include('production.urls')),  # CRITICAL: Must come FIRST - harvests and blocks endpoints
-    path('api/', include('financialmanagement.urls')),  # Financial management endpoints
+    # PRODUCTION HARVESTS & BLOCKS
+    path('api/', include('production.urls')),  # Harvests & Blocks routers (registers at /api/harvests/ and /api/blocks/)
+    # FINANCIAL MANAGEMENT - MUST use 'api/' prefix (same as production) because both routers register subpaths
+    path('api/', include('financialmanagement.urls')),  # Staff, wages, sales, expenses, etc.
+    # OTHER MODULES
     path('api/aggregation/', include('aggregation.urls')),
     path('api/processing/', include('processing.urls')),
-    path('api/users/', include('users.urls')),  # Include users app URLs
-    path('api/adminuser/', include('adminuser.urls')),  # Include adminuser app URLs for admin authentication
-    path('api/tasks/', include('taskmanagement.urls')),  # Include taskmanagement app URLs
-    path('api/activities/', include('activities.urls')),  # Include activities app URLs for activity logging
-    path('api/schema/', SpectacularAPIView.as_view(), name='schema'), # API schema (to view apis for frontend)
-    path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'), # Swagger UI for API docs
+    path('api/users/', include('users.urls')),
+    path('api/adminuser/', include('adminuser.urls')),
+    path('api/tasks/', include('taskmanagement.urls')),
+    path('api/activities/', include('activities.urls')),
+    # SCHEMA & DOCS
+    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
+    path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+    # TOKEN ENDPOINTS
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 ]
