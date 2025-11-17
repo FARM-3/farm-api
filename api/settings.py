@@ -72,6 +72,7 @@ INSTALLED_APPS = [
     "adminuser",
     "taskmanagement",
     'activities',
+    'farmtours',
 
 ]
 
