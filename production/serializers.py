@@ -41,13 +41,10 @@ class HarvestsSerializer(serializers.ModelSerializer):
     # Read-only field to display staff member's full name
     # paid_by_name = serializers.SerializerMethodField()
 
-    # Read-only field - harvest_id is auto-generated
-    harvest_id = serializers.CharField(read_only=True)
-
     class Meta:
         model = Harvests
         fields = '__all__'
-        read_only_fields = ['harvest_id', 'created_at', 'updated_at']
+        read_only_fields = ['created_at', 'updated_at']
 
     # COMMENTED OUT: This method requires paid_by to be a ForeignKey to Staff model
     # Currently paid_by is a CharField, so this would cause AttributeError

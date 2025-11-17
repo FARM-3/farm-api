@@ -88,10 +88,12 @@ class Harvests(models.Model):
 
     def save(self, *args, **kwargs):
         """
-        Override save to auto-generate harvest_id before saving and auto-create an expense
+        Override save to auto-generate harvest_id before saving (only if not provided) and auto-create an expense
+        Accepts harvest_id from frontend (offline-first approach) or generates one as fallback
         """
         is_new = not self.harvest_id or not self.pk
 
+        # Only auto-generate if harvest_id not provided by frontend
         if not self.harvest_id:
             self.harvest_id = self.generate_harvest_id()
 

@@ -74,28 +74,10 @@ class FarmerRegistration(models.Model):
 
         self.full_clean()
 
-
+        # farmer_id MUST be provided by frontend (offline-first approach)
+        # Backend does NOT generate IDs - only accepts them from mobile app
         if not self.farmer_id:
-
-
-            first_initial = self.first_name[0].upper() if self.first_name else 'X'
-            last_initial = self.last_name[0].upper() if self.last_name else 'X'
-
-            # Generate 3 random digits
-            random_digits = ''.join(random.choices('0123456789', k=3))
-
-            # Assemble the unique ID
-            new_unique_id = f"{first_initial}{last_initial}{random_digits}A"
-
-            # Check if this generated ID already exists in the database
-
-            while FarmerRegistration.objects.filter(farmer_id=new_unique_id).exists():
-
-                random_digits = ''.join(random.choices('0123456789', k=3))
-                new_unique_id = f"{first_initial}{last_initial}{random_digits}A"
-
-            # Assign the unique ID
-            self.farmer_id = new_unique_id
+            raise ValueError("farmer_id must be provided by the frontend")
 
         # Generate QR code if farmer_id exists and qr_code doesn't
         if self.farmer_id and not self.qr_code:
