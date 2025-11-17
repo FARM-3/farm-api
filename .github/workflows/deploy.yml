@@ -24,7 +24,13 @@ jobs:
             # Format: https://oauth2:TOKEN@github.com/owner/repo.git
             git remote set-url origin https://oauth2:${{ secrets.GITHUB_TOKEN }}@github.com/Rugyeyo-Farm/api.git
             git pull origin main
+            # Stop and remove all containers
             docker-compose -f /home/rugyeyo/docker-compose.yml down --remove-orphans
+            # Force remove any stuck containers by name
+            docker rm -f rugyeyo-postgres rugyeyo-backend rugyeyo-nginx 2>/dev/null || true
+            # Start containers with force recreate
             docker-compose -f /home/rugyeyo/docker-compose.yml up -d --force-recreate
+            # Run migrations
             docker-compose -f /home/rugyeyo/docker-compose.yml exec -T backend python manage.py migrate
+            # Generate API schema
             docker-compose -f /home/rugyeyo/docker-compose.yml exec -T backend python manage.py spectacular --file schema.yml
