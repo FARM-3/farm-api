@@ -1,5 +1,5 @@
 from django.db import models
-from django.core.validators import MinValueValidator, MaxValueValidator
+from django.core.validators import MinValueValidator
 from django.utils import timezone
 
 
@@ -35,11 +35,6 @@ class TourPackage(models.Model):
         help_text="Duration of the tour"
     )
 
-    price_per_person = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        help_text="Price per person in your currency"
-    )
 
     max_group_size = models.PositiveIntegerField(
         default=20,
@@ -49,6 +44,13 @@ class TourPackage(models.Model):
     min_group_size = models.PositiveIntegerField(
         default=1,
         help_text="Minimum number of people required for the tour"
+    )
+
+    price_per_person = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        validators=[MinValueValidator(0)],
+        help_text="Price per person for this tour package"
     )
 
     is_active = models.BooleanField(
@@ -190,7 +192,7 @@ class TourBooking(models.Model):
     )
 
     number_of_people = models.PositiveIntegerField(
-        validators=[MinValueValidator(1), MaxValueValidator(50)],
+        validators=[MinValueValidator(1)],
         help_text="Number of people in the group"
     )
 
@@ -242,6 +244,7 @@ class TourBooking(models.Model):
         verbose_name = "Tour Booking"
         verbose_name_plural = "Tour Bookings"
         ordering = ['-created_at']
+        unique_together = ('customer_email', 'availability')
 
     def __str__(self):
         return f"{self.booking_reference} - {self.customer_name} ({self.status})"

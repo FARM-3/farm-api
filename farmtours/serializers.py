@@ -86,6 +86,7 @@ class CreateTourBookingSerializer(serializers.ModelSerializer):
         tour_package = data['tour_package']
         availability = data['availability']
         number_of_people = data['number_of_people']
+        customer_email = data['customer_email']
 
         # Check if availability belongs to the selected tour package
         if availability.tour_package != tour_package:
@@ -99,21 +100,22 @@ class CreateTourBookingSerializer(serializers.ModelSerializer):
                 "availability": "Cannot book tours for past dates"
             })
 
+        # Check for double booking (same customer, same date/time)
+        from .models import TourBooking
+        existing_booking = TourBooking.objects.filter(
+            customer_email=customer_email,
+            availability=availability
+        ).exclude(status='cancelled').first()
+
+        if existing_booking:
+            raise serializers.ValidationError({
+                "customer_email": f"You already have a booking for this time slot. Booking reference: {existing_booking.booking_reference}"
+            })
+
         # Check if enough spots are available
         if not availability.has_available_spots(number_of_people):
             raise serializers.ValidationError({
                 "number_of_people": f"Not enough spots available. Only {availability.available_spots} spots left."
-            })
-
-        # Check group size limits
-        if number_of_people < tour_package.min_group_size:
-            raise serializers.ValidationError({
-                "number_of_people": f"Minimum group size is {tour_package.min_group_size} people"
-            })
-
-        if number_of_people > tour_package.max_group_size:
-            raise serializers.ValidationError({
-                "number_of_people": f"Maximum group size is {tour_package.max_group_size} people"
             })
 
         return data
