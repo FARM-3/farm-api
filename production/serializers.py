@@ -35,11 +35,15 @@ class HarvestsSerializer(serializers.ModelSerializer):
     """
     Serializer for Harvests model
     Handles serialization/deserialization of harvest data
+    Supports offline-first: accepts frontend-generated harvest_id
     """
 
     # COMMENTED OUT: This field expects get_paid_by_name() method which requires paid_by to be a ForeignKey
     # Read-only field to display staff member's full name
     # paid_by_name = serializers.SerializerMethodField()
+
+    # Explicitly define harvest_id as writable field (model has editable=False, but we override for offline-first)
+    harvest_id = serializers.CharField(max_length=20, required=False, allow_blank=False)
 
     class Meta:
         model = Harvests
@@ -55,6 +59,15 @@ class HarvestsSerializer(serializers.ModelSerializer):
     #     if obj.paid_by:
     #         return obj.paid_by.get_full_name()
     #     return None
+
+    def validate_harvest_id(self, value):
+        """
+        Validate harvest_id format and requirement
+        harvest_id must be provided by frontend (offline-first approach)
+        """
+        if not value or value.strip() == '':
+            raise serializers.ValidationError("harvest_id is required and cannot be empty")
+        return value
 
     def validate_weight_on_delivery(self, value):
         """
