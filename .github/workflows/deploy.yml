@@ -19,18 +19,36 @@ jobs:
           key: ${{ secrets.DO_SSH_KEY }}
           passphrase: ""
           script: |
+            # 1. Navigate to the project directory
             cd /home/rugyeyo/backend
-            # Use GitHub token for git authentication (for private repos)
-            # Format: https://oauth2:TOKEN@github.com/owner/repo.git
+            
+            # 2. Update code from the main branch
             git remote set-url origin https://oauth2:${{ secrets.GITHUB_TOKEN }}@github.com/Rugyeyo-Farm/api.git
             git pull origin main
-            # Stop and remove all containers
+            
+            # 3. Clean up existing containers and network
+            # Use --remove-orphans to remove services not defined in the new docker-compose.yml
             docker-compose -f /home/rugyeyo/docker-compose.yml down --remove-orphans
-            # Force remove any stuck containers by name
+            # Force remove any stuck containers by name (optional, but good for cleanup)
             docker rm -f rugyeyo-postgres rugyeyo-backend rugyeyo-nginx 2>/dev/null || true
-            # Start containers with force recreate
-            docker-compose -f /home/rugyeyo/docker-compose.yml up -d --force-recreate
-            # Run migrations
+            
+            # =======================================================
+            # 4. CRITICAL STEP: Build images separately (high memory use)
+            # This phase is usually where the OOM (Status 137) occurs.
+            echo "--- Starting Docker Compose Build ---"
+            docker-compose -f /home/rugyeyo/docker-compose.yml build
+            echo "--- Docker Compose Build Complete ---"
+            
+            # 5. Start containers using the newly built images
+            # Use --remove-orphans again just in case, but no --force-recreate needed.
+            docker-compose -f /home/rugyeyo/docker-compose.yml up -d
+            # =======================================================
+            
+            # 6. Run migrations inside the running backend container
+            echo "--- Running Migrations and Schema Generation ---"
             docker-compose -f /home/rugyeyo/docker-compose.yml exec -T backend python manage.py migrate
-            # Generate API schema
+            
+            # 7. Generate API schema
             docker-compose -f /home/rugyeyo/docker-compose.yml exec -T backend python manage.py spectacular --file schema.yml
+            
+            echo "--- Deployment Complete ---"
