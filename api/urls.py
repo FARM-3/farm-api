@@ -39,8 +39,7 @@ urlpatterns = [
     path('api-auth/', include('rest_framework.urls')),
     path('api/', include('financialmanagement.urls')),
     path('api/aggregation/', include('aggregation.urls')),
-    path('api/harvests/', include('production.urls')),
-    path('api/blocks/', include('production.urls')),
+    path('api/', include('production.urls')),  # FIXED: Single include for harvests and blocks (production.urls has both routers)
     path('api/processing/', include('processing.urls')),
     path('api/users/', include('users.urls')),  # Include users app URLs
     path('api/adminuser/', include('adminuser.urls')),  # Include adminuser app URLs for admin authentication

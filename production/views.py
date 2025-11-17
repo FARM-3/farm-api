@@ -18,8 +18,10 @@ class HarvestListView(ListView):
     queryset = Harvests.objects.all().order_by('date_of_delivery')
 
 class HarvestsViewSet(viewsets.ModelViewSet):
+    """ViewSet for Production Harvests - allows all CRUD operations (POST, GET, PUT, DELETE)"""
     queryset = Harvests.objects.all()
     serializer_class = HarvestsSerializer
+    # No permission_classes = allow all (or set to [IsAuthenticated] if auth required)
 
 class BlockViewSet(viewsets.ModelViewSet):
     """ViewSet for Block management"""
