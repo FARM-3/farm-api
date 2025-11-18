@@ -8,96 +8,78 @@ from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 
 from aggregation import models
-from .models import Fermenting, Washing, Drying, Bagging
+from .models import Fermenting, Washing, NaturalSundrying, Drying, Bagging, Ripeness, Floating
 from .serializers import (
     FermentingSerializer,
     WashingSerializer,
+    NaturalSundryingSerializer,
     DryingSerializer,
-    BaggingSerializer
-
+    BaggingSerializer,
+    RipenessSerializer,
+    FloatingSerializer
 )
 
 
 class FermentingViewSet(viewsets.ModelViewSet):
     """
     ViewSet for Fermenting process
-    
+    Links to grade_id from Floating (Quality Control)
+
     Automatically provides these endpoints:
     - GET /api/fermenting/ - List all records
     - POST /api/fermenting/ - Create new record
-    - GET /api/fermenting/{id}/ - Get single record
-    - PUT /api/fermenting/{id}/ - Update record (full)
-    - PATCH /api/fermenting/{id}/ - Update record (partial)
-    - DELETE /api/fermenting/{id}/ - Delete record
+    - GET /api/fermenting/{processing_id}/ - Get single record
+    - PUT /api/fermenting/{processing_id}/ - Update record (full)
+    - PATCH /api/fermenting/{processing_id}/ - Update record (partial)
+    - DELETE /api/fermenting/{processing_id}/ - Delete record
     """
     queryset = Fermenting.objects.all()
     serializer_class = FermentingSerializer
-    
+
     # Enable filtering, searching, and ordering
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    
-    # Fields you can filter by: /api/fermenting/?grade=A&days=3
-    filterset_fields = ['grade', 'days', 'date']
-    
-    # Fields you can search in: /api/fermenting/?search=batch1
-    search_fields = ['processing_id', 'name']
-    
-    # Fields you can order by: /api/fermenting/?ordering=-date
-    ordering_fields = ['date', 'weight_before', 'created_at']
-    
+
+    # Fields you can filter by: /api/fermenting/?grade={grade_id}&days=3
+    filterset_fields = ['grade', 'days', 'start_date', 'end_date']
+
+    # Fields you can search in: /api/fermenting/?search=FERM-20250114
+    search_fields = ['processing_id', 'grade__grade_id']
+
+    # Fields you can order by: /api/fermenting/?ordering=-end_date
+    ordering_fields = ['start_date', 'end_date', 'days', 'weight', 'created_at']
+
     # Default ordering
-    ordering = ['-date']
+    ordering = ['-end_date']
     
-"""    @action(detail=False, methods=['get'])
-    def summary(self, request):
-        """
-       #Custom endpoint: /api/fermenting/summary/
-       #Returns summary statistics for all fermentation batches
-"""
-        queryset = self.get_queryset()
-        total_batches = queryset.count()
-        total_weight_before = sum(f.weight_before for f in queryset)
-        total_weight_after = sum(f.weight_after for f in queryset)
-        
-        return Response({
-            'total_batches': total_batches,
-            'total_weight_before': float(total_weight_before),
-            'total_weight_after': float(total_weight_after),
-            'total_weight_loss': float(total_weight_before - total_weight_after),
-            'average_days': queryset.aggregate(avg_days=models.Avg('days'))['avg_days']
-        })
-"""
 
 class WashingViewSet(viewsets.ModelViewSet):
     """
     ViewSet for Washing process
-    Provides full CRUD operations
+    Links to grade_id from Floating (Quality Control)
     """
     queryset = Washing.objects.all()
     serializer_class = WashingSerializer
-    
+
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['grade', 'date']
-    search_fields = ['processing_id', 'name']
-    ordering_fields = ['date', 'weight_before', 'created_at']
+    search_fields = ['processing_id', 'grade__grade_id']
+    ordering_fields = ['date', 'weight', 'created_at']
     ordering = ['-date']
-    
-    @action(detail=False, methods=['get'])
-    def summary(self, request):
-        """
-        Custom endpoint: /api/washing/summary/
-        """
-        queryset = self.get_queryset()
-        total_batches = queryset.count()
-        total_weight_before = sum(w.weight_before for w in queryset)
-        total_weight_after = sum(w.weight_after for w in queryset)
-        
-        return Response({
-            'total_batches': total_batches,
-            'total_weight_before': float(total_weight_before),
-            'total_weight_after': float(total_weight_after),
-            'total_weight_loss': float(total_weight_before - total_weight_after)
-        })
+
+
+class NaturalSundryingViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for Natural Sundrying process
+    Links to grade_id from Floating (Quality Control)
+    """
+    queryset = NaturalSundrying.objects.all()
+    serializer_class = NaturalSundryingSerializer
+
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ['grade', 'start_date']
+    search_fields = ['processing_id', 'grade__grade_id']
+    ordering_fields = ['start_date', 'weight', 'created_at']
+    ordering = ['-start_date']
     
 
 class DryingViewSet(viewsets.ModelViewSet):
@@ -157,4 +139,142 @@ class BaggingViewSet(viewsets.ModelViewSet):
 
 # Import models for custom actions
 from django.db.models import Avg, Count, Sum, F
+
+
+class RipenessViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for Ripeness (Quality Control) testing
+
+    Automatically provides these endpoints:
+    - GET /api/ripeness/ - List all ripeness tests
+    - POST /api/ripeness/ - Create new ripeness test
+    - GET /api/ripeness/{harvest_id}/ - Get ripeness test for specific harvest
+    - PUT /api/ripeness/{harvest_id}/ - Update ripeness test (full)
+    - PATCH /api/ripeness/{harvest_id}/ - Update ripeness test (partial)
+    - DELETE /api/ripeness/{harvest_id}/ - Delete ripeness test
+    """
+    queryset = Ripeness.objects.all()
+    serializer_class = RipenessSerializer
+
+    # Enable filtering, searching, and ordering
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+
+    # Fields you can filter by: /api/ripeness/?date=2025-01-14
+    filterset_fields = ['date', 'harvest']
+
+    # Fields you can search in: /api/ripeness/?search=ED0711PA1
+    search_fields = ['harvest__harvest_id', 'harvest__worker_name']
+
+    # Fields you can order by: /api/ripeness/?ordering=-ripeness_score
+    ordering_fields = ['date', 'ripeness_score', 'sample_size', 'created_at']
+
+    # Default ordering (most recent first)
+    ordering = ['-date']
+
+    @action(detail=False, methods=['get'])
+    def summary(self, request):
+        """
+        Custom endpoint: /api/ripeness/summary/
+        Returns summary statistics for all ripeness tests
+        """
+        queryset = self.get_queryset()
+
+        if queryset.count() == 0:
+            return Response({
+                'total_tests': 0,
+                'average_ripeness_score': 0,
+                'passing_tests': 0,  # >= 80%
+                'failing_tests': 0   # < 80%
+            })
+
+        total_tests = queryset.count()
+        avg_score = queryset.aggregate(Avg('ripeness_score'))['ripeness_score__avg']
+        passing = queryset.filter(ripeness_score__gte=80).count()
+        failing = queryset.filter(ripeness_score__lt=80).count()
+
+        return Response({
+            'total_tests': total_tests,
+            'average_ripeness_score': float(avg_score) if avg_score else 0,
+            'passing_tests': passing,
+            'failing_tests': failing,
+            'pass_rate': f"{(passing / total_tests * 100):.2f}%" if total_tests > 0 else "0%"
+        })
+
+
+class FloatingViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for Floating (Quality Control) testing
+
+    Automatically provides these endpoints:
+    - GET /api/floating/ - List all floating tests
+    - POST /api/floating/ - Create new floating test
+    - GET /api/floating/{grade_id}/ - Get specific floating test
+    - PUT /api/floating/{grade_id}/ - Update floating test (full)
+    - PATCH /api/floating/{grade_id}/ - Update floating test (partial)
+    - DELETE /api/floating/{grade_id}/ - Delete floating test
+    """
+    queryset = Floating.objects.all()
+    serializer_class = FloatingSerializer
+
+    # Enable filtering, searching, and ordering
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+
+    # Fields you can filter by: /api/floating/?grade=A&date=2025-01-14
+    filterset_fields = ['grade', 'date', 'harvest']
+
+    # Fields you can search in: /api/floating/?search=GRA1411A00
+    search_fields = ['grade_id', 'grade', 'harvest__harvest_id', 'harvest__worker_name']
+
+    # Fields you can order by: /api/floating/?ordering=-weight
+    ordering_fields = ['date', 'weight', 'ripeness_score', 'created_at']
+
+    # Default ordering (most recent first)
+    ordering = ['-date']
+
+    @action(detail=False, methods=['get'])
+    def summary(self, request):
+        """
+        Custom endpoint: /api/floating/summary/
+        Returns summary statistics grouped by grade
+        """
+        queryset = self.get_queryset()
+
+        # Overall statistics
+        total_tests = queryset.count()
+        total_weight = queryset.aggregate(Sum('weight'))['weight__sum'] or 0
+
+        # Group by grade
+        by_grade = queryset.values('grade').annotate(
+            count=Count('grade_id'),
+            total_weight=Sum('weight'),
+            avg_weight=Avg('weight')
+        ).order_by('grade')
+
+        return Response({
+            'overall': {
+                'total_tests': total_tests,
+                'total_weight': float(total_weight)
+            },
+            'by_grade': list(by_grade)
+        })
+
+    @action(detail=False, methods=['get'], url_path='by-harvest/(?P<harvest_id>[^/.]+)')
+    def by_harvest(self, request, harvest_id=None):
+        """
+        Custom endpoint: /api/floating/by-harvest/{harvest_id}/
+        Returns all floating tests for a specific harvest
+        """
+        tests = self.queryset.filter(harvest__harvest_id=harvest_id)
+        serializer = self.get_serializer(tests, many=True)
+
+        # Calculate totals
+        total_weight = tests.aggregate(Sum('weight'))['weight__sum'] or 0
+
+        return Response({
+            'harvest_id': harvest_id,
+            'tests': serializer.data,
+            'total_weight': float(total_weight),
+            'test_count': tests.count()
+        })
+
 

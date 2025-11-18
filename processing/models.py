@@ -227,155 +227,238 @@ class Floating(models.Model):
 
 class Fermenting(models.Model):
     """
-    First stage: Fermenting process
-    Tracks coffee batches during fermentation
+    Fermenting process - tracks coffee batches during fermentation
+    Links to a grade_id from Floating (Quality Control)
     """
     # Processing ID - auto-generated unique identifier
     processing_id = models.CharField(
-        max_length=50, 
+        max_length=50,
         unique=True,
-        help_text="Unique ID for this fermentation batch (e.g., FERM-2024-001)"
+        editable=False,
+        primary_key=True,
+        help_text="Auto-generated: FERM-{YYYYMMDD}-{SEQ}"
     )
-    
-    # Duration in days
-    days = models.PositiveIntegerField(
-        validators=[MinValueValidator(1)],
-        help_text="Number of days for fermentation"
-    )
-    
-    # Batch name
-    name = models.CharField(
-        max_length=100,
-        help_text="Descriptive name for this batch"
-    )
-    
-    # Coffee grade
-    grade = models.CharField(
-        max_length=1,
-        choices=GRADE_CHOICES,
-        help_text="Quality grade of the coffee"
-    )
-    CHERRY_COLOUR_CHOICES = [
-        ('red', 'Red'),
-        ('green', 'Green'),
-        ('Yellow', 'yellow'),
-        ('Black', 'Black'),
-    ]
-    cherry_colour = models.CharField(
-        max_length=10,
-        choices=CHERRY_COLOUR_CHOICES,
-        help_text="Cherry colour",
-        null=True, # Allow nulls for migration
-        blank=True,
 
+    # Reference to Floating grade_id (from Quality Control)
+    grade = models.ForeignKey(
+        'Floating',
+        on_delete=models.PROTECT,
+        related_name='fermenting_processes',
+        help_text="Grade ID from Floating quality control test"
     )
-    
-    # Processing date
-    date = models.DateField(default=timezone.now)
-    
-    # Weight tracking
-    weight_before = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        validators=[MinValueValidator(0)],
-        help_text="Weight in kg before fermentation"
+
+    # Fermentation period
+    start_date = models.DateField(
+        help_text="Date when fermentation started"
     )
-    
-    weight_after = models.DecimalField(
+
+    end_date = models.DateField(
+        help_text="Date when fermentation ended"
+    )
+
+    # Duration in days (auto-calculated from dates)
+    days = models.PositiveIntegerField(
+        editable=False,
+        help_text="Number of days for fermentation (auto-calculated)"
+    )
+
+    # Weight after fermenting
+    weight = models.DecimalField(
         max_digits=10,
         decimal_places=2,
         validators=[MinValueValidator(0)],
         help_text="Weight in kg after fermentation"
     )
-    
-    # Metadata fields (automatic timestamps)
+
+    # Metadata fields
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    
+
     class Meta:
-        ordering = ['-date']  # Most recent first
+        ordering = ['-end_date']
         verbose_name = "Fermenting Process"
         verbose_name_plural = "Fermenting Processes"
-    
+
     def __str__(self):
-        return f"{self.processing_id} - {self.name}"
-    
-    @property
-    def weight_loss(self) -> float: #Add type hint
-        """Calculate weight loss during fermentation"""
-        return self.weight_before - self.weight_after
+        return f"{self.processing_id} - Grade {self.grade.grade_id}"
+
+    def save(self, *args, **kwargs):
+        """Auto-generate processing_id and calculate days before saving"""
+        # Auto-generate processing_id if not exists
+        if not self.processing_id:
+            self.processing_id = self.generate_processing_id()
+
+        # Auto-calculate days from start_date and end_date
+        if self.start_date and self.end_date:
+            self.days = (self.end_date - self.start_date).days
+
+        super().save(*args, **kwargs)
+
+    def generate_processing_id(self):
+        """
+        Generate processing_id in format: FERM-{YYYYMMDD}-{SEQ}
+        Example: FERM-20250114-001
+        """
+        from datetime import date
+        today = date.today().strftime('%Y%m%d')
+
+        # Get count of Fermenting entries for this date
+        same_day_count = Fermenting.objects.filter(
+            start_date=self.start_date
+        ).count()
+
+        # Sequential number
+        sequence = f"{same_day_count + 1:03d}"
+
+        return f"FERM-{today}-{sequence}"
 
 class Washing(models.Model):
     """
-    Second stage: Washing process
-    Tracks coffee batches during washing
+    Washing process - tracks coffee batches during washing
+    Links to a grade_id from Floating (Quality Control)
     """
+    # Processing ID - auto-generated unique identifier
     processing_id = models.CharField(
         max_length=50,
         unique=True,
         editable=False,
-        help_text="Auto-generated: WASH-{DDMMYY}-{SEQ}"
-
-    )
-       
-    
-    name = models.CharField(
-        max_length=100,
-        help_text="Descriptive name for this batch"
-    )
-    
-    grade = models.CharField(
-        max_length=1,
-        choices=GRADE_CHOICES,
-        help_text="Quality grade of the coffee"
-    )
-    CHERRY_COLOUR_CHOICES = [
-        ('red', 'Red'),
-        ('green', 'Green'),
-        ('Yellow', 'Yellow'),
-        ('Black', 'Black'),
-    ]
-    cherry_colour = models.CharField(
-        max_length=10,
-        choices=CHERRY_COLOUR_CHOICES,
-        help_text="Cherry colour",
-        null=True, #Allow nulls for migration
-        blank=True,
-
+        primary_key=True,
+        help_text="Auto-generated: WASH-{YYYYMMDD}-{SEQ}"
     )
 
-    
-    date = models.DateField(default=timezone.now)
-    
-    weight_before = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        validators=[MinValueValidator(0)],
-        help_text="Weight in kg before washing"
+    # Reference to Floating grade_id (from Quality Control)
+    grade = models.ForeignKey(
+        'Floating',
+        on_delete=models.PROTECT,
+        related_name='washing_processes',
+        help_text="Grade ID from Floating quality control test"
     )
-    
-    weight_after = models.DecimalField(
+
+    # Washing date
+    date = models.DateField(
+        default=timezone.now,
+        help_text="Date when washing was performed"
+    )
+
+    # Weight after washing
+    weight = models.DecimalField(
         max_digits=10,
         decimal_places=2,
         validators=[MinValueValidator(0)],
         help_text="Weight in kg after washing"
     )
-    
+
+    # Metadata fields
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    
+
     class Meta:
         ordering = ['-date']
         verbose_name = "Washing Process"
         verbose_name_plural = "Washing Processes"
-    
+
     def __str__(self):
-        return f"{self.processing_id} - {self.name}"
-    
-    @property
-    def weight_loss(self) -> float: #Add type hint
-        """Calculate weight loss during washing"""
-        return self.weight_before - self.weight_after
+        return f"{self.processing_id} - Grade {self.grade.grade_id}"
+
+    def save(self, *args, **kwargs):
+        """Auto-generate processing_id before saving"""
+        # Auto-generate processing_id if not exists
+        if not self.processing_id:
+            self.processing_id = self.generate_processing_id()
+
+        super().save(*args, **kwargs)
+
+    def generate_processing_id(self):
+        """
+        Generate processing_id in format: WASH-{YYYYMMDD}-{SEQ}
+        Example: WASH-20250114-001
+        """
+        from datetime import date
+        today = date.today().strftime('%Y%m%d')
+
+        # Get count of Washing entries for this date
+        same_day_count = Washing.objects.filter(
+            date=self.date
+        ).count()
+
+        # Sequential number
+        sequence = f"{same_day_count + 1:03d}"
+
+        return f"WASH-{today}-{sequence}"
+
+
+class NaturalSundrying(models.Model):
+    """
+    Natural Sundrying process - tracks coffee batches during natural sun drying
+    Links to a grade_id from Floating (Quality Control)
+    """
+    # Processing ID - auto-generated unique identifier
+    processing_id = models.CharField(
+        max_length=50,
+        unique=True,
+        editable=False,
+        primary_key=True,
+        help_text="Auto-generated: SUND-{YYYYMMDD}-{SEQ}"
+    )
+
+    # Reference to Floating grade_id (from Quality Control)
+    grade = models.ForeignKey(
+        'Floating',
+        on_delete=models.PROTECT,
+        related_name='sundrying_processes',
+        help_text="Grade ID from Floating quality control test"
+    )
+
+    # Sundrying start date
+    start_date = models.DateField(
+        help_text="Date when sundrying started"
+    )
+
+    # Weight before sundrying
+    weight = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        validators=[MinValueValidator(0)],
+        help_text="Weight in kg before sundrying"
+    )
+
+    # Metadata fields
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-start_date']
+        verbose_name = "Natural Sundrying Process"
+        verbose_name_plural = "Natural Sundrying Processes"
+
+    def __str__(self):
+        return f"{self.processing_id} - Grade {self.grade.grade_id}"
+
+    def save(self, *args, **kwargs):
+        """Auto-generate processing_id before saving"""
+        # Auto-generate processing_id if not exists
+        if not self.processing_id:
+            self.processing_id = self.generate_processing_id()
+
+        super().save(*args, **kwargs)
+
+    def generate_processing_id(self):
+        """
+        Generate processing_id in format: SUND-{YYYYMMDD}-{SEQ}
+        Example: SUND-20250114-001
+        """
+        from datetime import date
+        today = date.today().strftime('%Y%m%d')
+
+        # Get count of Sundrying entries for this date
+        same_day_count = NaturalSundrying.objects.filter(
+            start_date=self.start_date
+        ).count()
+
+        # Sequential number
+        sequence = f"{same_day_count + 1:03d}"
+
+        return f"SUND-{today}-{sequence}"
     
 class Drying(models.Model):
     """

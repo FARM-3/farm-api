@@ -3,7 +3,8 @@
     "allow": [
       "Bash(python manage.py runserver:*)",
       "Bash(. venv/Scripts/activate)",
-      "Bash(python manage.py migrate:*)"
+      "Bash(python manage.py migrate:*)",
+      "Bash(python manage.py:*)"
     ],
     "deny": [],
     "ask": []
