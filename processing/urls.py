@@ -3,8 +3,11 @@ from rest_framework.routers import DefaultRouter
 from .views import (
     FermentingViewSet,
     WashingViewSet,
+    NaturalSundryingViewSet,
     DryingViewSet,
-    BaggingViewSet
+    BaggingViewSet,
+    RipenessViewSet,
+    FloatingViewSet
 )
 
 # Create a router - this automatically generates URLs for our ViewSets
@@ -15,8 +18,11 @@ router = DefaultRouter()
 # The second is the ViewSet class
 router.register(r'fermenting', FermentingViewSet, basename='fermenting')
 router.register(r'washing', WashingViewSet, basename='washing')
+router.register(r'sundrying', NaturalSundryingViewSet, basename='sundrying')
 router.register(r'drying', DryingViewSet, basename='drying')
 router.register(r'bagging', BaggingViewSet, basename='bagging')
+router.register(r'ripeness', RipenessViewSet, basename='ripeness')
+router.register(r'floating', FloatingViewSet, basename='floating')
 
 
 
