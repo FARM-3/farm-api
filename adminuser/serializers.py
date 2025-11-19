@@ -1,6 +1,6 @@
 # adminuser/serializers.py
 from rest_framework import serializers
-from .models import AdminUser
+from .models import AdminUser, EmailVerification
 import re
 
 
@@ -26,9 +26,10 @@ class AdminUserSerializer(serializers.ModelSerializer):
             'role',
             'role_display',
             'is_active',
+            'is_email_verified',
             'created_at'
         ]
-        read_only_fields = ['id', 'created_at']
+        read_only_fields = ['id', 'created_at', 'is_email_verified']
 
 
 # ============================================
@@ -178,3 +179,134 @@ class ResetPasswordSerializer(serializers.Serializer):
                 "confirm_password": "Passwords do not match"
             })
         return data
+
+
+# ============================================
+# ADMIN SIGNUP SERIALIZER
+# ============================================
+class AdminSignupSerializer(serializers.Serializer):
+    """
+    Serializer for admin user signup/registration.
+    Creates a new admin user account.
+    """
+
+    name = serializers.CharField(
+        required=True,
+        max_length=100,
+        help_text="Admin user's full name"
+    )
+
+    email = serializers.EmailField(
+        required=True,
+        help_text="Admin user's email address"
+    )
+
+    password = serializers.CharField(
+        required=True,
+        write_only=True,
+        min_length=6,
+        help_text="Password (minimum 6 characters)"
+    )
+
+    confirm_password = serializers.CharField(
+        required=True,
+        write_only=True,
+        min_length=6,
+        help_text="Confirm password"
+    )
+
+    role = serializers.ChoiceField(
+        choices=AdminUser.ROLE_CHOICES,
+        default="admin",
+        required=False,
+        help_text="Admin role (admin, superadmin, manager)"
+    )
+
+    def validate_email(self, value):
+        """
+        Ensure email is unique and normalize to lowercase.
+        """
+        email = value.lower()
+        if AdminUser.objects.filter(email=email).exists():
+            raise serializers.ValidationError("An admin user with this email already exists")
+        return email
+
+    def validate(self, data):
+        """
+        Validate that passwords match.
+        """
+        if data['password'] != data['confirm_password']:
+            raise serializers.ValidationError({
+                "confirm_password": "Passwords do not match"
+            })
+        return data
+
+    def create(self, validated_data):
+        """
+        Create new admin user account.
+        """
+        # Remove confirm_password as it's not needed for creation
+        validated_data.pop('confirm_password')
+
+        # Create admin user
+        admin_user = AdminUser.objects.create_user(
+            email=validated_data['email'],
+            password=validated_data['password'],
+            name=validated_data.get('name', ''),
+            role=validated_data.get('role', 'admin'),
+            is_staff=True,
+            is_superuser=False
+        )
+
+        return admin_user
+
+
+# ============================================
+# SEND VERIFICATION EMAIL SERIALIZER
+# ============================================
+class SendVerificationEmailSerializer(serializers.Serializer):
+    """
+    Serializer for sending verification email.
+    Admin provides their email to receive verification link.
+    """
+
+    email = serializers.EmailField(
+        required=True,
+        help_text="Admin user's email address"
+    )
+
+    def validate_email(self, value):
+        """Normalize email to lowercase."""
+        return value.lower()
+
+
+# ============================================
+# CHECK VERIFICATION STATUS SERIALIZER
+# ============================================
+class CheckVerificationSerializer(serializers.Serializer):
+    """
+    Serializer for checking email verification status.
+    """
+
+    email = serializers.EmailField(
+        required=True,
+        help_text="Admin user's email address"
+    )
+
+    def validate_email(self, value):
+        """Normalize email to lowercase."""
+        return value.lower()
+
+
+# ============================================
+# VERIFY EMAIL TOKEN SERIALIZER
+# ============================================
+class VerifyEmailTokenSerializer(serializers.Serializer):
+    """
+    Serializer for verifying email with token.
+    """
+
+    token = serializers.UUIDField(
+        required=True,
+        help_text="Email verification token"
+    )
