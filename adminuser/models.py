@@ -3,6 +3,8 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from django.utils import timezone
 import random
 import string
+import uuid
+from datetime import timedelta
 
 
 # ============================================
@@ -121,6 +123,11 @@ class AdminUser(AbstractBaseUser):
         help_text="Admin user has all permissions"
     )
 
+    is_email_verified = models.BooleanField(
+        default=False,
+        help_text="Whether the admin user's email has been verified"
+    )
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -224,3 +231,75 @@ class PasswordResetOTP(models.Model):
         """
         self.is_used = True
         self.save()
+
+
+# ============================================
+# EMAIL VERIFICATION MODEL
+# ============================================
+class EmailVerification(models.Model):
+    """
+    Model to store email verification tokens.
+    Each token is valid for 24 hours and can only be used once.
+    """
+
+    admin_user = models.ForeignKey(
+        AdminUser,
+        on_delete=models.CASCADE,
+        related_name='email_verifications',
+        help_text="Admin user requesting email verification"
+    )
+
+    token = models.UUIDField(
+        default=uuid.uuid4,
+        editable=False,
+        unique=True,
+        help_text="Unique verification token"
+    )
+
+    is_verified = models.BooleanField(
+        default=False,
+        help_text="Whether email has been verified"
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField(
+        help_text="Token expiration time (24 hours from creation)"
+    )
+
+    class Meta:
+        verbose_name = "Email Verification"
+        verbose_name_plural = "Email Verifications"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"Email verification for {self.admin_user.email}"
+
+    def save(self, *args, **kwargs):
+        """
+        Override save to auto-set expiration time.
+        """
+        if not self.expires_at:
+            # Set expiration to 24 hours from now
+            self.expires_at = timezone.now() + timedelta(hours=24)
+
+        super().save(*args, **kwargs)
+
+    def is_valid(self):
+        """
+        Check if token is still valid (not expired, not used).
+        """
+        return (
+            not self.is_verified and
+            timezone.now() < self.expires_at
+        )
+
+    def mark_as_verified(self):
+        """
+        Mark token as verified and update admin user's email verification status.
+        """
+        self.is_verified = True
+        self.save()
+
+        # Update admin user's email verification status
+        self.admin_user.is_email_verified = True
+        self.admin_user.save()
