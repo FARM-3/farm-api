@@ -3,6 +3,8 @@ from django.views.generic import ListView
 from .models import Harvests
 from .serializers import HarvestsSerializer
 from rest_framework import viewsets
+<<<<<<< HEAD
+=======
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
@@ -15,7 +17,11 @@ class HarvestListView(ListView):
     model = Harvests
     template_name = 'harvest_list.html'
     context_object_name = 'harvests'
+<<<<<<< HEAD
+    queryset = Harvests.objects.all().order_by('date')
+=======
     queryset = Harvests.objects.all().order_by('date_of_delivery')
+>>>>>>> 32f5cd754438efd6bf2c5652d930d014e74a421b
 
 class HarvestsViewSet(viewsets.ModelViewSet):
     """ViewSet for Production Harvests - allows all CRUD operations (POST, GET, PUT, DELETE)"""

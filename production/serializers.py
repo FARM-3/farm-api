@@ -1,4 +1,17 @@
 from rest_framework import serializers
+<<<<<<< HEAD
+from .models import Harvests
+
+
+
+
+
+
+class HarvestsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Harvests
+        fields = '__all__'
+=======
 from .models import Harvests, Block
 from rest_framework import serializers
 
