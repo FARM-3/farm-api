@@ -95,9 +95,9 @@ class NaturalSundryingSerializer(serializers.ModelSerializer):
 
 class DryingSerializer(serializers.ModelSerializer):
     """
-    Serializer for Drying model
-    Tracks daily drying progress with auto-calculated fields
-    All auto-generated fields are read-only
+    Serializer for Drying model (Offline-First Approach)
+    Frontend handles ALL calculations and business logic
+    Backend simply stores and retrieves data
     """
 
     class Meta:
@@ -113,7 +113,7 @@ class DryingSerializer(serializers.ModelSerializer):
             'weight',
             'moisture_before',
             'weight_before',
-            # Auto-generated fields (read-only)
+            # Calculated fields (now writable - calculated on frontend)
             'processing_type',
             'type_of_coffee',
             'days',
@@ -126,19 +126,7 @@ class DryingSerializer(serializers.ModelSerializer):
             'created_at',
             'updated_at'
         ]
-        read_only_fields = [
-            'lot_id',
-            'processing_type',
-            'type_of_coffee',
-            'days',
-            'moisture_deviation',
-            'rate_of_drying',
-            'rate_of_weightloss',
-            'outturn',
-            'outturn_deviation',
-            'created_at',
-            'updated_at'
-        ]
+        read_only_fields = ['id', 'created_at', 'updated_at']
 
     def validate_moisture_content(self, value):
         """
