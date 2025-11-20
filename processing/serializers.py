@@ -141,36 +141,29 @@ class DryingSerializer(serializers.ModelSerializer):
 class BaggingSerializer(serializers.ModelSerializer):
     """
     Serializer for Bagging model (final stage)
+
+    Offline-First Approach:
+    - Frontend handles ALL business logic and calculations
+    - Backend is a simple CRUD API that stores/retrieves data
+    - No validation beyond basic field constraints
+    - All computed fields are calculated on frontend
     """
     class Meta:
         model = Bagging
         fields = [
             'id',
-            'processing_id',
-            'name',
-            'grade',
-            'moisture_content',
-            'date',
+            'lot_id',
             'weight',
+            'moisture_content',
+            'no_of_bags',
+            'date',
+            'outturn',
+            'expected_outturn',
+            'qr_code',
             'created_at',
             'updated_at'
         ]
-        read_only_fields = ['created_at', 'updated_at']
-    
-    def validate_moisture_content(self, value):
-        """
-        Validate that moisture content is in acceptable range for bagging
-        Typically, coffee should be dried to 10-12% moisture before bagging
-        """
-        if value > 15:
-            raise serializers.ValidationError(
-                "Moisture content too high for bagging (should be ≤15%)"
-            )
-        if value < 8:
-            raise serializers.ValidationError(
-                "Moisture content too low (should be ≥8%)"
-            )
-        return value
+        read_only_fields = ['id', 'created_at', 'updated_at']
 
 
 class RipenessSerializer(serializers.ModelSerializer):

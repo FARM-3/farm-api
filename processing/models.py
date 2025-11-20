@@ -709,18 +709,11 @@ class Bagging(models.Model):
             return round(self.weight / self.no_of_bags, 2)
         return 0
 
-    def clean(self):
-        if self.moisture_content < 0 or self.moisture_content > 100:
-            raise ValidationError({'moisture_content': 'Moisture must be 0-100 percent'})
-        if self.weight <= 0:
-            raise ValidationError({'weight': 'Weight must be > 0'})
-        if self.no_of_bags <= 0:
-            raise ValidationError({'no_of_bags': 'Number of bags must be at least 1'})
-
     def save(self, *args, **kwargs):
-        # outturn / expected_outturn: leave null here.
-        # If you want server-side generation, implement logic here to pull drying data
-        # via lot_id (or link to Sundrying model) and set outturn/expected_outturn before save.
-        self.full_clean()
+        """
+        Simplified save for offline-first approach.
+        Frontend handles all validation and calculations.
+        Backend simply stores the data as-is.
+        """
         super().save(*args, **kwargs)
 # ...existing code...       

@@ -100,40 +100,55 @@ class DryingViewSet(viewsets.ModelViewSet):
 class BaggingViewSet(viewsets.ModelViewSet):
     """
     ViewSet for Bagging process (final stage)
+
+    Offline-First Approach:
+    - Backend is a simple CRUD API
+    - Frontend handles ALL business logic, validation, and calculations
+    - No complex filtering or custom endpoints
+
+    Automatically provides:
+    - GET /api/processing/bagging/ - List all records
+    - POST /api/processing/bagging/ - Create new record
+    - GET /api/processing/bagging/{id}/ - Get single record
+    - PUT /api/processing/bagging/{id}/ - Full update
+    - PATCH /api/processing/bagging/{id}/ - Partial update
+    - DELETE /api/processing/bagging/{id}/ - Delete record
     """
     queryset = Bagging.objects.all()
     serializer_class = BaggingSerializer
-    
+
+    # Enable basic filtering, searching, and ordering
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ['grade', 'date']
-    search_fields = ['processing_id', 'name']
-    ordering_fields = ['date', 'weight', 'moisture_content', 'created_at']
+    filterset_fields = ['lot_id', 'date']
+    search_fields = ['lot_id']
+    ordering_fields = ['date', 'weight', 'moisture_content', 'no_of_bags', 'created_at']
     ordering = ['-date']
-    
+
     @action(detail=False, methods=['get'])
     def summary(self, request):
         """
-        Custom endpoint: /api/bagging/summary/
-        Returns final bagging statistics
+        Custom endpoint: /api/processing/bagging/summary/
+        Returns basic bagging statistics (aggregated data)
         """
-        from django.db.models import Sum, Avg
-        
         queryset = self.get_queryset()
         stats = queryset.aggregate(
-            total_batches=Count('id'),
+            total_records=Count('id'),
             total_weight=Sum('weight'),
-            avg_moisture=Avg('moisture_content')
+            avg_moisture=Avg('moisture_content'),
+            total_bags=Sum('no_of_bags')
         )
-        
-        # Group by grade
-        by_grade = queryset.values('grade').annotate(
-            count=Count('id'),
-            total_weight=Sum('weight')
-        )
-        
+
+        # Group by lot_id for overview
+        by_lot = queryset.values('lot_id').annotate(
+            record_count=Count('id'),
+            total_weight=Sum('weight'),
+            avg_moisture=Avg('moisture_content'),
+            avg_outturn=Avg('outturn')
+        ).order_by('-record_count')
+
         return Response({
             'overall': stats,
-            'by_grade': list(by_grade)
+            'by_lot': list(by_lot)
         })
 
 
