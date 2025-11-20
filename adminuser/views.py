@@ -7,15 +7,270 @@ from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
 from drf_spectacular.utils import extend_schema, OpenApiResponse
 from django.utils import timezone
-from .models import AdminUser, PasswordResetOTP
+from .models import AdminUser, PasswordResetOTP, EmailVerification
 from .serializers import (
     AdminUserSerializer,
     AdminLoginSerializer,
+    AdminSignupSerializer,
+    SendVerificationEmailSerializer,
+    CheckVerificationSerializer,
+    VerifyEmailTokenSerializer,
     RequestPasswordResetSerializer,
     VerifyOTPSerializer,
     ResetPasswordSerializer
 )
-from .utils import send_otp_email
+from .utils import send_otp_email, send_verification_email
+
+
+# ============================================
+# ADMIN SIGNUP VIEW
+# ============================================
+@extend_schema(
+    request=AdminSignupSerializer,
+    responses={201: AdminUserSerializer}
+)
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def admin_signup_view(request):
+    """
+    API endpoint for admin user signup/registration.
+
+    Endpoint: POST /api/admin/signup/
+
+    Request body:
+        {
+            "name": "John Doe",
+            "email": "admin@example.com",
+            "password": "securepassword",
+            "confirm_password": "securepassword",
+            "role": "admin"  (optional, defaults to "admin")
+        }
+
+    Response (success):
+        {
+            "message": "Admin account created successfully. Please check your email to verify your account.",
+            "user": {
+                "id": 1,
+                "name": "John Doe",
+                "email": "admin@example.com",
+                "role": "admin",
+                "role_display": "Admin",
+                "is_email_verified": false
+            }
+        }
+
+    Response (failure):
+        {
+            "error": "An admin user with this email already exists"
+        }
+    """
+
+    # Step 1: Validate incoming data
+    serializer = AdminSignupSerializer(data=request.data)
+    if not serializer.is_valid():
+        return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    # Step 2: Create admin user
+    admin_user = serializer.save()
+
+    # Step 3: Send verification email
+    email_sent = send_verification_email(admin_user, request)
+
+    # Step 4: Return success response
+    return Response({
+        "message": "Admin account created successfully. Please check your email to verify your account.",
+        "user": AdminUserSerializer(admin_user).data,
+        "email_sent": email_sent
+    }, status=status.HTTP_201_CREATED)
+
+
+# ============================================
+# SEND VERIFICATION EMAIL VIEW
+# ============================================
+@extend_schema(
+    request=SendVerificationEmailSerializer,
+    responses={200: OpenApiResponse(description="Verification email sent")}
+)
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def send_verification_email_view(request):
+    """
+    Send or resend email verification link.
+
+    Endpoint: POST /api/admin/send-verification-email/
+
+    Request body:
+        {
+            "email": "admin@example.com"
+        }
+
+    Response (success):
+        {
+            "message": "Verification email sent. Please check your inbox.",
+            "email": "admin@example.com"
+        }
+
+    Response (failure):
+        {
+            "error": "Admin user with this email not found"
+        }
+    """
+
+    # Step 1: Validate request
+    serializer = SendVerificationEmailSerializer(data=request.data)
+    if not serializer.is_valid():
+        return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    email = serializer.validated_data['email']
+
+    # Step 2: Check if admin user exists
+    try:
+        admin_user = AdminUser.objects.get(email=email)
+    except AdminUser.DoesNotExist:
+        return Response(
+            {"error": "Admin user with this email not found"},
+            status=status.HTTP_404_NOT_FOUND
+        )
+
+    # Step 3: Check if already verified
+    if admin_user.is_email_verified:
+        return Response({
+            "message": "Email is already verified. You can proceed to login.",
+            "email": email,
+            "is_verified": True
+        }, status=status.HTTP_200_OK)
+
+    # Step 4: Send verification email
+    email_sent = send_verification_email(admin_user, request)
+
+    if not email_sent:
+        return Response(
+            {"error": "Failed to send verification email. Please try again later."},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+    # Step 5: Return success response
+    return Response({
+        "message": "Verification email sent. Please check your inbox.",
+        "email": email
+    }, status=status.HTTP_200_OK)
+
+
+# ============================================
+# CHECK VERIFICATION STATUS VIEW
+# ============================================
+@extend_schema(
+    responses={200: OpenApiResponse(description="Verification status")}
+)
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def check_verification_view(request, email):
+    """
+    Check if an email address is verified.
+
+    Endpoint: GET /api/admin/check-verification/<email>/
+
+    Response (success):
+        {
+            "email": "admin@example.com",
+            "is_verified": true
+        }
+
+    Response (failure):
+        {
+            "error": "Admin user with this email not found"
+        }
+    """
+
+    # Normalize email
+    email = email.lower()
+
+    # Check if admin user exists
+    try:
+        admin_user = AdminUser.objects.get(email=email)
+    except AdminUser.DoesNotExist:
+        return Response(
+            {"error": "Admin user with this email not found"},
+            status=status.HTTP_404_NOT_FOUND
+        )
+
+    # Return verification status
+    return Response({
+        "email": email,
+        "is_verified": admin_user.is_email_verified
+    }, status=status.HTTP_200_OK)
+
+
+# ============================================
+# VERIFY EMAIL TOKEN VIEW
+# ============================================
+@extend_schema(
+    responses={200: OpenApiResponse(description="Email verified successfully")}
+)
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def verify_email_view(request):
+    """
+    Verify email address using token from verification link.
+
+    Endpoint: GET /api/admin/verify-email?token=<uuid>
+
+    Query parameters:
+        token: UUID verification token
+
+    Response (success):
+        {
+            "message": "Email verified successfully. You can now login.",
+            "email": "admin@example.com",
+            "is_verified": true
+        }
+
+    Response (failure):
+        {
+            "error": "Invalid or expired verification token"
+        }
+    """
+
+    # Step 1: Get token from query parameters
+    token = request.query_params.get('token')
+
+    if not token:
+        return Response(
+            {"error": "Verification token is required"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    # Step 2: Find verification record
+    try:
+        verification = EmailVerification.objects.get(token=token)
+    except EmailVerification.DoesNotExist:
+        return Response(
+            {"error": "Invalid verification token"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    # Step 3: Check if token is still valid
+    if not verification.is_valid():
+        return Response(
+            {"error": "Verification token has expired. Please request a new verification email."},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    # Step 4: Mark as verified
+    verification.mark_as_verified()
+
+    # Step 5: Return success response
+    return Response({
+        "message": "Email verified successfully. You can now login.",
+        "email": verification.admin_user.email,
+        "is_verified": True
+    }, status=status.HTTP_200_OK)
 
 
 # ============================================
@@ -86,6 +341,15 @@ def admin_login_view(request):
             {"error": "Account is disabled"},
             status=status.HTTP_403_FORBIDDEN
         )
+
+    # Step 3.5: Check if email is verified
+    if not user.is_email_verified:
+        return Response({
+            "error": "Email not verified",
+            "message": "Please verify your email address before logging in. Check your email for the verification link.",
+            "email": user.email,
+            "is_email_verified": False
+        }, status=status.HTTP_403_FORBIDDEN)
 
     # Step 4: Generate JWT tokens
     # Access token: short-lived, used for API requests

@@ -45,7 +45,7 @@ urlpatterns = [
     path('api/aggregation/', include('aggregation.urls')),
     path('api/processing/', include('processing.urls')),
     path('api/users/', include('users.urls')),
-    path('api/adminuser/', include('adminuser.urls')),
+    path('api/admin/', include('adminuser.urls')),
     path('api/tasks/', include('taskmanagement.urls')),
     path('api/activities/', include('activities.urls')),
     # SCHEMA & DOCS
