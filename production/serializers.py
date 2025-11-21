@@ -1,19 +1,6 @@
 from rest_framework import serializers
-<<<<<<< HEAD
-from .models import Harvests
-
-
-
-
-
-
-class HarvestsSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Harvests
-        fields = '__all__'
-=======
 from .models import Harvests, Block
-from rest_framework import serializers
+from financialmanagement.models import Staff
 
 
 class BlockSerializer(serializers.ModelSerializer):
@@ -33,16 +20,12 @@ class BlockSerializer(serializers.ModelSerializer):
             'fertilizer_names',
             'use_pesticides',
             'pesticides_list',
-            'standard_practices',       
+            'standard_practices',
             'created_at',
             'updated_at',
         ]
         read_only_fields = ['created_at', 'updated_at']
 
-
-from rest_framework import serializers
-from .models import Harvests
-from financialmanagement.models import Staff
 
 class HarvestsSerializer(serializers.ModelSerializer):
     """
