@@ -4,10 +4,9 @@ from .models import Fermenting, Washing, NaturalSundrying, Drying, Bagging, Ripe
 class FermentingSerializer(serializers.ModelSerializer):
     """
     Serializer for Fermenting model
-    Processing ID and days are auto-calculated
+    Processing ID is provided by frontend, days are auto-calculated
     """
-    # Read-only fields - auto-generated
-    processing_id = serializers.ReadOnlyField()
+    # Days is still auto-calculated from dates
     days = serializers.ReadOnlyField()
 
     # Display grade_id string instead of full object
@@ -16,7 +15,7 @@ class FermentingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Fermenting
         fields = [
-            'processing_id',  # Auto-generated, read-only
+            'processing_id',  # Frontend-generated, writable
             'grade',  # For creating (accepts grade_id)
             'grade_id',  # For display (shows grade_id string)
             'start_date',
@@ -26,7 +25,7 @@ class FermentingSerializer(serializers.ModelSerializer):
             'created_at',
             'updated_at'
         ]
-        read_only_fields = ['processing_id', 'days', 'created_at', 'updated_at']
+        read_only_fields = ['days', 'created_at', 'updated_at']
 
     def validate(self, attrs):
         """

@@ -5,7 +5,7 @@ from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.contrib.auth.models import User
 from django.utils import timezone
-
+from datetime import date
 
 
 
@@ -230,13 +230,13 @@ class Fermenting(models.Model):
     Fermenting process - tracks coffee batches during fermentation
     Links to a grade_id from Floating (Quality Control)
     """
-    # Processing ID - auto-generated unique identifier
+    # Processing ID - provided by frontend
     processing_id = models.CharField(
         max_length=50,
         unique=True,
-        editable=False,
+        editable=True,
         primary_key=True,
-        help_text="Auto-generated: FERM-{YYYYMMDD}-{SEQ}"
+        help_text="Frontend-generated: FER{DDMM}{SEQ} (e.g., FER041200)"
     )
 
     # Reference to Floating grade_id (from Quality Control)
@@ -283,34 +283,12 @@ class Fermenting(models.Model):
         return f"{self.processing_id} - Grade {self.grade.grade_id}"
 
     def save(self, *args, **kwargs):
-        """Auto-generate processing_id and calculate days before saving"""
-        # Auto-generate processing_id if not exists
-        if not self.processing_id:
-            self.processing_id = self.generate_processing_id()
-
+        """Calculate days before saving (processing_id comes from frontend)"""
         # Auto-calculate days from start_date and end_date
         if self.start_date and self.end_date:
             self.days = (self.end_date - self.start_date).days
 
         super().save(*args, **kwargs)
-
-    def generate_processing_id(self):
-        """
-        Generate processing_id in format: FERM-{YYYYMMDD}-{SEQ}
-        Example: FERM-20250114-001
-        """
-        from datetime import date
-        today = date.today().strftime('%Y%m%d')
-
-        # Get count of Fermenting entries for this date
-        same_day_count = Fermenting.objects.filter(
-            start_date=self.start_date
-        ).count()
-
-        # Sequential number
-        sequence = f"{same_day_count + 1:03d}"
-
-        return f"FERM-{today}-{sequence}"
 
 class Washing(models.Model):
     """
@@ -618,7 +596,6 @@ class Drying(models.Model):
 
     def _generate_lot_id(self):
         """Generate lot_id as W01-W52 based on ISO week number."""
-        from datetime import datetime
         iso_week = self.date.isocalendar()[1]
         return f"W{iso_week:02d}"
 
