@@ -249,10 +249,12 @@ class Fermenting(models.Model):
 
     # Fermentation period
     start_date = models.DateField(
+        default=timezone.now,
         help_text="Date when fermentation started"
     )
 
     end_date = models.DateField(
+        default=timezone.now,
         help_text="Date when fermentation ended"
     )
 
@@ -266,6 +268,7 @@ class Fermenting(models.Model):
     weight = models.DecimalField(
         max_digits=10,
         decimal_places=2,
+        default=0,
         validators=[MinValueValidator(0)],
         help_text="Weight in kg after fermentation"
     )
@@ -322,6 +325,7 @@ class Washing(models.Model):
     weight = models.DecimalField(
         max_digits=10,
         decimal_places=2,
+        default=0,
         validators=[MinValueValidator(0)],
         help_text="Weight in kg after washing"
     )
@@ -389,6 +393,7 @@ class NaturalSundrying(models.Model):
 
     # Sundrying start date
     start_date = models.DateField(
+        default=timezone.now,
         help_text="Date when sundrying started"
     )
 
@@ -396,6 +401,7 @@ class NaturalSundrying(models.Model):
     weight = models.DecimalField(
         max_digits=10,
         decimal_places=2,
+        default=0,
         validators=[MinValueValidator(0)],
         help_text="Weight in kg before sundrying"
     )
@@ -615,21 +621,25 @@ class Bagging(models.Model):
     lot_id = models.CharField(
         max_length=100,
         db_index=True,
+        default='W01',
         help_text="Lot id from drying (select existing drying lot_id)"
     )
     weight = models.DecimalField(
         max_digits=10,
         decimal_places=2,
+        default=0.01,
         validators=[MinValueValidator(0.01)],
         help_text="Weight in kilograms"
     )
     moisture_content = models.DecimalField(
         max_digits=5,
         decimal_places=2,
+        default=12.0,
         validators=[MinValueValidator(0), MaxValueValidator(100)],
         help_text="Moisture content percentage (0-100)"
     )
     no_of_bags = models.PositiveIntegerField(
+        default=1,
         validators=[MinValueValidator(1)],
         help_text="Total number of bags"
     )
