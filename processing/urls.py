@@ -7,7 +7,8 @@ from .views import (
     DryingViewSet,
     BaggingViewSet,
     RipenessViewSet,
-    FloatingViewSet
+    FloatingViewSet,
+    BatchViewSet
 )
 
 # Create a router - this automatically generates URLs for our ViewSets
@@ -23,6 +24,7 @@ router.register(r'drying', DryingViewSet, basename='drying')
 router.register(r'bagging', BaggingViewSet, basename='bagging')
 router.register(r'ripeness', RipenessViewSet, basename='ripeness')
 router.register(r'floating', FloatingViewSet, basename='floating')
+router.register(r'batch', BatchViewSet, basename='batch')
 
 
 

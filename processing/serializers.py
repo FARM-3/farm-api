@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Fermenting, Washing, NaturalSundrying, Drying, Bagging, Ripeness, Floating
+from .models import Fermenting, Washing, NaturalSundrying, Drying, Bagging, Ripeness, Floating, Batch
 
 class FermentingSerializer(serializers.ModelSerializer):
     """
@@ -242,6 +242,32 @@ class FloatingSerializer(serializers.ModelSerializer):
         """
         if not value or len(value) == 0:
             raise serializers.ValidationError("Grade cannot be empty")
+        return value
+
+
+class BatchSerializer(serializers.ModelSerializer):
+    """
+    Serializer for Batch model
+    Handles grouping of multiple grade IDs for batch processing
+    """
+    class Meta:
+        model = Batch
+        fields = [
+            'batch_id',
+            'grade_ids',
+            'created_by',
+            'notes',
+            'created_at',
+            'updated_at'
+        ]
+        read_only_fields = ['created_at', 'updated_at']
+
+    def validate_grade_ids(self, value):
+        """Validate that grade_ids is a non-empty array"""
+        if not isinstance(value, list):
+            raise serializers.ValidationError("grade_ids must be an array")
+        if len(value) == 0:
+            raise serializers.ValidationError("grade_ids cannot be empty")
         return value
 
 

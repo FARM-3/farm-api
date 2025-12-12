@@ -225,10 +225,49 @@ class Floating(models.Model):
         return grade_id
 
 
+class Batch(models.Model):
+    """
+    Batch model - groups multiple grade IDs together for batch processing
+    """
+    batch_id = models.CharField(
+        max_length=20,
+        unique=True,
+        primary_key=True,
+        help_text="Format: BA001, BA002, etc."
+    )
+
+    # Store grade_ids as JSON array
+    grade_ids = models.JSONField(
+        help_text="Array of grade_ids included in this batch"
+    )
+
+    created_by = models.CharField(
+        max_length=100,
+        help_text="User who created the batch"
+    )
+
+    notes = models.TextField(
+        blank=True,
+        null=True,
+        help_text="Optional notes about the batch"
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = "Batch"
+        verbose_name_plural = "Batches"
+
+    def __str__(self):
+        return f"{self.batch_id} ({len(self.grade_ids)} grades)"
+
+
 class Fermenting(models.Model):
     """
     Fermenting process - tracks coffee batches during fermentation
-    Links to a grade_id from Floating (Quality Control)
+    Can process either a single grade_id or multiple grade_ids (batch)
     """
     # Processing ID - provided by frontend
     processing_id = models.CharField(
@@ -239,12 +278,20 @@ class Fermenting(models.Model):
         help_text="Frontend-generated: FER{DDMM}{SEQ} (e.g., FER041200)"
     )
 
-    # Reference to Floating grade_id (from Quality Control)
+    # Store grade_ids as JSON array to support both single and batch processing
+    grade_ids = models.JSONField(
+        help_text="Array of grade IDs being processed (can be single or multiple)"
+    )
+
+    # Optional: Keep backward compatibility with old ForeignKey field
+    # This will be deprecated - use grade_ids instead
     grade = models.ForeignKey(
         'Floating',
         on_delete=models.PROTECT,
         related_name='fermenting_processes',
-        help_text="Grade ID from Floating quality control test"
+        null=True,
+        blank=True,
+        help_text="DEPRECATED: Use grade_ids instead. Single grade ID from Floating quality control test"
     )
 
     # Fermentation period
@@ -283,7 +330,8 @@ class Fermenting(models.Model):
         verbose_name_plural = "Fermenting Processes"
 
     def __str__(self):
-        return f"{self.processing_id} - Grade {self.grade.grade_id}"
+        grade_count = len(self.grade_ids) if isinstance(self.grade_ids, list) else 1
+        return f"{self.processing_id} - {grade_count} grade(s)"
 
     def save(self, *args, **kwargs):
         """Calculate days before saving (processing_id comes from frontend)"""
@@ -296,7 +344,7 @@ class Fermenting(models.Model):
 class Washing(models.Model):
     """
     Washing process - tracks coffee batches during washing
-    Links to a grade_id from Floating (Quality Control)
+    Can process either a single grade_id or multiple grade_ids (batch)
     """
     # Processing ID - auto-generated unique identifier
     processing_id = models.CharField(
@@ -307,12 +355,19 @@ class Washing(models.Model):
         help_text="Auto-generated: WASH-{YYYYMMDD}-{SEQ}"
     )
 
-    # Reference to Floating grade_id (from Quality Control)
+    # Store grade_ids as JSON array to support both single and batch processing
+    grade_ids = models.JSONField(
+        help_text="Array of grade IDs being processed (can be single or multiple)"
+    )
+
+    # Optional: Keep backward compatibility with old ForeignKey field
     grade = models.ForeignKey(
         'Floating',
         on_delete=models.PROTECT,
         related_name='washing_processes',
-        help_text="Grade ID from Floating quality control test"
+        null=True,
+        blank=True,
+        help_text="DEPRECATED: Use grade_ids instead"
     )
 
     # Washing date
@@ -340,7 +395,8 @@ class Washing(models.Model):
         verbose_name_plural = "Washing Processes"
 
     def __str__(self):
-        return f"{self.processing_id} - Grade {self.grade.grade_id}"
+        grade_count = len(self.grade_ids) if isinstance(self.grade_ids, list) else 1
+        return f"{self.processing_id} - {grade_count} grade(s)"
 
     def save(self, *args, **kwargs):
         """Auto-generate processing_id before saving"""
@@ -372,7 +428,7 @@ class Washing(models.Model):
 class NaturalSundrying(models.Model):
     """
     Natural Sundrying process - tracks coffee batches during natural sun drying
-    Links to a grade_id from Floating (Quality Control)
+    Can process either a single grade_id or multiple grade_ids (batch)
     """
     # Processing ID - auto-generated unique identifier
     processing_id = models.CharField(
@@ -383,12 +439,19 @@ class NaturalSundrying(models.Model):
         help_text="Auto-generated: SUND-{YYYYMMDD}-{SEQ}"
     )
 
-    # Reference to Floating grade_id (from Quality Control)
+    # Store grade_ids as JSON array to support both single and batch processing
+    grade_ids = models.JSONField(
+        help_text="Array of grade IDs being processed (can be single or multiple)"
+    )
+
+    # Optional: Keep backward compatibility with old ForeignKey field
     grade = models.ForeignKey(
         'Floating',
         on_delete=models.PROTECT,
         related_name='sundrying_processes',
-        help_text="Grade ID from Floating quality control test"
+        null=True,
+        blank=True,
+        help_text="DEPRECATED: Use grade_ids instead"
     )
 
     # Sundrying start date
@@ -416,7 +479,8 @@ class NaturalSundrying(models.Model):
         verbose_name_plural = "Natural Sundrying Processes"
 
     def __str__(self):
-        return f"{self.processing_id} - Grade {self.grade.grade_id}"
+        grade_count = len(self.grade_ids) if isinstance(self.grade_ids, list) else 1
+        return f"{self.processing_id} - {grade_count} grade(s)"
 
     def save(self, *args, **kwargs):
         """Auto-generate processing_id before saving"""

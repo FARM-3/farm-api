@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 
 from aggregation import models
-from .models import Fermenting, Washing, NaturalSundrying, Drying, Bagging, Ripeness, Floating
+from .models import Fermenting, Washing, NaturalSundrying, Drying, Bagging, Ripeness, Floating, Batch
 from .serializers import (
     FermentingSerializer,
     WashingSerializer,
@@ -16,7 +16,8 @@ from .serializers import (
     DryingSerializer,
     BaggingSerializer,
     RipenessSerializer,
-    FloatingSerializer
+    FloatingSerializer,
+    BatchSerializer
 )
 
 
@@ -291,5 +292,37 @@ class FloatingViewSet(viewsets.ModelViewSet):
             'total_weight': float(total_weight),
             'test_count': tests.count()
         })
+
+
+class BatchViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for Batch management
+    Handles grouping of multiple grade IDs for batch processing
+
+    Automatically provides these endpoints:
+    - GET /api/batch/ - List all batches
+    - POST /api/batch/ - Create new batch
+    - GET /api/batch/{batch_id}/ - Get specific batch
+    - PUT /api/batch/{batch_id}/ - Update batch (full)
+    - PATCH /api/batch/{batch_id}/ - Update batch (partial)
+    - DELETE /api/batch/{batch_id}/ - Delete batch
+    """
+    queryset = Batch.objects.all()
+    serializer_class = BatchSerializer
+
+    # Enable filtering, searching, and ordering
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+
+    # Fields you can filter by: /api/batch/?created_by=John
+    filterset_fields = ['created_by', 'created_at']
+
+    # Fields you can search in: /api/batch/?search=BA001
+    search_fields = ['batch_id', 'created_by', 'notes']
+
+    # Fields you can order by: /api/batch/?ordering=-created_at
+    ordering_fields = ['batch_id', 'created_at', 'updated_at']
+
+    # Default ordering (most recent first)
+    ordering = ['-created_at']
 
 
