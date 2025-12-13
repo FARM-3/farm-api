@@ -11,34 +11,33 @@ Available endpoints:
 
 SEASONS:
 - GET    /api/tasks/seasons/              → List all seasons
-- POST   /api/tasks/seasons/              → Create new season (managers only)
+- POST   /api/tasks/seasons/              → Create new season
 - GET    /api/tasks/seasons/{id}/         → Get specific season
-- PUT    /api/tasks/seasons/{id}/         → Update season (managers only)
-- DELETE /api/tasks/seasons/{id}/         → Delete season (managers only)
+- PUT    /api/tasks/seasons/{id}/         → Update season
+- DELETE /api/tasks/seasons/{id}/         → Delete season
 - GET    /api/tasks/seasons/current/      → Get currently active seasons
 - GET    /api/tasks/seasons/upcoming/     → Get upcoming seasons
 - GET    /api/tasks/seasons/{id}/tasks/   → Get all tasks for a season
 
 TASKS:
-- GET    /api/tasks/tasks/                → List all tasks (filtered by role)
-- POST   /api/tasks/tasks/                → Create new task (managers only)
-- GET    /api/tasks/tasks/{id}/           → Get specific task
-- PUT    /api/tasks/tasks/{id}/           → Update task
-- DELETE /api/tasks/tasks/{id}/           → Delete task (managers only)
-- GET    /api/tasks/tasks/my_tasks/       → Get tasks assigned to current user
-- GET    /api/tasks/tasks/today/          → Get tasks due today
-- GET    /api/tasks/tasks/upcoming/       → Get upcoming tasks (next 7 days)
-- GET    /api/tasks/tasks/overdue/        → Get overdue tasks
-- GET    /api/tasks/tasks/statistics/     → Get task statistics
-- GET    /api/tasks/tasks/block_champions/ → Get list of block champions (managers only)
-- POST   /api/tasks/tasks/{id}/update_status/ → Update task status
-- POST   /api/tasks/tasks/{id}/add_comment/   → Add comment to task
+- GET    /api/tasks/                      → List all tasks
+- POST   /api/tasks/                      → Create new task
+- GET    /api/tasks/{id}/                 → Get specific task
+- PUT    /api/tasks/{id}/                 → Update task
+- PATCH  /api/tasks/{id}/                 → Partial update task
+- DELETE /api/tasks/{id}/                 → Delete task
+- GET    /api/tasks/today/                → Get tasks for today
+- GET    /api/tasks/upcoming/             → Get upcoming tasks (next 7 days)
+- GET    /api/tasks/overdue/              → Get overdue tasks
+- GET    /api/tasks/statistics/           → Get task statistics
+- POST   /api/tasks/{id}/toggle_complete/ → Toggle task completion
+- POST   /api/tasks/{id}/add_comment/     → Add comment to task
 
 Query Parameters for Tasks:
-- ?status=PENDING|IN_PROGRESS|COMPLETED|CANCELLED
-- ?priority=URGENT|HIGH|MEDIUM|LOW
-- ?due_date=YYYY-MM-DD
-- ?block_name=BlockName
+- ?date=YYYY-MM-DD
+- ?priority=low|medium|high
+- ?completed=true|false
+- ?block=<block_id>
 """
 
 app_name = 'taskmanagement'

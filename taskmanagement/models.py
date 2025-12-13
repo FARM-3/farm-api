@@ -36,82 +36,115 @@ class Season(models.Model):
     
 class Task(models.Model):
     title = models.CharField(max_length=200)
-    description = models.TextField()
-    status = models.CharField(max_length=50)
-    priority = models.CharField(max_length=50)
-    assigned_to = models.ForeignKey(
-        User, 
-        on_delete=models.CASCADE, 
-        related_name='assigned_tasks',
-        limit_choices_to={'role': 'block_champion'},
-        help_text="Block Champion assigned to this task"
+    description = models.TextField(blank=True)
+
+    # Activity - stored as JSON array to support multiple activities
+    activity = models.JSONField(
+        default=list,
+        blank=True,
+        help_text="Array of activity types"
     )
+    custom_activity = models.CharField(
+        max_length=200,
+        blank=True,
+        help_text="Custom activity text when 'other' is selected"
+    )
+
+    priority = models.CharField(
+        max_length=50,
+        blank=True,
+        default='medium'
+    )
+
+    # Multiple staff assignment - stored as JSON array
+    assigned_to = models.JSONField(
+        default=list,
+        blank=True,
+        help_text="Array of staff IDs assigned to this task"
+    )
+
     # Creator - Can be Farm Manager (assigning) or Block Champion (self-created)
     created_by = models.ForeignKey(
-        User, 
-        on_delete=models.CASCADE, 
+        User,
+        on_delete=models.CASCADE,
         related_name='created_tasks',
+        null=True,
+        blank=True,
         help_text="Farm Manager or Block Champion who created the task"
     )
-    due_date = models.DateField()
+
+    # Date and time fields
+    date = models.DateField(
+        default=timezone.now,
+        help_text="Date when task is scheduled"
+    )
+    time = models.CharField(
+        max_length=50,
+        blank=True,
+        help_text="Time of day (e.g., '2:30 PM')"
+    )
+
+    # Completion tracking
+    completed = models.BooleanField(default=False)
     completed_at = models.DateTimeField(null=True, blank=True)
+
+    # Block assignment
+    block = models.ForeignKey(
+        'production.Block',
+        on_delete=models.CASCADE,
+        related_name='tasks',
+        null=True,
+        blank=True,
+        help_text="Farm block where this task is to be performed"
+    )
+
+    # Optional season linkage
     season = models.ForeignKey(
-        Season, 
-        on_delete=models.SET_NULL, 
-        null=True, 
+        Season,
+        on_delete=models.SET_NULL,
+        null=True,
         blank=True,
         related_name='tasks',
         help_text="Link task to a seasonal calendar"
     )
 
-    block = models.ForeignKey(
-    'production.Block',
-    on_delete=models.CASCADE,
-    related_name='tasks',
-    help_text="Farm block where this task is to be performed"
-)
-    location = models.CharField(
-    max_length=200, 
-    blank=True,
-    help_text="Specific location details within the block"
-)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
     class Meta:
-        ordering = ['-due_date', '-priority']
+        ordering = ['-date', '-created_at']
         verbose_name = "Task"
         verbose_name_plural = "Tasks"
         indexes = [
-            models.Index(fields=['assigned_to', 'status']),
-            models.Index(fields=['due_date', 'status']),
+            models.Index(fields=['date', 'completed']),
+            models.Index(fields=['created_at']),
         ]
 
     def __str__(self):
-        return f"{self.title} - {self.assigned_to.phone} ({self.get_status_display()})"
-    
+        return f"{self.title} - {self.date}"
+
     def save(self, *args, **kwargs):
-        # Auto-set completed_at when status changes to COMPLETED
-        if self.status == 'COMPLETED' and not self.completed_at:
+        # Auto-set completed_at when completed is True
+        if self.completed and not self.completed_at:
             self.completed_at = timezone.now()
-        elif self.status != 'COMPLETED' and self.completed_at:
-            # Reset completed_at if status changes from completed
+        elif not self.completed and self.completed_at:
+            # Reset completed_at if task is marked as incomplete
             self.completed_at = None
         super().save(*args, **kwargs)
-    
+
     @property
     def is_overdue(self):
         """Check if task is overdue"""
-        if self.status == 'COMPLETED':
+        if self.completed:
             return False
-        return self.due_date < timezone.now().date()
-    
+        return self.date < timezone.now().date()
+
     @property
     def days_until_due(self):
         """Calculate days until due date"""
-        if self.status == 'COMPLETED':
+        if self.completed:
             return None
-        delta = self.due_date - timezone.now().date()
+        delta = self.date - timezone.now().date()
         return delta.days
 
 class TaskComment(models.Model):

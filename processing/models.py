@@ -280,6 +280,7 @@ class Fermenting(models.Model):
 
     # Store grade_ids as JSON array to support both single and batch processing
     grade_ids = models.JSONField(
+        default=list,
         help_text="Array of grade IDs being processed (can be single or multiple)"
     )
 
@@ -357,6 +358,7 @@ class Washing(models.Model):
 
     # Store grade_ids as JSON array to support both single and batch processing
     grade_ids = models.JSONField(
+        default=list,
         help_text="Array of grade IDs being processed (can be single or multiple)"
     )
 
@@ -441,6 +443,7 @@ class NaturalSundrying(models.Model):
 
     # Store grade_ids as JSON array to support both single and batch processing
     grade_ids = models.JSONField(
+        default=list,
         help_text="Array of grade IDs being processed (can be single or multiple)"
     )
 

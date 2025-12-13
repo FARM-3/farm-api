@@ -1,7 +1,4 @@
 from django.contrib import admin
-
-# Register your models here.
-from django.contrib import admin
 from .models import Season, Task, TaskComment
 
 
@@ -15,11 +12,11 @@ class SeasonAdmin(admin.ModelAdmin):
 
 @admin.register(Task)
 class TaskAdmin(admin.ModelAdmin):
-    list_display = ['title', 'assigned_to', 'status', 'priority', 'due_date', 'is_overdue', 'created_by']
-    list_filter = ['status', 'priority', 'due_date', 'created_at']
-    search_fields = ['title', 'description', 'assigned_to__phone', 'assigned_to__name']
+    list_display = ['title', 'priority', 'date', 'completed', 'is_overdue', 'created_by']
+    list_filter = ['priority', 'date', 'completed', 'created_at']
+    search_fields = ['title', 'description']
     readonly_fields = ['completed_at', 'created_at', 'updated_at']
-    raw_id_fields = ['assigned_to', 'created_by', 'season']
+    raw_id_fields = ['created_by', 'season', 'block']
 
 
 @admin.register(TaskComment)
@@ -27,5 +24,3 @@ class TaskCommentAdmin(admin.ModelAdmin):
     list_display = ['task', 'user', 'created_at']
     search_fields = ['comment', 'user__phone']
     readonly_fields = ['created_at']
-
-
