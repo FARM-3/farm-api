@@ -103,13 +103,13 @@ class Floating(models.Model):
     Second step: separates coffee into grades based on floating behavior
     Grade A: netweight (sinkers), Grade B: floaters
     """
-    # Primary key: auto-generated grade_id (format: GRA1411A00 or GRB1010B22)
+    # Primary key: frontend-generated grade_id (format: {HARVEST_ID}-GRA or {HARVEST_ID}-GRB)
     grade_id = models.CharField(
         max_length=20,
         unique=True,
-        editable=False,
+        editable=True,
         primary_key=True,
-        help_text="Auto-generated: GR{A/B}{DDMM}{Letter}{00-99} (e.g., GRA1411A00)"
+        help_text="Frontend-generated: {HARVEST_ID}-GR{A/B} (e.g., HV001-GRA, HV001-GRB)"
     )
 
     # Foreign key to Harvests (production app)
@@ -165,12 +165,9 @@ class Floating(models.Model):
 
     def save(self, *args, **kwargs):
         """
-        Auto-generate grade_id and auto-fill ripeness_score before saving
+        Auto-fill ripeness_score before saving
+        grade_id is provided by frontend
         """
-        # Auto-generate grade_id if not exists
-        if not self.grade_id:
-            self.grade_id = self.generate_grade_id()
-
         # Auto-fill ripeness_score from related Ripeness test
         if not self.ripeness_score:
             try:
@@ -181,48 +178,6 @@ class Floating(models.Model):
                 pass
 
         super().save(*args, **kwargs)
-
-    def generate_grade_id(self):
-        """
-        Generate grade_id in format: GR{A/B}{DDMM}{Letter}{00-99}
-
-        Examples:
-            - GRA1411A00: Grade A, Nov 14 (14th day, 11th month), first entry (A00)
-            - GRB1010B22: Grade B, Oct 10, entry B22
-
-        Sequential logic:
-            - Letter: A-Z (26 letters)
-            - Number: 00-99 (100 numbers)
-            - Total per day per grade: 26 * 100 = 2600 entries
-        """
-        # Extract grade letter (first letter of grade, uppercase)
-        # If grade is "A" or "a", use 'A'. If "B" or "b", use 'B'
-        grade_letter = self.grade[0].upper() if self.grade else 'A'
-
-        # Get date in DDMM format (day and month)
-        date_str = self.date.strftime('%d%m')
-
-        # Get count of Floating entries for this grade on this date
-        same_day_count = Floating.objects.filter(
-            grade__istartswith=grade_letter,
-            date=self.date
-        ).count()
-
-        # Calculate sequential code (Letter + 00-99)
-        # Position in sequence (0-2599)
-        position = same_day_count % 2600  # Reset after 2600 entries
-
-        # Calculate letter index (A-Z, 26 letters)
-        letter_index = position // 100  # Which letter (0-25)
-        number = position % 100  # Which number (0-99)
-
-        sequence_letter = chr(65 + letter_index)  # 65 is ASCII for 'A'
-        sequence_number = f"{number:02d}"  # Format as 2 digits with leading zero
-
-        # Combine: GR + {A/B} + DDMM + Letter + 00-99
-        grade_id = f"GR{grade_letter}{date_str}{sequence_letter}{sequence_number}"
-
-        return grade_id
 
 
 class Batch(models.Model):
@@ -269,13 +224,13 @@ class Fermenting(models.Model):
     Fermenting process - tracks coffee batches during fermentation
     Can process either a single grade_id or multiple grade_ids (batch)
     """
-    # Processing ID - provided by frontend
+    # Processing ID - provided by frontend, format: {BATCH_ID}-FER (e.g., BA001-FER)
     processing_id = models.CharField(
         max_length=50,
         unique=True,
         editable=True,
         primary_key=True,
-        help_text="Frontend-generated: FER{DDMM}{SEQ} (e.g., FER041200)"
+        help_text="Frontend-generated: {BATCH_ID}-FER (e.g., BA001-FER)"
     )
 
     # Store grade_ids as JSON array to support both single and batch processing
@@ -347,13 +302,13 @@ class Washing(models.Model):
     Washing process - tracks coffee batches during washing
     Can process either a single grade_id or multiple grade_ids (batch)
     """
-    # Processing ID - auto-generated unique identifier
+    # Processing ID - provided by frontend, format: {BATCH_ID}-WSH (e.g., BA001-WSH)
     processing_id = models.CharField(
         max_length=50,
         unique=True,
-        editable=False,
+        editable=True,
         primary_key=True,
-        help_text="Auto-generated: WASH-{YYYYMMDD}-{SEQ}"
+        help_text="Frontend-generated: {BATCH_ID}-WSH (e.g., BA001-WSH)"
     )
 
     # Store grade_ids as JSON array to support both single and batch processing
@@ -401,30 +356,8 @@ class Washing(models.Model):
         return f"{self.processing_id} - {grade_count} grade(s)"
 
     def save(self, *args, **kwargs):
-        """Auto-generate processing_id before saving"""
-        # Auto-generate processing_id if not exists
-        if not self.processing_id:
-            self.processing_id = self.generate_processing_id()
-
+        """Save the washing record"""
         super().save(*args, **kwargs)
-
-    def generate_processing_id(self):
-        """
-        Generate processing_id in format: WASH-{YYYYMMDD}-{SEQ}
-        Example: WASH-20250114-001
-        """
-        from datetime import date
-        today = date.today().strftime('%Y%m%d')
-
-        # Get count of Washing entries for this date
-        same_day_count = Washing.objects.filter(
-            date=self.date
-        ).count()
-
-        # Sequential number
-        sequence = f"{same_day_count + 1:03d}"
-
-        return f"WASH-{today}-{sequence}"
 
 
 class NaturalSundrying(models.Model):
@@ -432,13 +365,13 @@ class NaturalSundrying(models.Model):
     Natural Sundrying process - tracks coffee batches during natural sun drying
     Can process either a single grade_id or multiple grade_ids (batch)
     """
-    # Processing ID - auto-generated unique identifier
+    # Processing ID - provided by frontend, format: {BATCH_ID}-SUN (e.g., BA001-SUN)
     processing_id = models.CharField(
         max_length=50,
         unique=True,
-        editable=False,
+        editable=True,
         primary_key=True,
-        help_text="Auto-generated: SUND-{YYYYMMDD}-{SEQ}"
+        help_text="Frontend-generated: {BATCH_ID}-SUN (e.g., BA001-SUN)"
     )
 
     # Store grade_ids as JSON array to support both single and batch processing
@@ -486,30 +419,8 @@ class NaturalSundrying(models.Model):
         return f"{self.processing_id} - {grade_count} grade(s)"
 
     def save(self, *args, **kwargs):
-        """Auto-generate processing_id before saving"""
-        # Auto-generate processing_id if not exists
-        if not self.processing_id:
-            self.processing_id = self.generate_processing_id()
-
+        """Save the natural sundrying record"""
         super().save(*args, **kwargs)
-
-    def generate_processing_id(self):
-        """
-        Generate processing_id in format: SUND-{YYYYMMDD}-{SEQ}
-        Example: SUND-20250114-001
-        """
-        from datetime import date
-        today = date.today().strftime('%Y%m%d')
-
-        # Get count of Sundrying entries for this date
-        same_day_count = NaturalSundrying.objects.filter(
-            start_date=self.start_date
-        ).count()
-
-        # Sequential number
-        sequence = f"{same_day_count + 1:03d}"
-
-        return f"SUND-{today}-{sequence}"
     
 class Drying(models.Model):
     """
