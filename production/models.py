@@ -56,11 +56,13 @@ class Harvests(models.Model):
         help_text="Date when harvest was delivered"
     )
 
-    # Payment amount
+    # Payment amount (optional - only when paying labour)
     amount_paid = models.DecimalField(
         max_digits=10,
         decimal_places=2,
-        help_text="Amount paid to worker"
+        null=True,
+        blank=True,
+        help_text="Amount paid to worker (optional - only when paying labour)"
     )
 
     # Staff member who processed payment (Foreign Key to Staff model)
@@ -73,7 +75,9 @@ class Harvests(models.Model):
 
     paid_by = models.CharField(
         max_length=100,
-        help_text="Staff member who processed the payment"
+        null=True,
+        blank=True,
+        help_text="Staff member who processed the payment (optional - only when paying labour)"
     )
 
     # Timestamp fields
@@ -101,8 +105,8 @@ class Harvests(models.Model):
 
         super().save(*args, **kwargs)
 
-        # Auto-create an expense record when a production harvest is first created
-        if is_new:
+        # Auto-create an expense record when a production harvest is first created (only if labour was paid)
+        if is_new and self.amount_paid and self.amount_paid > 0:
             try:
                 from financialmanagement.models import Expense
                 from decimal import Decimal
@@ -114,7 +118,7 @@ class Harvests(models.Model):
                     item="Coffee",
                     supplier=self.worker_name,
                     description=f"Production harvest: {self.weight_on_delivery}kg from block {self.block_id}",
-                    amount=Decimal(str(self.amount_paid)) if self.amount_paid else Decimal('0.00'),
+                    amount=Decimal(str(self.amount_paid)),
                     date=self.date_of_delivery,
                     location=self.block_id or "Farm"
                 )

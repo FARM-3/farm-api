@@ -148,8 +148,8 @@ class FarmerRegistration(models.Model):
     defforestation_status = models.BooleanField(default=True)      
 
     #source of seedlings
-    source_of_seedlings = models.CharField(max_length=100, blank=False)      
-    type_of_seedlings = models.CharField(max_length=100, blank=False)     
+    source_of_seedlings = models.CharField(max_length=100, blank=False)
+    type_of_seedlings = models.JSONField(blank=False)
     age_of_seedlings = models.CharField(max_length=100, blank=False)          
     standard_practices = models.BooleanField(default=False) 
     irrigation_source = models.CharField(max_length=100, blank=False)       
