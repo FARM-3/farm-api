@@ -10,6 +10,15 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+from dotenv import load_dotenv
+import os
+from pathlib import Path
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+load_dotenv(BASE_DIR / ".env")
+
+
 import os
 from pathlib import Path
 try:
@@ -19,6 +28,17 @@ except ImportError:
 from datetime import timedelta
 from decouple import config
 from dotenv import load_dotenv
+
+import os
+
+PESAPAL_CONSUMER_KEY = os.getenv("PESAPAL_CONSUMER_KEY")
+PESAPAL_CONSUMER_SECRET = os.getenv("PESAPAL_CONSUMER_SECRET")
+PESAPAL_BASE_URL = os.getenv("PESAPAL_BASE_URL")
+PESAPAL_IPN_ID = os.getenv("PESAPAL_IPN_ID")
+
+
+print("PESAPAL BASE URL:", PESAPAL_BASE_URL)
+
 
 load_dotenv()
 import environ
@@ -73,6 +93,7 @@ INSTALLED_APPS = [
     "taskmanagement",
     'activities',
     'farmtours',
+    'payments',
 
 ]
 
