@@ -13,6 +13,7 @@ from django.dispatch import receiver
 from django.contrib.contenttypes.models import ContentType
 from .models import FarmerRegistration, FarmerHarvest
 from activities.models import Activity
+from activities.middleware import get_current_user
 
 logger = logging.getLogger(__name__)
 
@@ -32,14 +33,15 @@ def log_farmer_activity(sender, instance, created, **kwargs):
             object_repr = f"Farmer: {instance.first_name} {instance.last_name}"
 
         content_type = ContentType.objects.get_for_model(FarmerRegistration)
+        user = get_current_user()
         Activity.objects.create(
-            user=None,  # Activity allows null user for system-triggered operations
+            user=user,
             action=action,
             content_type=content_type,
             object_id=instance.farmer_id,
             object_repr=object_repr,
         )
-        logger.info(f"[aggregation.signals] Logged farmer {action}: {instance.farmer_id}")
+        logger.info(f"[aggregation.signals] Logged farmer {action}: {instance.farmer_id} by {user or 'System'}")
     except Exception as e:
         logger.error(f"[aggregation.signals] Failed to log farmer activity for {instance.farmer_id}: {str(e)}", exc_info=True)
         # Note: We do NOT re-raise this exception - activity logging failure should not break the operation
@@ -60,14 +62,15 @@ def log_harvest_activity(sender, instance, created, **kwargs):
             object_repr = f"Harvest: {instance.weight_on_delivery}kg from {instance.name or 'Farmer'}"
 
         content_type = ContentType.objects.get_for_model(FarmerHarvest)
+        user = get_current_user()
         Activity.objects.create(
-            user=None,  # Activity allows null user for system-triggered operations
+            user=user,
             action=action,
             content_type=content_type,
             object_id=instance.harvest_id,
             object_repr=object_repr,
         )
-        logger.info(f"[aggregation.signals] Logged harvest {action}: {instance.harvest_id}")
+        logger.info(f"[aggregation.signals] Logged harvest {action}: {instance.harvest_id} by {user or 'System'}")
     except Exception as e:
         logger.error(f"[aggregation.signals] Failed to log harvest activity for {instance.harvest_id}: {str(e)}", exc_info=True)
         # Note: We do NOT re-raise this exception - activity logging failure should not break the operation
@@ -85,14 +88,15 @@ def log_farmer_deletion(sender, instance, **kwargs):
     try:
         object_repr = f"Farmer: {instance.first_name} {instance.last_name}"
         content_type = ContentType.objects.get_for_model(FarmerRegistration)
+        user = get_current_user()
         Activity.objects.create(
-            user=None,  # Activity allows null user for system-triggered operations
+            user=user,
             action=Activity.ACTION_DELETED,
             content_type=content_type,
             object_id=instance.farmer_id,
             object_repr=object_repr,
         )
-        logger.info(f"[aggregation.signals] Logged farmer deletion: {instance.farmer_id}")
+        logger.info(f"[aggregation.signals] Logged farmer deletion: {instance.farmer_id} by {user or 'System'}")
     except Exception as e:
         logger.error(f"[aggregation.signals] Failed to log farmer deletion for {instance.farmer_id}: {str(e)}", exc_info=True)
         # Note: We do NOT re-raise this exception - activity logging failure should not block the deletion
@@ -111,14 +115,15 @@ def log_harvest_deletion(sender, instance, **kwargs):
     try:
         object_repr = f"Harvest: {instance.weight_on_delivery}kg from {instance.name or 'Farmer'}"
         content_type = ContentType.objects.get_for_model(FarmerHarvest)
+        user = get_current_user()
         Activity.objects.create(
-            user=None,  # Activity allows null user for system-triggered operations
+            user=user,
             action=Activity.ACTION_DELETED,
             content_type=content_type,
             object_id=instance.harvest_id,
             object_repr=object_repr,
         )
-        logger.info(f"[aggregation.signals] Logged harvest deletion: {instance.harvest_id}")
+        logger.info(f"[aggregation.signals] Logged harvest deletion: {instance.harvest_id} by {user or 'System'}")
     except Exception as e:
         logger.error(f"[aggregation.signals] Failed to log harvest deletion for {instance.harvest_id}: {str(e)}", exc_info=True)
         # Note: We do NOT re-raise this exception - activity logging failure should not block the deletion
