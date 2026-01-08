@@ -179,7 +179,7 @@ class RipenessViewSet(viewsets.ModelViewSet):
     filterset_fields = ['date', 'harvest']
 
     # Fields you can search in: /api/ripeness/?search=ED0711PA1
-    search_fields = ['harvest__harvest_id', 'harvest__worker_name']
+    search_fields = ['harvest']
 
     # Fields you can order by: /api/ripeness/?ordering=-ripeness_score
     ordering_fields = ['date', 'ripeness_score', 'sample_size', 'created_at']
@@ -239,7 +239,7 @@ class FloatingViewSet(viewsets.ModelViewSet):
     filterset_fields = ['grade', 'date', 'harvest']
 
     # Fields you can search in: /api/floating/?search=GRA1411A00
-    search_fields = ['grade_id', 'grade', 'harvest__harvest_id', 'harvest__worker_name']
+    search_fields = ['grade_id', 'grade', 'harvest']
 
     # Fields you can order by: /api/floating/?ordering=-weight
     ordering_fields = ['date', 'weight', 'ripeness_score', 'created_at']

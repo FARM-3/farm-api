@@ -75,9 +75,9 @@ class HarvestsSerializer(serializers.ModelSerializer):
 
     def validate_amount_paid(self, value):
         """
-        Ensure amount paid is non-negative
+        Ensure amount paid is non-negative (allow None for unpaid labour)
         """
-        if value < 0:
+        if value is not None and value < 0:
             raise serializers.ValidationError("Amount paid cannot be negative")
         return value
 

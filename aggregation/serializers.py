@@ -3,6 +3,11 @@ from .models import FarmerRegistration
 from .models import FarmerHarvest
 
 class FarmerRegistrationSerializer(serializers.ModelSerializer):
+    type_of_seedlings = serializers.ListField(
+        child=serializers.CharField(max_length=20),
+        allow_empty=False
+    )
+
     class Meta:
         model = FarmerRegistration
         fields = '__all__'  

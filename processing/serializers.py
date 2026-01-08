@@ -169,18 +169,15 @@ class RipenessSerializer(serializers.ModelSerializer):
     """
     Serializer for Ripeness (Quality Control) model
     Ripeness score is auto-calculated by the model's save() method
+    Supports both production harvests and aggregation harvests
     """
     # Read-only field - calculated automatically from no_of_redcherry / sample_size
     ripeness_score = serializers.ReadOnlyField()
 
-    # Display harvest_id instead of the full harvest object
-    harvest_id = serializers.CharField(source='harvest.harvest_id', read_only=True)
-
     class Meta:
         model = Ripeness
         fields = [
-            'harvest',  # For creating/updating (accepts harvest_id)
-            'harvest_id',  # For display (shows harvest_id string)
+            'harvest',  # Harvest ID string (works for both production and aggregation)
             'date',
             'sample_size',
             'no_of_redcherry',
@@ -212,19 +209,16 @@ class FloatingSerializer(serializers.ModelSerializer):
     Serializer for Floating (Quality Control) model
     Grade ID is frontend-generated in format: {HARVEST_ID}-GR{A/B}
     Ripeness score is auto-filled from the related Ripeness test
+    Supports both production harvests and aggregation harvests
     """
     # Ripeness score is auto-filled, read-only
     ripeness_score = serializers.ReadOnlyField()
-
-    # Display harvest_id instead of the full harvest object
-    harvest_id = serializers.CharField(source='harvest.harvest_id', read_only=True)
 
     class Meta:
         model = Floating
         fields = [
             'grade_id',  # Frontend-generated (e.g., HV001-GRA), writable
-            'harvest',  # For creating/updating (accepts harvest_id)
-            'harvest_id',  # For display (shows harvest_id string)
+            'harvest',  # Harvest ID string (works for both production and aggregation)
             'grade',  # User input (e.g., "A" or "B")
             'weight',
             'date',

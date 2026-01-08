@@ -79,14 +79,79 @@ class Migration(migrations.Migration):
                 blank=True, help_text="Time of day (e.g., '2:30 PM')", max_length=50
             ),
         ),
-        migrations.AlterField(
-            model_name="task",
-            name="assigned_to",
-            field=models.JSONField(
-                blank=True,
-                default=list,
-                help_text="Array of staff IDs assigned to this task",
-            ),
+        migrations.SeparateDatabaseAndState(
+            database_operations=[
+                # Convert existing integer FK values to a JSON array before changing the
+                # column type to jsonb. The original schema used a ForeignKey so the
+                # physical column in Postgres is `assigned_to_id`. To safely convert we:
+                #  - drop the FK constraint if it exists,
+                #  - rename `assigned_to_id` -> `assigned_to` (Django field name),
+                #  - alter the column type to jsonb by wrapping the existing integer into
+                #    a one-element array and converting to jsonb. This preserves existing
+                #    assignments as an array [id].
+                migrations.RunSQL(
+                    # Use a plpgsql DO block to make the migration robust across Postgres
+                    # versions and to handle cases where the original column may be
+                    # `assigned_to_id` (FK) or already `assigned_to`.
+                    sql=(
+                        "DO $$\n"
+                        "DECLARE c record;\n"
+                        "BEGIN\n"
+                        "  -- Ensure a jsonb 'assigned_to' column exists. If not, create it.\n"
+                        "  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='taskmanagement_task' AND column_name='assigned_to') THEN\n"
+                        "    ALTER TABLE taskmanagement_task ADD COLUMN assigned_to jsonb;\n"
+                        "    -- If an integer FK column exists, populate the new jsonb column from it\n"
+                        "    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='taskmanagement_task' AND column_name='assigned_to_id') THEN\n"
+                        "      UPDATE taskmanagement_task SET assigned_to = to_jsonb(ARRAY[assigned_to_id]) WHERE assigned_to_id IS NOT NULL;\n"
+                        "    END IF;\n"
+                        "    ALTER TABLE taskmanagement_task ALTER COLUMN assigned_to SET DEFAULT '[]'::jsonb;\n"
+                        "  END IF;\n"
+                        "\n"
+                        "  -- If the old FK column exists, drop any FK constraints referencing it and then drop the column.\n"
+                        "  IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='taskmanagement_task' AND column_name='assigned_to_id') THEN\n"
+                        "    -- Drop FK constraints regardless of their exact names\n"
+                        "    FOR c IN SELECT pc.conname FROM pg_constraint pc\n"
+                        "      JOIN pg_class cl ON pc.conrelid = cl.oid\n"
+                        "      JOIN unnest(pc.conkey) WITH ORDINALITY AS cols(attnum, idx) ON true\n"
+                        "      JOIN pg_attribute a ON a.attrelid = cl.oid AND a.attnum = cols.attnum\n"
+                        "      WHERE cl.relname = 'taskmanagement_task' AND a.attname = 'assigned_to_id' AND pc.contype = 'f'\n"
+                        "    LOOP\n"
+                        "      EXECUTE format('ALTER TABLE taskmanagement_task DROP CONSTRAINT %I', c.conname);\n"
+                        "    END LOOP;\n"
+                        "    -- Finally drop the old FK column\n"
+                        "    ALTER TABLE taskmanagement_task DROP COLUMN assigned_to_id;\n"
+                        "  END IF;\n"
+                        "END$$;"
+                    ),
+                    reverse_sql=(
+                        "DO $$\n"
+                        "BEGIN\n"
+                        "  -- Try to convert jsonb array back to bigint and rename column back if needed\n"
+                        "  IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'taskmanagement_task' AND column_name = 'assigned_to') THEN\n"
+                        "    BEGIN\n"
+                        "      EXECUTE 'ALTER TABLE taskmanagement_task ALTER COLUMN assigned_to TYPE bigint USING ((assigned_to->>0)::bigint)';\n"
+                        "    EXCEPTION WHEN others THEN\n"
+                        "      RAISE NOTICE 'Skipping reverse assigned_to conversion: %', SQLERRM;\n"
+                        "    END;\n"
+                        "    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'taskmanagement_task' AND column_name = 'assigned_to') THEN\n"
+                        "      EXECUTE 'ALTER TABLE taskmanagement_task RENAME COLUMN assigned_to TO assigned_to_id';\n"
+                        "    END IF;\n"
+                        "  END IF;\n"
+                        "END$$;"
+                    ),
+                ),
+            ],
+            state_operations=[
+                migrations.AlterField(
+                    model_name="task",
+                    name="assigned_to",
+                    field=models.JSONField(
+                        blank=True,
+                        default=list,
+                        help_text="Array of staff IDs assigned to this task",
+                    ),
+                ),
+            ]
         ),
         migrations.AlterField(
             model_name="task",
