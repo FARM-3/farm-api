@@ -28,14 +28,14 @@ class Ripeness(models.Model):
     Quality Control - Ripeness Test
     First step of processing: tests the ripeness of coffee cherries
     Measures percentage of red cherries in a sample
+    Supports both production harvests and aggregation harvests
     """
-    # Foreign key to Harvests (production app)
-    harvest = models.OneToOneField(
-        'production.Harvests',
-        on_delete=models.CASCADE,
+    # Harvest ID (supports both production.Harvests and aggregation.FarmerHarvest)
+    harvest = models.CharField(
+        max_length=50,
+        unique=True,
         primary_key=True,
-        related_name='ripeness_test',
-        help_text="Harvest batch being tested for ripeness"
+        help_text="Harvest ID from either production or aggregation"
     )
 
     # Test date
@@ -76,7 +76,7 @@ class Ripeness(models.Model):
         verbose_name_plural = "Ripeness Tests"
 
     def __str__(self):
-        return f"{self.harvest.harvest_id} - Ripeness: {self.ripeness_score}%"
+        return f"{self.harvest} - Ripeness: {self.ripeness_score}%"
 
     def save(self, *args, **kwargs):
         """Auto-calculate ripeness_score before saving"""
@@ -102,6 +102,7 @@ class Floating(models.Model):
     Quality Control - Floating Test
     Second step: separates coffee into grades based on floating behavior
     Grade A: netweight (sinkers), Grade B: floaters
+    Supports both production harvests and aggregation harvests
     """
     # Primary key: frontend-generated grade_id (format: {HARVEST_ID}-GRA or {HARVEST_ID}-GRB)
     grade_id = models.CharField(
@@ -112,12 +113,11 @@ class Floating(models.Model):
         help_text="Frontend-generated: {HARVEST_ID}-GR{A/B} (e.g., HV001-GRA, HV001-GRB)"
     )
 
-    # Foreign key to Harvests (production app)
-    harvest = models.ForeignKey(
-        'production.Harvests',
-        on_delete=models.CASCADE,
-        related_name='floating_tests',
-        help_text="Harvest batch being tested for floating"
+    # Harvest ID (supports both production.Harvests and aggregation.FarmerHarvest)
+    harvest = models.CharField(
+        max_length=50,
+        db_index=True,
+        help_text="Harvest ID from either production or aggregation"
     )
 
     # Grade (A for netweight/sinkers, B for floaters)
