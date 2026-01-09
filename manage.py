@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 """Django's command-line utility for administrative tasks."""
 import os
+# ONLY for development on http://localhost or http://127.0.0.1
+os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
+
+import os
 import sys
 
 

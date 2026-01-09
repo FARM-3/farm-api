@@ -54,6 +54,8 @@ urlpatterns = [
     # TOKEN ENDPOINTS
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path("api/payments/", include("payments.urls")),
+
 ]
 
 # Serve static files during development and in production if DEBUG is True

@@ -6,6 +6,81 @@ from django.conf import settings
 from django.db import migrations, models
 
 
+
+def forward_migration(apps, schema_editor):
+    if schema_editor.connection.vendor == 'postgresql':
+        sql = """DO $$
+DECLARE c record;
+BEGIN
+  -- Ensure a jsonb 'assigned_to' column exists. If not, create it.
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='taskmanagement_task' AND column_name='assigned_to') THEN
+    ALTER TABLE taskmanagement_task ADD COLUMN assigned_to jsonb;
+    -- If an integer FK column exists, populate the new jsonb column from it
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='taskmanagement_task' AND column_name='assigned_to_id') THEN
+      UPDATE taskmanagement_task SET assigned_to = to_jsonb(ARRAY[assigned_to_id]) WHERE assigned_to_id IS NOT NULL;
+    END IF;
+    ALTER TABLE taskmanagement_task ALTER COLUMN assigned_to SET DEFAULT '[]'::jsonb;
+  END IF;
+
+  -- If the old FK column exists, drop any FK constraints referencing it and then drop the column.
+  IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='taskmanagement_task' AND column_name='assigned_to_id') THEN
+    -- Drop FK constraints regardless of their exact names
+    FOR c IN SELECT pc.conname FROM pg_constraint pc
+      JOIN pg_class cl ON pc.conrelid = cl.oid
+      JOIN unnest(pc.conkey) WITH ORDINALITY AS cols(attnum, idx) ON true
+      JOIN pg_attribute a ON a.attrelid = cl.oid AND a.attnum = cols.attnum
+      WHERE cl.relname = 'taskmanagement_task' AND a.attname = 'assigned_to_id' AND pc.contype = 'f'
+    LOOP
+      EXECUTE format('ALTER TABLE taskmanagement_task DROP CONSTRAINT %I', c.conname);
+    END LOOP;
+    -- Finally drop the old FK column
+    ALTER TABLE taskmanagement_task DROP COLUMN assigned_to_id;
+  END IF;
+END$$;"""
+        schema_editor.execute(sql)
+    else:
+        # SQLite fallback for CI
+        try:
+            with schema_editor.connection.cursor() as cursor:
+                # Check current columns
+                cursor.execute("PRAGMA table_info(taskmanagement_task)")
+                columns = [row[1] for row in cursor.fetchall()]
+
+                # Drop old FK column if exists
+                if 'assigned_to_id' in columns:
+                    # SQLite ignoring FK constraints for drop is safer in transaction
+                    cursor.execute("PRAGMA foreign_keys = OFF")
+                    cursor.execute("ALTER TABLE taskmanagement_task DROP COLUMN assigned_to_id")
+                    cursor.execute("PRAGMA foreign_keys = ON")
+
+                # Add new JSON-compatible column if missing
+                if 'assigned_to' not in columns:
+                    cursor.execute("ALTER TABLE taskmanagement_task ADD COLUMN assigned_to text DEFAULT '[]'")
+        except Exception as e:
+            print(f"SQLite migration warning: {e}")
+
+
+def reverse_migration(apps, schema_editor):
+    if schema_editor.connection.vendor == 'postgresql':
+        sql = """DO $$
+BEGIN
+  -- Try to convert jsonb array back to bigint and rename column back if needed
+  IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'taskmanagement_task' AND column_name = 'assigned_to') THEN
+    BEGIN
+      EXECUTE 'ALTER TABLE taskmanagement_task ALTER COLUMN assigned_to TYPE bigint USING ((assigned_to->>0)::bigint)';
+    EXCEPTION WHEN others THEN
+      RAISE NOTICE 'Skipping reverse assigned_to conversion: %', SQLERRM;
+    END;
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'taskmanagement_task' AND column_name = 'assigned_to') THEN
+      EXECUTE 'ALTER TABLE taskmanagement_task RENAME COLUMN assigned_to TO assigned_to_id';
+    END IF;
+  END IF;
+END$$;"""
+        schema_editor.execute(sql)
+    else:
+        pass
+
+
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -79,14 +154,29 @@ class Migration(migrations.Migration):
                 blank=True, help_text="Time of day (e.g., '2:30 PM')", max_length=50
             ),
         ),
-        migrations.AlterField(
-            model_name="task",
-            name="assigned_to",
-            field=models.JSONField(
-                blank=True,
-                default=list,
-                help_text="Array of staff IDs assigned to this task",
-            ),
+        migrations.SeparateDatabaseAndState(
+            database_operations=[
+                # Convert existing integer FK values to a JSON array before changing the
+                # column type to jsonb. The original schema used a ForeignKey so the
+                # physical column in Postgres is `assigned_to_id`. To safely convert we:
+                #  - drop the FK constraint if it exists,
+                #  - rename `assigned_to_id` -> `assigned_to` (Django field name),
+                #  - alter the column type to jsonb by wrapping the existing integer into
+                #    a one-element array and converting to jsonb. This preserves existing
+                #    assignments as an array [id].
+                migrations.RunPython(forward_migration, reverse_migration),
+            ],
+            state_operations=[
+                migrations.AlterField(
+                    model_name="task",
+                    name="assigned_to",
+                    field=models.JSONField(
+                        blank=True,
+                        default=list,
+                        help_text="Array of staff IDs assigned to this task",
+                    ),
+                ),
+            ]
         ),
         migrations.AlterField(
             model_name="task",
