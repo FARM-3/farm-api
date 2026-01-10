@@ -11,6 +11,7 @@ from rest_framework.views import APIView
 
 
 
+
 from .services.pesapal import (
     get_pesapal_access_token,
     get_transaction_status,
@@ -172,3 +173,35 @@ def get_transaction_status_view(request):
         return Response({"success": False, "error": str(exc)}, status=400)
 
     return Response({"success": True, "data": data})
+
+
+@api_view(["POST"])
+def pesapal_ipn_callback(request):
+    """
+    This endpoint is called by Pesapal when a transaction status changes.
+    """
+    data = request.data
+
+    order_tracking_id = data.get("OrderTrackingId") or data.get("orderTrackingId")
+    merchant_reference = data.get("OrderMerchantReference")
+    payment_status = data.get("Status")
+
+    if not order_tracking_id:
+        return Response(
+            {"success": False, "error": "Missing OrderTrackingId"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    # OPTIONAL (recommended): confirm status from Pesapal
+    # confirmed_status = get_transaction_status(order_tracking_id)
+
+    # TODO:
+    # - Update your Order model
+    # - Mark payment as PAID / FAILED / CANCELLED
+    # - Trigger delivery / email / invoice
+
+    print("📩 PESAPAL IPN RECEIVED:", data)
+
+    return Response({"success": True}, status=status.HTTP_200_OK)
+
+    
