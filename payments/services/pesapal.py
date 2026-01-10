@@ -63,7 +63,7 @@ def get_pesapal_access_token():
 
     return token
 
-
+#This is to register an IPN URL with Pesapal
 def register_ipn_url(url: str, ipn_notification_type: str = "GET") -> dict:
     """Register an IPN URL with Pesapal and return the parsed JSON response.
 
