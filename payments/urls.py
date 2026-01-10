@@ -1,4 +1,5 @@
 from django.urls import path
+from .views import pesapal_ipn_callback
 from .views import (
     test_pesapal_auth,
     list_ipns,
@@ -17,4 +18,6 @@ urlpatterns = [
     path("transaction-status/", get_transaction_status_view),
     path("refund-request/", refund_request_view),
     path("cancel-order/", cancel_order_view),
+    path("ipn/", pesapal_ipn_callback, name="pesapal-ipn"),
+
 ]
