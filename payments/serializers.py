@@ -1,5 +1,12 @@
 from rest_framework import serializers
 
+class RegisterIPNSerializer(serializers.Serializer):
+    url = serializers.URLField()
+    ipn_notification_type = serializers.ChoiceField(
+        choices=["GET", "POST"],
+        default="GET"
+    )
+
 
 class BillingAddressSerializer(serializers.Serializer):
     phone_number = serializers.CharField(required=False, allow_blank=True)

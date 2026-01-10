@@ -5,6 +5,11 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.conf import settings
 from rest_framework import status
+from rest_framework.views import APIView
+
+
+
+
 
 from .services.pesapal import (
     get_pesapal_access_token,
@@ -20,6 +25,7 @@ from .serializers import (
     SubmitOrderSerializer,
     RefundRequestSerializer,
     CancelOrderSerializer,
+    RegisterIPNSerializer,
 )
 
 
@@ -51,24 +57,30 @@ def test_pesapal_auth(request):
     return Response({"success": True, "token": token})
 
 
-@api_view(["POST"])
-def register_ipn(request):
-    """Register an IPN URL with Pesapal.
 
-    Expected body: { "url": "https://yourdomain.com/ipn", "ipn_notification_type": "GET" }
-    """
-    url = request.data.get("url")
-    ipn_type = request.data.get("ipn_notification_type", "GET")
+class RegisterIPNView(APIView):
+    serializer_class = RegisterIPNSerializer
 
-    if not url:
-        return Response({"success": False, "error": "url is required"}, status=400)
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+        if not serializer.is_valid():
+            return Response(
+                {"success": False, "errors": serializer.errors},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
-    try:
-        data = register_ipn_url(url, ipn_type)
-    except Exception as exc:
-        return Response({"success": False, "error": str(exc)}, status=400)
+        try:
+            data = register_ipn_url(
+                serializer.validated_data["url"],
+                serializer.validated_data["ipn_notification_type"]
+            )
+        except Exception as exc:
+            return Response(
+                {"success": False, "error": str(exc)},
+                status=400
+            )
 
-    return Response({"success": True, "data": data})
+        return Response({"success": True, "data": data})
 
 
 @api_view(["POST"])
