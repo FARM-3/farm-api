@@ -3,7 +3,7 @@
 ## Overview
 Complete redesign of the Sundrying model to track daily drying progress with automated calculations and weekly lot consolidation.
 
-## Model Structure
+## The Model Structure
 
 ### Drying Model Fields
 

@@ -19,6 +19,8 @@ jobs:
           key: ${{ secrets.DO_SSH_KEY }}
           passphrase: ""
           script: |
+            set -e  # Exit immediately if any command fails
+
             # 1. Navigate to the project directory
             cd /home/rugyeyo/backend
             
