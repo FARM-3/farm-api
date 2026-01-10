@@ -1,10 +1,17 @@
 from django.urls import path
-from .views import test_pesapal_auth, register_ipn, list_ipns
-from .views import submit_order, get_transaction_status_view, refund_request_view, cancel_order_view
+from .views import (
+    test_pesapal_auth,
+    list_ipns,
+    submit_order,
+    get_transaction_status_view,
+    refund_request_view,
+    cancel_order_view,
+    RegisterIPNView,
+)
 
 urlpatterns = [
     path("test-auth/", test_pesapal_auth),
-    path("register-ipn/", register_ipn),
+    path("register-ipn/", RegisterIPNView.as_view(), name="register-ipn"),
     path("list-ipn/", list_ipns),
     path("submit-order/", submit_order),
     path("transaction-status/", get_transaction_status_view),
