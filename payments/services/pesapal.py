@@ -4,8 +4,8 @@ from django.conf import settings
 
 LOG = logging.getLogger(__name__)
 
-# Default to the Pesapal QA sandbox base URL but allow overriding via Django settings
-PESAPAL_DEFAULT_BASE_URL = "https://pay.pesapal.com/v3/api"
+# Default to the Pesapal sandbox base URL but allow overriding via Django settings
+PESAPAL_DEFAULT_BASE_URL = "https://cybqa.pesapal.com/pesapalv3/api"
 
 
 

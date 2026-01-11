@@ -3,6 +3,7 @@ from .views import pesapal_ipn_callback
 from .views import (
     test_pesapal_auth,
     list_ipns,
+    get_active_ipn_id,
     submit_order,
     get_transaction_status_view,
     refund_request_view,
@@ -14,6 +15,7 @@ urlpatterns = [
     path("test-auth/", test_pesapal_auth),
     path("register-ipn/", RegisterIPNView.as_view(), name="register-ipn"),
     path("list-ipn/", list_ipns),
+    path("get-active-ipn-id/", get_active_ipn_id),
     path("submit-order/", submit_order),
     path("transaction-status/", get_transaction_status_view),
     path("refund-request/", refund_request_view),
