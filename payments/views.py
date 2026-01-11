@@ -140,6 +140,26 @@ def list_ipns(request):
     return Response({"success": True, "data": data})
 
 
+@api_view(["GET"])
+def get_active_ipn_id(request):
+    """Return the active IPN notification ID for frontend use."""
+    try:
+        ipn_list = get_ipn_list()
+        if ipn_list and len(ipn_list) > 0:
+            # Return the first active IPN ID
+            return Response({
+                "success": True,
+                "notification_id": ipn_list[0].get("ipn_id")
+            })
+        else:
+            return Response({
+                "success": False,
+                "error": "No IPN registered. Please register an IPN URL first."
+            }, status=400)
+    except Exception as exc:
+        return Response({"success": False, "error": str(exc)}, status=400)
+
+
 @api_view(["POST"])
 def submit_order(request):
     """Accepts order details from frontend, validates them, submits to Pesapal and returns redirect_url."""
