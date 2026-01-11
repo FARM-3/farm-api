@@ -4,8 +4,9 @@ from django.conf import settings
 
 LOG = logging.getLogger(__name__)
 
-# Default to the Pesapal QA sandbox base URL but allow overriding via Django settings
+# Default to the Pesapal sandbox base URL but allow overriding via Django settings
 PESAPAL_DEFAULT_BASE_URL = "https://cybqa.pesapal.com/pesapalv3/api"
+
 
 
 def get_pesapal_access_token():
@@ -62,7 +63,7 @@ def get_pesapal_access_token():
 
     return token
 
-
+#This is to register an IPN URL with Pesapal
 def register_ipn_url(url: str, ipn_notification_type: str = "GET") -> dict:
     """Register an IPN URL with Pesapal and return the parsed JSON response.
 

@@ -5,6 +5,12 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.conf import settings
 from rest_framework import status
+from rest_framework.views import APIView
+
+
+
+
+
 
 from .services.pesapal import (
     get_pesapal_access_token,
@@ -20,6 +26,7 @@ from .serializers import (
     SubmitOrderSerializer,
     RefundRequestSerializer,
     CancelOrderSerializer,
+    RegisterIPNSerializer,
 )
 
 
@@ -51,24 +58,30 @@ def test_pesapal_auth(request):
     return Response({"success": True, "token": token})
 
 
-@api_view(["POST"])
-def register_ipn(request):
-    """Register an IPN URL with Pesapal.
 
-    Expected body: { "url": "https://yourdomain.com/ipn", "ipn_notification_type": "GET" }
-    """
-    url = request.data.get("url")
-    ipn_type = request.data.get("ipn_notification_type", "GET")
+class RegisterIPNView(APIView):
+    serializer_class = RegisterIPNSerializer
 
-    if not url:
-        return Response({"success": False, "error": "url is required"}, status=400)
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+        if not serializer.is_valid():
+            return Response(
+                {"success": False, "errors": serializer.errors},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
-    try:
-        data = register_ipn_url(url, ipn_type)
-    except Exception as exc:
-        return Response({"success": False, "error": str(exc)}, status=400)
+        try:
+            data = register_ipn_url(
+                serializer.validated_data["url"],
+                serializer.validated_data["ipn_notification_type"]
+            )
+        except Exception as exc:
+            return Response(
+                {"success": False, "error": str(exc)},
+                status=400
+            )
 
-    return Response({"success": True, "data": data})
+        return Response({"success": True, "data": data})
 
 
 @api_view(["POST"])
@@ -127,6 +140,26 @@ def list_ipns(request):
     return Response({"success": True, "data": data})
 
 
+@api_view(["GET"])
+def get_active_ipn_id(request):
+    """Return the active IPN notification ID for frontend use."""
+    try:
+        ipn_list = get_ipn_list()
+        if ipn_list and len(ipn_list) > 0:
+            # Return the first active IPN ID
+            return Response({
+                "success": True,
+                "notification_id": ipn_list[0].get("ipn_id")
+            })
+        else:
+            return Response({
+                "success": False,
+                "error": "No IPN registered. Please register an IPN URL first."
+            }, status=400)
+    except Exception as exc:
+        return Response({"success": False, "error": str(exc)}, status=400)
+
+
 @api_view(["POST"])
 def submit_order(request):
     """Accepts order details from frontend, validates them, submits to Pesapal and returns redirect_url."""
@@ -160,3 +193,35 @@ def get_transaction_status_view(request):
         return Response({"success": False, "error": str(exc)}, status=400)
 
     return Response({"success": True, "data": data})
+
+
+@api_view(["POST"])
+def pesapal_ipn_callback(request):
+    """
+    This endpoint is called by Pesapal when a transaction status changes.
+    """
+    data = request.data
+
+    order_tracking_id = data.get("OrderTrackingId") or data.get("orderTrackingId")
+    merchant_reference = data.get("OrderMerchantReference")
+    payment_status = data.get("Status")
+
+    if not order_tracking_id:
+        return Response(
+            {"success": False, "error": "Missing OrderTrackingId"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    # OPTIONAL (recommended): confirm status from Pesapal
+    # confirmed_status = get_transaction_status(order_tracking_id)
+
+    # TODO:
+    # - Update your Order model
+    # - Mark payment as PAID / FAILED / CANCELLED
+    # - Trigger delivery / email / invoice
+
+    print("📩 PESAPAL IPN RECEIVED:", data)
+
+    return Response({"success": True}, status=status.HTTP_200_OK)
+
+    

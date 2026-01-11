@@ -1,13 +1,22 @@
 from rest_framework import serializers
 
+class RegisterIPNSerializer(serializers.Serializer):
+    url = serializers.URLField()
+    ipn_notification_type = serializers.ChoiceField(
+        choices=["GET", "POST"],
+        default="GET"
+    )
+
 
 class BillingAddressSerializer(serializers.Serializer):
-    phone_number = serializers.CharField(required=False, allow_blank=True)
-    email_address = serializers.EmailField(required=False, allow_blank=True)
-    country_code = serializers.CharField(required=False, allow_blank=True)
-    first_name = serializers.CharField(required=False, allow_blank=True)
+    # Required fields per Pesapal documentation
+    email_address = serializers.EmailField()
+    phone_number = serializers.CharField()
+    country_code = serializers.CharField()
+    first_name = serializers.CharField()
+    last_name = serializers.CharField()
+    # Optional fields
     middle_name = serializers.CharField(required=False, allow_blank=True)
-    last_name = serializers.CharField(required=False, allow_blank=True)
     line_1 = serializers.CharField(required=False, allow_blank=True)
     line_2 = serializers.CharField(required=False, allow_blank=True)
     city = serializers.CharField(required=False, allow_blank=True)
