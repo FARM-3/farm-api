@@ -128,6 +128,16 @@ class User(AbstractBaseUser):
         help_text="User has completed security questions setup on first login"
     )
 
+    # ---- Staff Link ----
+    staff = models.OneToOneField(
+        'financialmanagement.Staff',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='user_account',
+        help_text="Link to staff member if this user is also a staff member"
+    )
+
     # ---- Django Required Fields ----
     is_active = models.BooleanField(
         default=True,

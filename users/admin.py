@@ -145,6 +145,7 @@ class UserAdmin(BaseUserAdmin):
         'name',
         'phone',
         'role',
+        'linked_staff',
         'is_active',
         'has_security_question',
         'has_security_answers_setup',
@@ -171,7 +172,7 @@ class UserAdmin(BaseUserAdmin):
 
         # Role Section
         ('Role & Permissions', {
-            'fields': ('role', 'is_active')
+            'fields': ('role', 'is_active', 'staff')
         }),
         
         # Security Section
@@ -209,6 +210,13 @@ class UserAdmin(BaseUserAdmin):
     )
     
     # ---- Custom Methods for List Display ----
+    @admin.display(description='Linked Staff')
+    def linked_staff(self, obj):
+        """Show linked staff member if any."""
+        if obj.staff:
+            return f"{obj.staff.get_full_name()} ({obj.staff.staff_id})"
+        return "-"
+
     @admin.display(boolean=True, description='Has Security Question')
     def has_security_question(self, obj):
         """Show if user has set up security question."""

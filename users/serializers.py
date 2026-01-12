@@ -17,6 +17,10 @@ class UserSerializer(serializers.ModelSerializer):
     # Make role human-readable (e.g., "Farm Manager" instead of "manager")
     role_display = serializers.CharField(source='get_role_display', read_only=True)
 
+    # Staff information (if user is linked to a staff member)
+    staff_id = serializers.CharField(source='staff.staff_id', read_only=True, allow_null=True)
+    staff_name = serializers.SerializerMethodField()
+
     class Meta:
         model = User
         fields = [
@@ -27,10 +31,21 @@ class UserSerializer(serializers.ModelSerializer):
             'role_display',
             'security_question',  # Question is OK to show, answer is NOT
             'security_answers_set',  # Flag to indicate if user has set up security questions
+            'staff_id',  # Staff ID if user is linked to staff
+            'staff_name',  # Staff full name if user is linked to staff
             'is_active',
             'created_at'
         ]
-        read_only_fields = ['id', 'created_at', 'security_answers_set']
+        read_only_fields = ['id', 'created_at', 'security_answers_set', 'staff_id', 'staff_name']
+
+    def get_staff_name(self, obj):
+        """
+        Get the full name of the linked staff member.
+        Returns None if user is not linked to a staff member.
+        """
+        if obj.staff:
+            return obj.staff.get_full_name()
+        return None
 
 
 # ============================================
