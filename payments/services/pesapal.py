@@ -175,6 +175,11 @@ def submit_order_request(order: dict) -> dict:
         if isinstance(order['amount'], Decimal):
             order['amount'] = float(order['amount'])
 
+    # FIX: Convert UUID to string for JSON serialization
+    from uuid import UUID
+    if 'notification_id' in order and isinstance(order['notification_id'], UUID):
+        order['notification_id'] = str(order['notification_id'])
+
     try:
         resp = requests.post(endpoint, json=order, headers=headers, timeout=15)
     except requests.RequestException as exc:
