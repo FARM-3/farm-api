@@ -105,10 +105,12 @@ def register_ipn_url(url: str, ipn_notification_type: str = "GET") -> dict:
         LOG.error("Non-JSON response from Pesapal when registering IPN: %s", resp.text)
         raise Exception(f"Invalid response from Pesapal when registering IPN: {resp.text}")
 
-    # Pesapal may include an error object
+    # Pesapal may include an error object - only treat as error if it has actual error information
     if data.get("error"):
-        LOG.error("Pesapal returned error when registering IPN: %s", data)
-        raise Exception(f"Pesapal error when registering IPN: {data}")
+        error_obj = data.get("error")
+        if error_obj and (error_obj.get("error_type") or error_obj.get("code") or error_obj.get("message")):
+            LOG.error("Pesapal returned error when registering IPN: %s", data)
+            raise Exception(f"Pesapal error when registering IPN: {data}")
 
     return data
 
@@ -193,9 +195,12 @@ def submit_order_request(order: dict) -> dict:
         raise Exception(f"Invalid response from Pesapal when submitting order: {resp.text}")
 
     # Pesapal signals errors via an error object or non-200 status in 'status'
+    # Only treat as error if the error object has actual error information
     if data.get("error"):
-        LOG.error("Pesapal returned error on SubmitOrderRequest: %s", data)
-        raise Exception(f"Pesapal error on SubmitOrderRequest: {data}")
+        error_obj = data.get("error")
+        if error_obj and (error_obj.get("error_type") or error_obj.get("code") or error_obj.get("message")):
+            LOG.error("Pesapal returned error on SubmitOrderRequest: %s", data)
+            raise Exception(f"Pesapal error on SubmitOrderRequest: {data}")
 
     return data
 
@@ -238,11 +243,14 @@ def get_transaction_status(order_tracking_id: str) -> dict:
         LOG.error("Non-JSON response from Pesapal when fetching transaction status: %s", resp.text)
         raise Exception(f"Invalid response from Pesapal when fetching transaction status: {resp.text}")
 
-    # Pesapal may include an error object
+    # Pesapal may include an error object - only treat it as an error if it has actual error details
     if isinstance(data, dict) and data.get("error"):
-        LOG.error("Pesapal returned error for transaction status: %s", data)
-        # Return the raw data for caller to inspect, but raise for obvious failures
-        raise Exception(f"Pesapal error when fetching transaction status: {data}")
+        error_obj = data.get("error")
+        # Check if the error object has actual error information (not just None values)
+        if error_obj and (error_obj.get("error_type") or error_obj.get("code") or error_obj.get("message")):
+            LOG.error("Pesapal returned error for transaction status: %s", data)
+            raise Exception(f"Pesapal error when fetching transaction status: {data}")
+        # If error object exists but all fields are None/empty, it's not a real error
 
     return data
 
@@ -295,9 +303,12 @@ def refund_request(confirmation_code: str, amount: float, username: str, remarks
         raise Exception(f"Invalid response from Pesapal when submitting refund: {resp.text}")
 
     # Pesapal returns status/message; treat error cases as exceptions for callers
+    # Only treat as error if the error object has actual error information
     if isinstance(data, dict) and data.get("error"):
-        LOG.error("Pesapal returned error on RefundRequest: %s", data)
-        raise Exception(f"Pesapal error on RefundRequest: {data}")
+        error_obj = data.get("error")
+        if error_obj and (error_obj.get("error_type") or error_obj.get("code") or error_obj.get("message")):
+            LOG.error("Pesapal returned error on RefundRequest: %s", data)
+            raise Exception(f"Pesapal error on RefundRequest: {data}")
 
     return data
 
@@ -341,8 +352,11 @@ def cancel_order(order_tracking_id: str) -> dict:
         LOG.error("Non-JSON response from Pesapal when submitting cancel order: %s", resp.text)
         raise Exception(f"Invalid response from Pesapal when submitting cancel order: {resp.text}")
 
+    # Only treat as error if the error object has actual error information
     if isinstance(data, dict) and data.get("error"):
-        LOG.error("Pesapal returned error on CancelOrder: %s", data)
-        raise Exception(f"Pesapal error on CancelOrder: {data}")
+        error_obj = data.get("error")
+        if error_obj and (error_obj.get("error_type") or error_obj.get("code") or error_obj.get("message")):
+            LOG.error("Pesapal returned error on CancelOrder: %s", data)
+            raise Exception(f"Pesapal error on CancelOrder: {data}")
 
     return data
