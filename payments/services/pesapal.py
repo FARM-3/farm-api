@@ -169,6 +169,12 @@ def submit_order_request(order: dict) -> dict:
         "Authorization": f"Bearer {token}",
     }
 
+    # FIX: Convert Decimal to float for JSON serialization
+    if 'amount' in order:
+        from decimal import Decimal
+        if isinstance(order['amount'], Decimal):
+            order['amount'] = float(order['amount'])
+
     try:
         resp = requests.post(endpoint, json=order, headers=headers, timeout=15)
     except requests.RequestException as exc:
