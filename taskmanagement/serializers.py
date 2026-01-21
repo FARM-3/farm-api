@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-from .models import Season, Task, TaskComment
+from .models import Season, Task, TaskComment, TaskSubmission
 
 User = get_user_model()
 
@@ -91,3 +91,80 @@ class TaskListSerializer(serializers.ModelSerializer):
             'block', 'block_name', 'block_id', 'activity',
             'created_at'
         ]
+
+
+class TaskSubmissionSerializer(serializers.ModelSerializer):
+    """
+    Serializer for TaskSubmission - mobile app task submissions.
+    No validation - accepts all CharField/JSONField data from frontend.
+    Handles photo file uploads during sync.
+    """
+    user_name = serializers.CharField(source='user.name', read_only=True)
+    user_phone = serializers.CharField(source='user.phone', read_only=True)
+    
+    # Photo upload field (accepts multiple files during sync)
+    uploaded_photos = serializers.ListField(
+        child=serializers.ImageField(),
+        write_only=True,
+        required=False,
+        help_text="Upload photo files during sync"
+    )
+
+    class Meta:
+        model = TaskSubmission
+        fields = [
+            'id', 'assigned_task_id', 'user', 'user_name', 'user_phone',
+            'title', 'description', 'activity', 'priority', 'block_id',
+            'status', 'accepted_at', 'rejected_at', 'started_at', 'completed_at',
+            'duration_minutes', 'photos', 'uploaded_photos', 'completion_comment',
+            'metadata', 'created_at', 'updated_at'
+        ]
+        read_only_fields = ['user', 'created_at', 'updated_at']
+
+    def create(self, validated_data):
+        # Handle photo uploads
+        uploaded_photos = validated_data.pop('uploaded_photos', [])
+        
+        # Create the submission
+        submission = TaskSubmission.objects.create(**validated_data)
+        
+        # Save photos and store URLs
+        photo_urls = []
+        for idx, photo_file in enumerate(uploaded_photos):
+            # Save photo with unique filename
+            import uuid
+            from django.core.files.storage import default_storage
+            filename = f"task_photos/{submission.id}_{uuid.uuid4().hex[:8]}_{photo_file.name}"
+            path = default_storage.save(filename, photo_file)
+            photo_urls.append(f"/media/{path}")
+        
+        # Update photos field with URLs
+        if photo_urls:
+            submission.photos = photo_urls
+            submission.save()
+        
+        return submission
+
+    def update(self, instance, validated_data):
+        # Handle photo uploads for updates
+        uploaded_photos = validated_data.pop('uploaded_photos', [])
+        
+        # Update fields
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        
+        # Add new photos to existing ones
+        if uploaded_photos:
+            import uuid
+            from django.core.files.storage import default_storage
+            new_photo_urls = []
+            for idx, photo_file in enumerate(uploaded_photos):
+                filename = f"task_photos/{instance.id}_{uuid.uuid4().hex[:8]}_{photo_file.name}"
+                path = default_storage.save(filename, photo_file)
+                new_photo_urls.append(f"/media/{path}")
+            
+            # Append to existing photos
+            instance.photos = instance.photos + new_photo_urls
+        
+        instance.save()
+        return instance

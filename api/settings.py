@@ -313,6 +313,10 @@ USE_TZ = True
 
 STATIC_URL = "/static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+n# Media files (User uploads - photos, documents, etc.)
+# For demo: stored on droplet. Migrate to AWS S3 for production.
+MEDIA_URL = "/media/"
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -382,3 +386,11 @@ Before deploying to production:
    - CSRF_COOKIE_SECURE = True
 8. Consider adding rate limiting
 """
+
+# ============================================
+# MEDIA FILES CONFIGURATION
+# ============================================
+# Media files (User uploads - photos, documents, etc.)
+# For demo: stored on droplet at /media/. Migrate to AWS S3 for production.
+MEDIA_URL = "/media/"
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")

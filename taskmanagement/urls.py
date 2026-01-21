@@ -45,6 +45,7 @@ app_name = 'taskmanagement'
 # Create a router for ViewSet-based views
 router = DefaultRouter()
 router.register(r'seasons', views.SeasonViewSet, basename='season')
+router.register(r'submissions', views.TaskSubmissionViewSet, basename='task-submission')
 router.register(r'', views.TaskViewSet, basename='task')
 
 urlpatterns = [

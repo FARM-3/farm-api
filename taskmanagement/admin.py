@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Season, Task, TaskComment
+from .models import Season, Task, TaskComment, TaskSubmission
 
 
 @admin.register(Season)
@@ -24,3 +24,27 @@ class TaskCommentAdmin(admin.ModelAdmin):
     list_display = ['task', 'user', 'created_at']
     search_fields = ['comment', 'user__phone']
     readonly_fields = ['created_at']
+
+
+@admin.register(TaskSubmission)
+class TaskSubmissionAdmin(admin.ModelAdmin):
+    list_display = ['id', 'user', 'assigned_task_id', 'status', 'activity', 'created_at']
+    list_filter = ['status', 'created_at']
+    search_fields = ['title', 'user__phone', 'user__name', 'assigned_task_id']
+    readonly_fields = ['created_at', 'updated_at']
+    raw_id_fields = ['user']
+    
+    fieldsets = (
+        ('Task Information', {
+            'fields': ('assigned_task_id', 'user', 'title', 'description', 'activity', 'priority', 'block_id')
+        }),
+        ('Status & Timestamps', {
+            'fields': ('status', 'accepted_at', 'rejected_at', 'started_at', 'completed_at', 'duration_minutes')
+        }),
+        ('Evidence & Comments', {
+            'fields': ('photos', 'completion_comment', 'metadata')
+        }),
+        ('System', {
+            'fields': ('created_at', 'updated_at')
+        }),
+    )

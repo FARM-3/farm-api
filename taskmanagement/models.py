@@ -149,21 +149,105 @@ class Task(models.Model):
 
 class TaskComment(models.Model):
     task = models.ForeignKey(
-        Task, 
-        on_delete=models.CASCADE, 
+        Task,
+        on_delete=models.CASCADE,
         related_name='comments'
     )
     user = models.ForeignKey(
-        User, 
+        User,
         on_delete=models.CASCADE
     )
     comment = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
-    
+
     class Meta:
         ordering = ['-created_at']
         verbose_name = "Task Comment"
         verbose_name_plural = "Task Comments"
-    
+
     def __str__(self):
         return f"Comment by {self.user.phone} on {self.task.title}"
+
+
+class TaskSubmission(models.Model):
+    """
+    Mobile app task submissions - handles two use cases:
+    1. Assigned tasks (linked to Task via assigned_task_id)
+    2. Self-created tasks (no link, user creates and completes themselves)
+
+    All validation is frontend. Backend accepts all CharField/JSONField.
+    Photos stored in /media/task_photos/ (demo only, migrate to AWS S3 later)
+    """
+
+    # Link to assigned task (null if self-created)
+    assigned_task_id = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="ID of the assigned Task from web app (null for self-created tasks)"
+    )
+
+    # User performing the task
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='task_submissions',
+        help_text="User who is performing/performed this task"
+    )
+
+    # Task details (for self-created tasks, or copied from assigned task)
+    title = models.CharField(max_length=500, blank=True)
+    description = models.TextField(blank=True)
+    activity = models.CharField(max_length=500, blank=True)
+    priority = models.CharField(max_length=100, blank=True)
+    block_id = models.CharField(max_length=100, blank=True)
+
+    # Status tracking (all CharField for flexibility)
+    status = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text="e.g., 'assigned', 'accepted', 'rejected', 'in_progress', 'completed'"
+    )
+
+    # Timestamps (all CharField to allow flexible frontend formats)
+    accepted_at = models.CharField(max_length=100, blank=True)
+    rejected_at = models.CharField(max_length=100, blank=True)
+    started_at = models.CharField(max_length=100, blank=True)
+    completed_at = models.CharField(max_length=100, blank=True)
+
+    # Duration tracking (CharField for frontend to calculate and send)
+    duration_minutes = models.CharField(max_length=100, blank=True)
+
+    # Photo evidence (stored as JSON array of file paths/URLs)
+    # e.g., ["/media/task_photos/photo_123.jpg", "/media/task_photos/photo_456.jpg"]
+    photos = models.JSONField(
+        default=list,
+        blank=True,
+        help_text="Array of photo URLs from /media/task_photos/"
+    )
+
+    # Completion comment (optional)
+    completion_comment = models.TextField(blank=True)
+
+    # Additional data (JSONField for any extra frontend data)
+    metadata = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text="Any additional data from mobile app"
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = "Task Submission"
+        verbose_name_plural = "Task Submissions"
+        indexes = [
+            models.Index(fields=['user', 'status']),
+            models.Index(fields=['assigned_task_id']),
+            models.Index(fields=['created_at']),
+        ]
+
+    def __str__(self):
+        task_type = f"Assigned Task {self.assigned_task_id}" if self.assigned_task_id else "Self-Created Task"
+        return f"{task_type} - {self.user.phone} - {self.status}"

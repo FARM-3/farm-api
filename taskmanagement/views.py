@@ -4,10 +4,10 @@ from rest_framework.response import Response
 from django.utils import timezone
 from django.db.models import Q
 from django.contrib.auth import get_user_model
-from .models import Season, Task, TaskComment
+from .models import Season, Task, TaskComment, TaskSubmission
 from .serializers import (
     SeasonSerializer, TaskSerializer, TaskCreateUpdateSerializer,
-    TaskCommentSerializer, TaskListSerializer
+    TaskCommentSerializer, TaskListSerializer, TaskSubmissionSerializer
 )
 
 User = get_user_model()
@@ -195,3 +195,80 @@ class TaskViewSet(viewsets.ModelViewSet):
         }
 
         return Response(stats)
+
+
+class TaskSubmissionViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint for mobile app task submissions.
+    Handles both assigned tasks and self-created tasks.
+    
+    Endpoints:
+    - GET /api/task-submissions/ - List all submissions for current user
+    - GET /api/task-submissions/my-assigned-tasks/ - Get tasks assigned to me
+    - POST /api/task-submissions/ - Create submission (with photo upload)
+    - PATCH /api/task-submissions/{id}/ - Update submission status
+    """
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = TaskSubmissionSerializer
+
+    def get_queryset(self):
+        # Only return submissions for the current user
+        queryset = TaskSubmission.objects.filter(user=self.request.user)
+        
+        # Optional filters
+        status_filter = self.request.query_params.get('status')
+        assigned_task_filter = self.request.query_params.get('assigned_task_id')
+        
+        if status_filter:
+            queryset = queryset.filter(status=status_filter)
+        if assigned_task_filter:
+            queryset = queryset.filter(assigned_task_id=assigned_task_filter)
+        
+        return queryset.order_by('-created_at')
+
+    def perform_create(self, serializer):
+        # Automatically set the user to the logged-in user
+        serializer.save(user=self.request.user)
+
+    @action(detail=False, methods=['get'])
+    def my_assigned_tasks(self, request):
+        """
+        Get all tasks assigned to the current user from the Task model.
+        These are tasks created in the web app that haven't been accepted/rejected yet.
+        
+        Returns tasks where current user's ID is in the assigned_to JSON array.
+        """
+        user_id = request.user.id
+        
+        # Find tasks where user_id is in assigned_to array
+        # Use JSON contains query
+        assigned_tasks = Task.objects.filter(
+            assigned_to__contains=[user_id],
+            completed=False
+        ).select_related('created_by', 'block')
+        
+        # Check if each task has already been submitted
+        tasks_with_submission_status = []
+        for task in assigned_tasks:
+            # Check if user has already submitted this task
+            submission = TaskSubmission.objects.filter(
+                assigned_task_id=task.id,
+                user=request.user
+            ).first()
+            
+            task_data = TaskSerializer(task).data
+            task_data['has_submission'] = submission is not None
+            task_data['submission_status'] = submission.status if submission else None
+            tasks_with_submission_status.append(task_data)
+        
+        return Response(tasks_with_submission_status)
+
+    @action(detail=False, methods=['get'])
+    def my_submissions(self, request):
+        """
+        Get all task submissions by the current user.
+        Includes both assigned tasks and self-created tasks.
+        """
+        submissions = self.get_queryset()
+        serializer = self.get_serializer(submissions, many=True)
+        return Response(serializer.data)
