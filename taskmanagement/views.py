@@ -235,18 +235,28 @@ class TaskSubmissionViewSet(viewsets.ModelViewSet):
         """
         Get all tasks assigned to the current user from the Task model.
         These are tasks created in the web app that haven't been accepted/rejected yet.
-        
-        Returns tasks where current user's ID is in the assigned_to JSON array.
+
+        Returns tasks where current user's linked staff reference_code is in the assigned_to JSON array.
         """
-        user_id = request.user.id
-        
-        # Find tasks where user_id is in assigned_to array
+        user = request.user
+
+        # Get the staff reference code for this user
+        # Tasks are assigned by staff reference_code (e.g., "RF030"), not user ID
+        staff_reference = None
+        if hasattr(user, 'linked_staff') and user.linked_staff:
+            staff_reference = user.linked_staff.reference_code
+
+        if not staff_reference:
+            # User has no linked staff, return empty list
+            return Response([])
+
+        # Find tasks where staff reference_code is in assigned_to array
         # Use JSON contains query
         assigned_tasks = Task.objects.filter(
-            assigned_to__contains=[user_id],
+            assigned_to__contains=[staff_reference],
             completed=False
         ).select_related('created_by', 'block')
-        
+
         # Check if each task has already been submitted
         tasks_with_submission_status = []
         for task in assigned_tasks:
@@ -255,12 +265,12 @@ class TaskSubmissionViewSet(viewsets.ModelViewSet):
                 assigned_task_id=task.id,
                 user=request.user
             ).first()
-            
+
             task_data = TaskSerializer(task).data
             task_data['has_submission'] = submission is not None
             task_data['submission_status'] = submission.status if submission else None
             tasks_with_submission_status.append(task_data)
-        
+
         return Response(tasks_with_submission_status)
 
     @action(detail=False, methods=['get'])
