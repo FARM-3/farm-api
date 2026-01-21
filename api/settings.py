@@ -313,7 +313,8 @@ USE_TZ = True
 
 STATIC_URL = "/static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
-n# Media files (User uploads - photos, documents, etc.)
+
+# Media files (User uploads - photos, documents, etc.)
 # For demo: stored on droplet. Migrate to AWS S3 for production.
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
