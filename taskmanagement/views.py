@@ -251,25 +251,32 @@ class TaskSubmissionViewSet(viewsets.ModelViewSet):
             # User has no linked staff, return empty list
             return Response([])
 
-        # Find tasks where staff reference_code is in assigned_to array
+        # Find tasks where staff_id is in assigned_to array
         # Use JSON contains query
         assigned_tasks = Task.objects.filter(
             assigned_to__contains=[staff_reference],
             completed=False
         ).select_related('created_by', 'block')
 
-        # Check if each task has already been submitted
+        # Return task data with submission status
+        # Try to check submission status, but handle case where table doesn't exist yet
         tasks_with_submission_status = []
         for task in assigned_tasks:
-            # Check if user has already submitted this task
-            submission = TaskSubmission.objects.filter(
-                assigned_task_id=task.id,
-                user=request.user
-            ).first()
-
             task_data = TaskSerializer(task).data
-            task_data['has_submission'] = submission is not None
-            task_data['submission_status'] = submission.status if submission else None
+
+            # Try to check submission status if table exists
+            try:
+                submission = TaskSubmission.objects.filter(
+                    assigned_task_id=task.id,
+                    user=request.user
+                ).first()
+                task_data['has_submission'] = submission is not None
+                task_data['submission_status'] = submission.status if submission else None
+            except Exception:
+                # Table doesn't exist yet (migrations not run)
+                task_data['has_submission'] = False
+                task_data['submission_status'] = None
+
             tasks_with_submission_status.append(task_data)
 
         return Response(tasks_with_submission_status)
