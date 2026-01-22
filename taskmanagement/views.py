@@ -240,11 +240,12 @@ class TaskSubmissionViewSet(viewsets.ModelViewSet):
         """
         user = request.user
 
-        # Get the staff reference code for this user
-        # Tasks are assigned by staff reference_code (e.g., "RF030"), not user ID
+        # Get the staff_id for this user
+        # Tasks are assigned by staff_id (e.g., "RF030"), not user ID
+        # Note: User model has 'staff' field linking to Staff model
         staff_reference = None
-        if hasattr(user, 'linked_staff') and user.linked_staff:
-            staff_reference = user.linked_staff.reference_code
+        if hasattr(user, 'staff') and user.staff:
+            staff_reference = user.staff.staff_id
 
         if not staff_reference:
             # User has no linked staff, return empty list
