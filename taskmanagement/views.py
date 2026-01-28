@@ -212,18 +212,22 @@ class TaskSubmissionViewSet(viewsets.ModelViewSet):
     serializer_class = TaskSubmissionSerializer
 
     def get_queryset(self):
-        # Only return submissions for the current user
-        queryset = TaskSubmission.objects.filter(user=self.request.user)
-        
+        # Superadmins and managers can see all submissions
+        # Regular users only see their own submissions
+        if self.request.user.role in ['superadmin', 'manager']:
+            queryset = TaskSubmission.objects.all()
+        else:
+            queryset = TaskSubmission.objects.filter(user=self.request.user)
+
         # Optional filters
         status_filter = self.request.query_params.get('status')
         assigned_task_filter = self.request.query_params.get('assigned_task_id')
-        
+
         if status_filter:
             queryset = queryset.filter(status=status_filter)
         if assigned_task_filter:
             queryset = queryset.filter(assigned_task_id=assigned_task_filter)
-        
+
         return queryset.order_by('-created_at')
 
     def perform_create(self, serializer):
