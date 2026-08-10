@@ -294,13 +294,13 @@ class Expense(models.Model):
     expense_name = models.CharField(max_length=50)
     category = models.CharField(max_length=50)
     item = models.CharField(max_length=50)
-    supplier = models.CharField(max_length=50)
-    description = models.CharField(max_length=255)
+    supplier = models.CharField(max_length=50, blank=True)
+    description = models.CharField(max_length=255, blank=True)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     unit_cost = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     quantity = models.IntegerField(null=True, blank=True)
     date = models.DateField()
-    location = models.CharField(max_length=100)
+    location = models.CharField(max_length=100, blank=True)
 
     class Meta:
         verbose_name = "Expense"

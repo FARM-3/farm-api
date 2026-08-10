@@ -360,6 +360,29 @@ class SaleModelTest(TestCase):
         self.assertEqual(sale.balance, Decimal('0.00'))
 
 
+class ExpenseModelTest(TestCase):
+    """Test cases for Expense model"""
+
+    def test_expense_allows_blank_optional_fields(self):
+        """Expense should allow blank supplier, description, location, and quantity."""
+        expense = Expense.objects.create(
+            expense_name='Fuel',
+            category='Transport',
+            item='Diesel',
+            supplier='',
+            description='',
+            amount=Decimal('25000.00'),
+            quantity=None,
+            date=date.today(),
+            location=''
+        )
+
+        self.assertEqual(expense.supplier, '')
+        self.assertEqual(expense.description, '')
+        self.assertEqual(expense.location, '')
+        self.assertIsNone(expense.quantity)
+
+
 class SetpriceModelTest(TestCase):
     """Test cases for Setprice model"""
 
