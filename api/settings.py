@@ -66,10 +66,10 @@ DEBUG = config('DEBUG', default=True, cast=bool)
 if DEBUG:
     # 🌟 LOCAL DEVELOPMENT SETTINGS 🌟
     # If DEBUG is True, automatically allow 127.0.0.1 and localhost.
-    ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '192.168.1.95', '142.93.94.236']
+    ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '192.168.0.114', '192.168.1.95']
 else:
     # Fallback to localhost only if no ALLOWED_HOSTS configured
-    ALLOWED_HOSTS = ['142.93.94.236', '127.0.0.1', 'localhost', '192.168.1.95']
+    ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '192.168.0.114', '192.168.1.95']
 
 # Application definition
 INSTALLED_APPS = [
