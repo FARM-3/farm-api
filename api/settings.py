@@ -63,13 +63,24 @@ SECRET_KEY = config("DJANGO_SECRET_KEY", default='django-insecure-fallback-key-c
 # SECURITY WARNING: don't run with debug turned on in production
 DEBUG = config('DEBUG', default=True, cast=bool) 
 
-if DEBUG:
-    # 🌟 LOCAL DEVELOPMENT SETTINGS 🌟
-    # If DEBUG is True, automatically allow 127.0.0.1 and localhost.
-    ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '192.168.100.2', '192.168.1.95']
-else:
-    # Fallback to localhost only if no ALLOWED_HOSTS configured
-    ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '192.168.100.2', '192.168.1.95']
+allowed_hosts_env = os.getenv('ALLOWED_HOSTS', '')
+ALLOWED_HOSTS = [
+    host.strip()
+    for host in allowed_hosts_env.split(',')
+    if host.strip()
+] or ['127.0.0.1', 'localhost', '192.168.100.2', '192.168.1.95']
+
+render_hostname = os.getenv('RENDER_EXTERNAL_HOSTNAME')
+if render_hostname and render_hostname not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append(render_hostname)
+
+if not DEBUG and '.onrender.com' not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append('.onrender.com')
+
+CSRF_TRUSTED_ORIGINS = [
+    f'https://{host}' for host in ALLOWED_HOSTS
+    if host and not host.startswith('.') and host not in ('127.0.0.1', 'localhost')
+]
 
 # Application definition
 INSTALLED_APPS = [
@@ -274,6 +285,7 @@ if database_url:
             default=database_url,
             conn_max_age=600,
             conn_health_checks=True,
+            ssl_require=not DEBUG,
         )
     }
 else:

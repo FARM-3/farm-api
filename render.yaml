@@ -3,8 +3,9 @@ services:
     name: farm-api
     runtime: python
     plan: free
-    buildCommand: ./build.sh
+    buildCommand: bash build.sh
     startCommand: gunicorn api.wsgi:application --bind 0.0.0.0:$PORT --timeout 120
+    healthCheckPath: /api/docs/
     envVars:
       - key: PYTHON_VERSION
         value: "3.11.0"
