@@ -66,10 +66,10 @@ DEBUG = config('DEBUG', default=True, cast=bool)
 if DEBUG:
     # 🌟 LOCAL DEVELOPMENT SETTINGS 🌟
     # If DEBUG is True, automatically allow 127.0.0.1 and localhost.
-    ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '192.168.0.114', '192.168.1.95']
+    ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '192.168.100.2', '192.168.1.95']
 else:
     # Fallback to localhost only if no ALLOWED_HOSTS configured
-    ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '192.168.0.114', '192.168.1.95']
+    ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '192.168.100.2', '192.168.1.95']
 
 # Application definition
 INSTALLED_APPS = [
@@ -266,12 +266,12 @@ env = environ.Env()
 environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 
 # Try to use DATABASE_URL if available (for Render), otherwise use individual settings
-if env("DB_URL", default=None):
-    # Use DATABASE_URL for production (Render provides this)
+database_url = env("DATABASE_URL", default=None) or env("DB_URL", default=None)
+if database_url:
     import dj_database_url
     DATABASES = {
         "default": dj_database_url.config(
-            default=env("DB_URL"),
+            default=database_url,
             conn_max_age=600,
             conn_health_checks=True,
         )
