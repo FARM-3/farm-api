@@ -154,29 +154,18 @@ class Migration(migrations.Migration):
                 blank=True, help_text="Time of day (e.g., '2:30 PM')", max_length=50
             ),
         ),
-        migrations.SeparateDatabaseAndState(
-            database_operations=[
-                # Convert existing integer FK values to a JSON array before changing the
-                # column type to jsonb. The original schema used a ForeignKey so the
-                # physical column in Postgres is `assigned_to_id`. To safely convert we:
-                #  - drop the FK constraint if it exists,
-                #  - rename `assigned_to_id` -> `assigned_to` (Django field name),
-                #  - alter the column type to jsonb by wrapping the existing integer into
-                #    a one-element array and converting to jsonb. This preserves existing
-                #    assignments as an array [id].
-                migrations.RunPython(forward_migration, reverse_migration),
-            ],
-            state_operations=[
-                migrations.AlterField(
-                    model_name="task",
-                    name="assigned_to",
-                    field=models.JSONField(
-                        blank=True,
-                        default=list,
-                        help_text="Array of staff IDs assigned to this task",
-                    ),
-                ),
-            ]
+        migrations.RemoveField(
+            model_name="task",
+            name="assigned_to",
+        ),
+        migrations.AddField(
+            model_name="task",
+            name="assigned_to",
+            field=models.JSONField(
+                blank=True,
+                default=list,
+                help_text="Array of staff IDs assigned to this task",
+            ),
         ),
         migrations.AlterField(
             model_name="task",
