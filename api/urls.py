@@ -15,6 +15,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 
+from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.conf import settings
 from django.conf.urls.static import static
@@ -31,9 +32,15 @@ from drf_spectacular.views import (
 
 def redirect_to_docs(request):
     # This sends the user from the root path (/) to your documentation
-    return redirect('api/docs/') 
+    return redirect('api/docs/')
+
+
+def health_check(request):
+    return JsonResponse({"status": "ok"})
+
 
 urlpatterns = [
+    path('health/', health_check, name='health-check'),
     path('', redirect_to_docs),
     path("admin/", admin.site.urls),
     path('api-auth/', include('rest_framework.urls')),
