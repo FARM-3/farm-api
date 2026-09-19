@@ -16,7 +16,7 @@ services:
       - key: DATABASE_URL
         fromDatabase:
           name: farm-db
-          property: connectionString
+          property: internalConnectionString
 
 databases:
   - name: farm-db

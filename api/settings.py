@@ -277,26 +277,37 @@ env = environ.Env()
 environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 
 # Try to use DATABASE_URL if available (for Render), otherwise use individual settings
-database_url = env("DATABASE_URL", default=None) or env("DB_URL", default=None)
+database_url = (
+    os.getenv("DATABASE_URL")
+    or os.getenv("DB_URL")
+    or env("DATABASE_URL", default=None)
+    or env("DB_URL", default=None)
+)
 if database_url:
     import dj_database_url
     DATABASES = {
         "default": dj_database_url.config(
             default=database_url,
             conn_max_age=600,
-            conn_health_checks=True,
         )
     }
-else:
-    # Use individual settings for local development
+elif env("DB_NAME", default=None):
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.postgresql",
             "NAME": env("DB_NAME"),
-            "USER": env("DB_USER"),
-            "PASSWORD": env("DB_PASSWORD"),
-            "HOST": env("DB_HOST"),
-            "PORT": env("DB_PORT"),
+            "USER": env("DB_USER", default="postgres"),
+            "PASSWORD": env("DB_PASSWORD", default="postgres"),
+            "HOST": env("DB_HOST", default="localhost"),
+            "PORT": env("DB_PORT", default="5432"),
+        }
+    }
+else:
+    # Fallback for build/collectstatic when DB env vars are not injected yet
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "build.sqlite3",
         }
     }
 
