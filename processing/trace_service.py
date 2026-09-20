@@ -39,21 +39,6 @@ def _processes_containing_grade(model, grade_id):
 def _resolve_harvest_source(harvest_id):
     """Return source metadata from production or aggregation harvest."""
     try:
-        h = Harvests.objects.get(harvest_id=harvest_id)
-        return {
-            'source_type': 'estate',
-            'farmer_name': h.worker_name,
-            'block_id': h.block_id,
-            'harvest_weight': _float(h.weight_on_delivery),
-            'delivery_date': h.date_of_delivery.isoformat() if h.date_of_delivery else None,
-            'location': h.block_id,
-            'gps_coordinates': None,
-            'coffee_type': 'Arabica',
-        }
-    except Harvests.DoesNotExist:
-        pass
-
-    try:
         fh = FarmerHarvest.objects.get(harvest_id=harvest_id)
         gps = fh.gps_coordinates_delivery
         location = fh.location_of_delivery
@@ -87,6 +72,21 @@ def _resolve_harvest_source(harvest_id):
             'amount_paid': _float(fh.amount_paid),
         }
     except FarmerHarvest.DoesNotExist:
+        pass
+
+    try:
+        h = Harvests.objects.get(harvest_id=harvest_id)
+        return {
+            'source_type': 'estate',
+            'farmer_name': h.worker_name,
+            'block_id': h.block_id,
+            'harvest_weight': _float(h.weight_on_delivery),
+            'delivery_date': h.date_of_delivery.isoformat() if h.date_of_delivery else None,
+            'location': h.block_id,
+            'gps_coordinates': None,
+            'coffee_type': 'Arabica',
+        }
+    except Harvests.DoesNotExist:
         return None
 
 

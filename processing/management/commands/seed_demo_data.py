@@ -84,6 +84,20 @@ class Command(BaseCommand):
             },
         )
 
+        def ensure_production_harvest(harvest_id, worker_name, weight, delivery_date, block_id='EXT'):
+            """Production harvest row required by processing FK on Render DB."""
+            Harvests.objects.update_or_create(
+                harvest_id=harvest_id,
+                defaults={
+                    'worker_name': worker_name,
+                    'block_id': block_id,
+                    'weight_on_delivery': weight,
+                    'date_of_delivery': delivery_date,
+                    'amount_paid': Decimal('0.00'),
+                    'paid_by': 'Admin',
+                },
+            )
+
         # --- Story 1: Complete aggregation harvest ---
         FarmerHarvest.objects.update_or_create(
             harvest_id='FH-DEMO001',
@@ -99,6 +113,7 @@ class Command(BaseCommand):
                 'paid_by': 'Admin',
             },
         )
+        ensure_production_harvest('FH-DEMO001', 'Grace Nakato', Decimal('1000.00'), d1)
 
         Ripeness.objects.update_or_create(
             harvest='FH-DEMO001',
@@ -164,16 +179,11 @@ class Command(BaseCommand):
         )
 
         # --- Story 2: Estate harvest (complete) ---
-        Harvests.objects.update_or_create(
-            harvest_id='ED0920PA1',
-            defaults={
-                'worker_name': 'James Okello',
-                'block_id': 'B01',
-                'weight_on_delivery': Decimal('650.00'),
-                'date_of_delivery': d1,
-                'amount_paid': Decimal('325000.00'),
-                'paid_by': 'Admin',
-            },
+        ensure_production_harvest(
+            'ED0920PA1', 'James Okello', Decimal('650.00'), d1, block_id='B01'
+        )
+        Harvests.objects.filter(harvest_id='ED0920PA1').update(
+            amount_paid=Decimal('325000.00'),
         )
         Ripeness.objects.update_or_create(
             harvest='ED0920PA1',
@@ -233,6 +243,7 @@ class Command(BaseCommand):
                 'paid_by': 'Admin',
             },
         )
+        ensure_production_harvest('FH-DEMO002', 'Peter Ssemwanga', Decimal('750.00'), d2)
         Ripeness.objects.update_or_create(
             harvest='FH-DEMO002',
             defaults={'date': d2, 'sample_size': 100, 'no_of_redcherry': 85},

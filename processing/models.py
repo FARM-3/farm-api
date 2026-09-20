@@ -35,6 +35,7 @@ class Ripeness(models.Model):
         max_length=50,
         unique=True,
         primary_key=True,
+        db_column='harvest_id',
         help_text="Harvest ID from either production or aggregation"
     )
 
@@ -117,6 +118,7 @@ class Floating(models.Model):
     harvest = models.CharField(
         max_length=50,
         db_index=True,
+        db_column='harvest_id',
         help_text="Harvest ID from either production or aggregation"
     )
 
