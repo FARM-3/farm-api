@@ -289,6 +289,7 @@ if database_url:
         "default": dj_database_url.config(
             default=database_url,
             conn_max_age=600,
+            ssl_require="render.com" in database_url,
         )
     }
 elif env("DB_NAME", default=None):

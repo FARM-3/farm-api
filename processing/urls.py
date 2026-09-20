@@ -10,6 +10,7 @@ from .views import (
     FloatingViewSet,
     BatchViewSet
 )
+from .trace_views import HarvestTrackView, TraceScanView
 
 # Create a router - this automatically generates URLs for our ViewSets
 router = DefaultRouter()
@@ -29,5 +30,7 @@ router.register(r'batch', BatchViewSet, basename='batch')
 
 
 urlpatterns = [
+    path('track/<str:harvest_id>/', HarvestTrackView.as_view(), name='harvest-track'),
+    path('trace/scan/', TraceScanView.as_view(), name='trace-scan'),
     path('', include(router.urls)),
 ]
