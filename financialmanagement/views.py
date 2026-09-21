@@ -2,8 +2,12 @@ from django.shortcuts import render
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from .models import Balancesheet, Wage
-from .serializers import WageSerializer, SaleSerializer, ExpenseSerializer, BalancesheetSerializer, StaffSerializer, SetpriceSerializer
-from .models import Sale, Expense, Staff   
+from .serializers import (
+    WageSerializer, SaleSerializer, ExpenseSerializer, BalancesheetSerializer,
+    StaffSerializer, SetpriceSerializer, CustomerSerializer,
+)
+from .models import Sale, Expense, Staff, Customer
+from .bulk_import import download_template, parse_csv_upload, import_staff_rows, import_wage_rows
 from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -17,10 +21,49 @@ class StaffViewSet(viewsets.ModelViewSet):
     serializer_class = StaffSerializer
     permission_classes = [AllowAny]
 
+    @action(detail=False, methods=['get'], url_path='import-template')
+    def import_template(self, request):
+        return download_template('staff')
+
+    @action(detail=False, methods=['post'], url_path='bulk-import')
+    def bulk_import(self, request):
+        file = request.FILES.get('file')
+        if not file:
+            return Response({'error': 'file required'}, status=status.HTTP_400_BAD_REQUEST)
+        rows = parse_csv_upload(file)
+        created, errors = import_staff_rows(rows)
+        return Response({'created': created, 'errors': errors})
+
+
+class CustomerViewSet(viewsets.ModelViewSet):
+    queryset = Customer.objects.filter(is_active=True)
+    serializer_class = CustomerSerializer
+    permission_classes = [AllowAny]
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        search = self.request.query_params.get('search')
+        if search:
+            qs = qs.filter(name__icontains=search)
+        return qs
+
 class WageViewSet(viewsets.ModelViewSet):
     queryset = Wage.objects.all().select_related('staff').order_by('-date_of_payment')
     serializer_class = WageSerializer
     permission_classes = [AllowAny]
+
+    @action(detail=False, methods=['get'], url_path='import-template')
+    def import_template(self, request):
+        return download_template('wages')
+
+    @action(detail=False, methods=['post'], url_path='bulk-import')
+    def bulk_import(self, request):
+        file = request.FILES.get('file')
+        if not file:
+            return Response({'error': 'file required'}, status=status.HTTP_400_BAD_REQUEST)
+        rows = parse_csv_upload(file)
+        created, errors = import_wage_rows(rows)
+        return Response({'created': created, 'errors': errors})
 
     @action(detail=False, methods=['get'])
     def by_employee(self, request):

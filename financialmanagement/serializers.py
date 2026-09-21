@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from drf_spectacular.utils import extend_schema_field
-from .models import Sale, Wage, Expense, Balancesheet, Staff, Setprice
+from .models import Sale, Wage, Expense, Balancesheet, Staff, Setprice, Customer
 
 class StaffSerializer(serializers.ModelSerializer):
     """
@@ -79,18 +79,35 @@ class WageSerializer(serializers.ModelSerializer):
 
         read_only_fields = ('staff_id', 'staff_full_name')
 
+class CustomerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Customer
+        fields = '__all__'
+        read_only_fields = ['customer_id', 'created_at']
+
+
 class SaleSerializer(serializers.ModelSerializer):
     customer_name = serializers.SerializerMethodField()
+    customer_id_display = serializers.CharField(source='customer.customer_id', read_only=True)
 
     class Meta:
         model = Sale
         fields = [
-            'id', 'first_name', 'last_name', 'customer_name', 'item', 'rate', 'quantity',
+            'id', 'customer', 'customer_id_display', 'first_name', 'last_name', 'customer_name',
+            'batch_id', 'item', 'rate', 'quantity',
             'total_amount', 'amount', 'date_of_payment',
-            'status', 'balance', 'method_of_payment'
+            'status', 'balance', 'method_of_payment',
         ]
 
-        read_only_fields = ['total_amount', 'status', 'balance', 'customer_name']
+        read_only_fields = ['total_amount', 'status', 'balance', 'customer_name', 'customer_id_display']
+
+    def create(self, validated_data):
+        customer = validated_data.get('customer')
+        if customer and not validated_data.get('first_name'):
+            parts = customer.name.split(' ', 1)
+            validated_data['first_name'] = parts[0]
+            validated_data['last_name'] = parts[1] if len(parts) > 1 else ''
+        return super().create(validated_data)
 
     def get_customer_name(self, obj):
         """Return the customer's full name for backward compatibility"""

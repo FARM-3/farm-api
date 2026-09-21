@@ -105,6 +105,8 @@ INSTALLED_APPS = [
     'activities',
     'farmtours',
     'payments',
+    'configuration',
+    'export_ops',
 
 ]
 

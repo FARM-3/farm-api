@@ -230,8 +230,44 @@ class Wage(models.Model):
 
         super().save(*args, **kwargs)
     
+class Customer(models.Model):
+    """Stored buyer — select at sale time instead of typing each time."""
+
+    customer_id = models.CharField(max_length=20, unique=True, editable=False)
+    name = models.CharField(max_length=200)
+    organisation = models.CharField(max_length=200, blank=True)
+    phone = models.CharField(max_length=30, blank=True)
+    email = models.EmailField(blank=True)
+    city = models.CharField(max_length=100, blank=True)
+    country = models.CharField(max_length=100, default='Uganda')
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
+    def save(self, *args, **kwargs):
+        if not self.customer_id:
+            last = Customer.objects.order_by('-customer_id').first()
+            if last and last.customer_id.startswith('CU'):
+                try:
+                    n = int(last.customer_id[2:]) + 1
+                except ValueError:
+                    n = Customer.objects.count() + 1
+            else:
+                n = Customer.objects.count() + 1
+            self.customer_id = f'CU{n:04d}'
+        super().save(*args, **kwargs)
+
+
 class Sale(models.Model):
 
+    customer = models.ForeignKey(
+        Customer, on_delete=models.SET_NULL, null=True, blank=True, related_name='sales',
+    )
     first_name = models.CharField(max_length=100, null=True, blank=True)
     last_name = models.CharField(max_length=100, null=True, blank=True)
     batch_id = models.CharField(max_length=20, null=True, blank=True)
@@ -256,6 +292,8 @@ class Sale(models.Model):
 
     def get_customer_name(self):
         """Return the customer's full name"""
+        if self.customer_id and self.customer:
+            return self.customer.name
         first = self.first_name or ""
         last = self.last_name or ""
         full_name = f"{first} {last}".strip()

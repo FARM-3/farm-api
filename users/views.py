@@ -11,7 +11,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from drf_spectacular.utils import extend_schema, OpenApiResponse
 from django.contrib.auth import logout
 from rest_framework.permissions import IsAuthenticated
-from .models import User, SecurityQuestion, UserSecurityAnswer
+from .models import User, SecurityQuestion, UserSecurityAnswer, LoginAudit
 from .serializers import (
     UserSerializer,
     LoginSerializer,
@@ -81,7 +81,16 @@ def login_view(request):
     # This uses our custom PhonePinBackend
     user = authenticate(request, username=phone, password=pin)
     
+    def _client_ip(req):
+        xff = req.META.get('HTTP_X_FORWARDED_FOR')
+        return xff.split(',')[0].strip() if xff else req.META.get('REMOTE_ADDR')
+
     if not user:
+        LoginAudit.objects.create(
+            phone=phone, success=False,
+            ip_address=_client_ip(request),
+            user_agent=request.META.get('HTTP_USER_AGENT', '')[:255],
+        )
         return Response(
             {"error": "Invalid phone number or PIN"},
             status=status.HTTP_401_UNAUTHORIZED
@@ -97,6 +106,12 @@ def login_view(request):
     # Access token: short-lived, used for API requests
     # Refresh token: long-lived, used to get new access tokens
     refresh = RefreshToken.for_user(user)
+
+    LoginAudit.objects.create(
+        user=user, phone=phone, success=True,
+        ip_address=_client_ip(request),
+        user_agent=request.META.get('HTTP_USER_AGENT', '')[:255],
+    )
     
     # Step 5: Return success response
     return Response({

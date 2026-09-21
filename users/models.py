@@ -290,3 +290,52 @@ class UserSecurityAnswer(models.Model):
         """Check if provided answer matches the hashed answer."""
         from django.contrib.auth.hashers import check_password
         return check_password(raw_answer, self.answer_hash)
+
+
+class RolePermission(models.Model):
+    """Module-level permissions per role."""
+
+    MODULES = [
+        ('dashboard', 'Dashboard'),
+        ('sales', 'Sales'),
+        ('wages', 'Wages'),
+        ('expenses', 'Expenses'),
+        ('staff', 'Staff'),
+        ('aggregation', 'Aggregation'),
+        ('harvest', 'Harvest'),
+        ('processing', 'Processing'),
+        ('inventory', 'Inventory'),
+        ('dispatch', 'Dispatch'),
+        ('export', 'Export & Compliance'),
+        ('settings', 'Settings'),
+        ('tasks', 'Tasks'),
+    ]
+
+    role = models.CharField(max_length=20, choices=User.ROLE_CHOICES)
+    module = models.CharField(max_length=30, choices=MODULES)
+    can_view = models.BooleanField(default=True)
+    can_create = models.BooleanField(default=False)
+    can_edit = models.BooleanField(default=False)
+    can_delete = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = [('role', 'module')]
+        ordering = ['role', 'module']
+
+    def __str__(self):
+        return f'{self.role} → {self.module}'
+
+
+class LoginAudit(models.Model):
+    user = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
+    phone = models.CharField(max_length=20)
+    success = models.BooleanField(default=True)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.CharField(max_length=255, blank=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-timestamp']
+
+    def __str__(self):
+        return f'{self.phone} {"OK" if self.success else "FAIL"} @ {self.timestamp}'

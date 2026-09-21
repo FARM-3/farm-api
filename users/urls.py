@@ -1,9 +1,16 @@
 
 # users/urls.py
 from django.urls import path, include
+from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenRefreshView
 from . import views
 from .views import logout_view
+from .security_views import RolePermissionViewSet, LoginAuditViewSet, UserAdminViewSet
+
+security_router = DefaultRouter()
+security_router.register(r'permissions', RolePermissionViewSet, basename='role-permission')
+security_router.register(r'login-audit', LoginAuditViewSet, basename='login-audit')
+security_router.register(r'accounts', UserAdminViewSet, basename='user-admin')
 
 """
 URL patterns for the users app.
@@ -96,4 +103,5 @@ urlpatterns = [
         views.verify_security_answers_and_reset_pin_view,
         name='verify-answers-reset-pin'
     ),
+    path('security/', include(security_router.urls)),
 ]
