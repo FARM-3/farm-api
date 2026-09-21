@@ -113,7 +113,7 @@ class Command(BaseCommand):
                 'paid_by': 'Admin',
             },
         )
-        ensure_production_harvest('FH-DEMO001', 'Grace Nakato', Decimal('1000.00'), d1)
+        ensure_production_harvest('FH-DEMO001', 'Grace Nakato', Decimal('1000.00'), d1, block_id='B01')
 
         Ripeness.objects.update_or_create(
             harvest='FH-DEMO001',

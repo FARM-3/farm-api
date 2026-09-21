@@ -107,6 +107,7 @@ INSTALLED_APPS = [
     'payments',
     'configuration',
     'export_ops',
+    'field_ops',
 
 ]
 

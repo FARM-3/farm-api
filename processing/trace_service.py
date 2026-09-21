@@ -160,6 +160,82 @@ def _build_loss_summary(harvest_weight, floating_records, drying_records, baggin
     }
 
 
+def _serialize_block_activity(log):
+    return {
+        'log_id': log.log_id,
+        'block_id': log.block_id,
+        'log_type': log.log_type,
+        'title': log.title,
+        'description': log.description,
+        'practices': log.practices or [],
+        'input_type': log.input_type,
+        'input_name': log.input_name,
+        'quantity': _float(log.quantity),
+        'unit': log.unit,
+        'activity_date': log.activity_date.isoformat() if log.activity_date else None,
+        'weather_conditions': log.weather_conditions or [],
+        'reported_by': log.reported_by_name,
+        'notes': log.notes,
+    }
+
+
+def _serialize_surveillance(report):
+    return {
+        'report_id': report.report_id,
+        'block_id': report.block_id,
+        'title': report.title,
+        'description': report.description,
+        'severity': report.severity,
+        'issue_type': report.issue_type,
+        'status': report.status,
+        'weather_conditions': report.weather_conditions or [],
+        'location': report.location,
+        'reported_by': report.reported_by_name,
+        'created_at': report.created_at.isoformat() if report.created_at else None,
+    }
+
+
+def _field_history_for_block(block_id, before_date=None):
+    """Block-level practices, inputs, and surveillance for trace reports."""
+    try:
+        from field_ops.models import BlockActivityLog, SurveillanceReport
+    except ImportError:
+        return {'block_activities': [], 'surveillance_reports': []}
+
+    if not block_id:
+        return {'block_activities': [], 'surveillance_reports': []}
+
+    activities = BlockActivityLog.objects.filter(block_id=block_id).order_by('-activity_date')
+    surveillance = SurveillanceReport.objects.filter(block_id=block_id).order_by('-created_at')
+    if before_date:
+        activities = activities.filter(activity_date__lte=before_date)
+        surveillance = surveillance.filter(created_at__date__lte=before_date)
+
+    return {
+        'block_id': block_id,
+        'block_activities': [_serialize_block_activity(a) for a in activities[:50]],
+        'surveillance_reports': [_serialize_surveillance(s) for s in surveillance[:20]],
+        'inputs_summary': [
+            {
+                'date': a.activity_date.isoformat(),
+                'input': a.input_name,
+                'type': a.input_type,
+                'quantity': _float(a.quantity),
+                'unit': a.unit,
+            }
+            for a in activities.filter(log_type='input').order_by('-activity_date')[:20]
+        ],
+        'practices_summary': [
+            {
+                'date': a.activity_date.isoformat(),
+                'practices': a.practices or [],
+                'title': a.title,
+            }
+            for a in activities.filter(log_type='practice').order_by('-activity_date')[:20]
+        ],
+    }
+
+
 def trace_harvest(harvest_id):
     """
     Build full trace payload for a harvest_id.
@@ -271,10 +347,23 @@ def trace_harvest(harvest_id):
         ],
     }
 
+    delivery_date = source.get('delivery_date')
+    before_date = None
+    if delivery_date:
+        try:
+            from datetime import date
+            before_date = date.fromisoformat(delivery_date[:10])
+        except (ValueError, TypeError):
+            before_date = None
+
+    block_id = source.get('block_id')
+    field_history = _field_history_for_block(block_id, before_date=before_date)
+
     return {
         'harvest_id': harvest_id,
         'farmer_name': source.get('farmer_name', 'Unknown'),
         'source_type': source.get('source_type'),
+        'field_history': field_history,
         'current_stage': current_stage,
         'stages': stages,
         'quality_control_completed': qc_done,

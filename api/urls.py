@@ -64,6 +64,7 @@ urlpatterns = [
     path("api/payments/", include("payments.urls")),
     path('api/config/', include('configuration.urls')),
     path('api/export/', include('export_ops.urls')),
+    path('api/field-ops/', include('field_ops.urls')),
 
 ]
 
