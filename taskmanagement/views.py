@@ -13,6 +13,58 @@ from .serializers import (
 User = get_user_model()
 
 
+def _task_assigned_to_staff(task, staff_id):
+    """True if staff_id appears in the task assigned_to JSON array."""
+    if not staff_id:
+        return False
+    assigned = task.assigned_to or []
+    target = str(staff_id).strip()
+    return any(str(entry).strip() == target for entry in assigned)
+
+
+def _resolve_staff_id_for_user(user):
+    """
+    Resolve Staff.staff_id for a mobile user.
+    Tasks are assigned by staff_id (RF001), so the user must map to a Staff row.
+    Auto-links user.staff when a unique name match is found.
+    """
+    from financialmanagement.models import Staff
+
+    if getattr(user, 'staff_id', None) and user.staff:
+        return user.staff.staff_id
+
+    staff = None
+    name = (user.name or '').strip()
+    if name:
+        parts = name.split()
+        if len(parts) >= 2:
+            staff = Staff.objects.filter(
+                first_name__iexact=parts[0],
+                last_name__iexact=parts[-1],
+                is_active=True,
+            ).first()
+        if not staff and len(parts) == 1:
+            staff = Staff.objects.filter(
+                first_name__iexact=parts[0],
+                is_active=True,
+            ).first()
+        if not staff:
+            name_lower = name.lower()
+            for candidate in Staff.objects.filter(is_active=True):
+                full = candidate.get_full_name().lower()
+                if name_lower in full or full in name_lower:
+                    staff = candidate
+                    break
+
+    if staff:
+        if not user.staff_id:
+            user.staff = staff
+            user.save(update_fields=['staff'])
+        return staff.staff_id
+
+    return None
+
+
 class SeasonViewSet(viewsets.ModelViewSet):
     """
     API endpoint for seasonal calendars.
@@ -238,48 +290,32 @@ class TaskSubmissionViewSet(viewsets.ModelViewSet):
     def my_assigned_tasks(self, request):
         """
         Get all tasks assigned to the current user from the Task model.
-        These are tasks created in the web app that haven't been accepted/rejected yet.
-
-        Returns tasks where current user's linked staff reference_code is in the assigned_to JSON array.
+        Matches by linked Staff.staff_id (auto-linked from user name when possible).
         """
         user = request.user
-
-        # Get the staff_id for this user
-        # Tasks are assigned by staff_id (e.g., "RF030"), not user ID
-        # Note: User model has 'staff' field linking to Staff model
-        staff_reference = None
-        if hasattr(user, 'staff') and user.staff:
-            staff_reference = user.staff.staff_id
+        staff_reference = _resolve_staff_id_for_user(user)
 
         if not staff_reference:
-            # User has no linked staff, return empty list
             return Response([])
 
-        # Find tasks where staff_id is in assigned_to array
-        # Use JSON contains query
-        assigned_tasks = Task.objects.filter(
-            assigned_to__contains=[staff_reference],
-            completed=False
-        ).select_related('created_by', 'block')
+        candidates = Task.objects.filter(completed=False).select_related('created_by', 'block')
+        assigned_tasks = [t for t in candidates if _task_assigned_to_staff(t, staff_reference)]
 
-        # Return task data with submission status
-        # Try to check submission status, but handle case where table doesn't exist yet
         tasks_with_submission_status = []
         for task in assigned_tasks:
             task_data = TaskSerializer(task).data
+            task_data['is_assigned'] = True
 
-            # Try to check submission status if table exists
             try:
                 submission = TaskSubmission.objects.filter(
                     assigned_task_id=task.id,
                     user=request.user
                 ).first()
                 task_data['has_submission'] = submission is not None
-                task_data['submission_status'] = submission.status if submission else None
+                task_data['submission_status'] = submission.status if submission else 'assigned'
             except Exception:
-                # Table doesn't exist yet (migrations not run)
                 task_data['has_submission'] = False
-                task_data['submission_status'] = None
+                task_data['submission_status'] = 'assigned'
 
             tasks_with_submission_status.append(task_data)
 
