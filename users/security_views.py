@@ -1,7 +1,10 @@
 from rest_framework import viewsets
 from rest_framework.permissions import AllowAny
 from .models import RolePermission, LoginAudit, User
-from .serializers_permissions import RolePermissionSerializer, LoginAuditSerializer, UserAdminSerializer
+from .serializers_permissions import (
+    RolePermissionSerializer, LoginAuditSerializer,
+    UserAdminSerializer, UserCreateSerializer, UserUpdateSerializer,
+)
 
 
 class RolePermissionViewSet(viewsets.ModelViewSet):
@@ -17,7 +20,14 @@ class LoginAuditViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class UserAdminViewSet(viewsets.ModelViewSet):
-    queryset = User.objects.all()
-    serializer_class = UserAdminSerializer
+    queryset = User.objects.all().order_by('-created_at')
     permission_classes = [AllowAny]
-    http_method_names = ['get', 'patch', 'head', 'options']
+
+    def get_serializer_class(self):
+        if self.action == 'create':
+            return UserCreateSerializer
+        if self.action in ('update', 'partial_update'):
+            return UserUpdateSerializer
+        return UserAdminSerializer
+
+    http_method_names = ['get', 'post', 'patch', 'delete', 'head', 'options']
