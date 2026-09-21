@@ -19,6 +19,9 @@ class LookupOptionViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         qs = super().get_queryset()
+        category = self.request.query_params.get('category')
+        if category:
+            qs = qs.filter(category=category)
         if self.action == 'list' and self.request.query_params.get('active_only') == '1':
             qs = qs.filter(is_active=True)
         return qs

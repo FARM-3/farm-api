@@ -68,14 +68,16 @@ class ExportTraceRecordViewSet(viewsets.ModelViewSet):
         if not trace:
             return Response({'detail': 'Harvest not found'}, status=status.HTTP_404_NOT_FOUND)
         record_id = f'TR-{timezone.now().strftime("%Y%m%d")}-{harvest_id[:8]}'
+        source = trace.get('source') or {}
+        loss = trace.get('loss_summary') or {}
         record, _ = ExportTraceRecord.objects.update_or_create(
             harvest_id=harvest_id,
             defaults={
                 'record_id': record_id,
-                'supplier_name': (trace.get('source') or {}).get('name', ''),
-                'origin_gps': (trace.get('source') or {}).get('gps_coordinates', ''),
-                'coffee_type': (trace.get('source') or {}).get('coffee_type', ''),
-                'total_kg': ((trace.get('stages') or {}).get('bagging') or {}).get('weight'),
+                'supplier_name': trace.get('farmer_name') or source.get('farmer_name', ''),
+                'origin_gps': source.get('gps_coordinates', ''),
+                'coffee_type': source.get('coffee_type', ''),
+                'total_kg': loss.get('output_kg'),
                 'trace_data': trace,
                 'compliance_status': 'ready',
                 'created_by': request.user if request.user.is_authenticated else None,

@@ -99,6 +99,15 @@ def _stage_status(completed, in_progress=False):
     return 'pending'
 
 
+def _optional_stage_status(completed, skipped=False):
+    """Optional steps (e.g. hulling) can be completed, skipped, or pending."""
+    if completed:
+        return 'completed'
+    if skipped:
+        return 'skipped'
+    return 'pending'
+
+
 def _build_loss_summary(harvest_weight, floating_records, drying_records, bagging_records):
     """Build weight loss chain from existing field data."""
     stages = []
@@ -304,12 +313,21 @@ def trace_harvest(harvest_id):
     bagging_done = bool(bagging_records)
     bagging_date = bagging_records[0].date.date().isoformat() if bagging_records else None
 
+    # Hulling is optional — some lots skip straight to bagging after drying
+    hulling_skipped = bagging_done and not hulling_done
+
     stages = [
-        {'name': 'Quality Control', 'status': _stage_status(qc_done), 'date': qc_date},
-        {'name': 'Processing Type Selection', 'status': _stage_status(proc_done), 'date': proc_date},
-        {'name': 'Drying', 'status': _stage_status(drying_done, drying_in_progress), 'date': drying_date},
-        {'name': 'Hulling', 'status': _stage_status(hulling_done), 'date': hulling_date},
-        {'name': 'Bagging', 'status': _stage_status(bagging_done), 'date': bagging_date},
+        {'name': 'Quality Control', 'status': _stage_status(qc_done), 'date': qc_date, 'optional': False},
+        {'name': 'Processing Type Selection', 'status': _stage_status(proc_done), 'date': proc_date, 'optional': False},
+        {'name': 'Drying', 'status': _stage_status(drying_done, drying_in_progress), 'date': drying_date, 'optional': False},
+        {
+            'name': 'Hulling',
+            'status': _optional_stage_status(hulling_done, skipped=hulling_skipped),
+            'date': hulling_date,
+            'optional': True,
+            'note': 'Optional — parchment removal before bagging; not all suppliers hull on-site',
+        },
+        {'name': 'Bagging', 'status': _stage_status(bagging_done), 'date': bagging_date, 'optional': False},
     ]
 
     current_stage = 'Not Started'
