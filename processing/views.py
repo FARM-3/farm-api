@@ -8,13 +8,14 @@ from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 
 from aggregation import models
-from .models import Fermenting, Washing, NaturalSundrying, Drying, Bagging, Ripeness, Floating, Batch
+from .models import Fermenting, Washing, NaturalSundrying, Drying, Bagging, Hulling, Ripeness, Floating, Batch
 from .serializers import (
     FermentingSerializer,
     WashingSerializer,
     NaturalSundryingSerializer,
     DryingSerializer,
     BaggingSerializer,
+    HullingSerializer,
     RipenessSerializer,
     FloatingSerializer,
     BatchSerializer
@@ -97,6 +98,16 @@ class DryingViewSet(viewsets.ModelViewSet):
     ordering_fields = ['date', 'moisture_content', 'moisture_deviation', 'outturn', 'created_at']
     ordering = ['-date', '-lot_id']
     
+
+class HullingViewSet(viewsets.ModelViewSet):
+    queryset = Hulling.objects.all()
+    serializer_class = HullingSerializer
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ['lot_id', 'date', 'staff_id']
+    search_fields = ['lot_id', 'staff_id']
+    ordering_fields = ['date', 'weight_before', 'outturn', 'created_at']
+    ordering = ['-date']
+
 
 class BaggingViewSet(viewsets.ModelViewSet):
     """

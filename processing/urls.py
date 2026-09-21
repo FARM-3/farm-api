@@ -5,6 +5,7 @@ from .views import (
     WashingViewSet,
     NaturalSundryingViewSet,
     DryingViewSet,
+    HullingViewSet,
     BaggingViewSet,
     RipenessViewSet,
     FloatingViewSet,
@@ -22,6 +23,7 @@ router.register(r'fermenting', FermentingViewSet, basename='fermenting')
 router.register(r'washing', WashingViewSet, basename='washing')
 router.register(r'sundrying', NaturalSundryingViewSet, basename='sundrying')
 router.register(r'drying', DryingViewSet, basename='drying')
+router.register(r'hulling', HullingViewSet, basename='hulling')
 router.register(r'bagging', BaggingViewSet, basename='bagging')
 router.register(r'ripeness', RipenessViewSet, basename='ripeness')
 router.register(r'floating', FloatingViewSet, basename='floating')

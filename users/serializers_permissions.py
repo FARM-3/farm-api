@@ -47,7 +47,17 @@ class UserCreateSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         pin = validated_data.pop('pin')
-        return User.objects.create_user(pin=pin, **validated_data)
+        is_active = validated_data.pop('is_active', True)
+        user = User.objects.create_user(
+            phone=validated_data['phone'],
+            pin=pin,
+            name=validated_data.get('name', ''),
+            role=validated_data.get('role', 'block_champion'),
+        )
+        if not is_active:
+            user.is_active = False
+            user.save(update_fields=['is_active'])
+        return user
 
 
 class UserUpdateSerializer(serializers.ModelSerializer):

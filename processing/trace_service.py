@@ -9,6 +9,7 @@ from .models import (
     Drying,
     Fermenting,
     Floating,
+    Hulling,
     NaturalSundrying,
     Ripeness,
     Washing,
@@ -275,6 +276,9 @@ def trace_harvest(harvest_id):
         )
 
     lot_ids = list({r.lot_id for r in drying_records if r.lot_id})
+    hulling_records = list(
+        Hulling.objects.filter(lot_id__in=lot_ids).order_by('-date')
+    ) if lot_ids else []
     bagging_records = list(
         Bagging.objects.filter(lot_id__in=lot_ids).order_by('-date')
     ) if lot_ids else []
@@ -294,8 +298,8 @@ def trace_harvest(harvest_id):
     drying_in_progress = drying_done and not bagging_records
     drying_date = drying_records[-1].date.isoformat() if drying_records else None
 
-    hulling_done = bool(bagging_records)  # inferred — no hulling model
-    hulling_date = bagging_records[0].date.date().isoformat() if bagging_records else None
+    hulling_done = bool(hulling_records)
+    hulling_date = hulling_records[0].date.isoformat() if hulling_records else None
 
     bagging_done = bool(bagging_records)
     bagging_date = bagging_records[0].date.date().isoformat() if bagging_records else None
@@ -334,6 +338,17 @@ def trace_harvest(harvest_id):
         ],
         'processing_steps': processing_steps,
         'lot_ids': lot_ids,
+        'hulling': [
+            {
+                'lot_id': h.lot_id,
+                'weight_before_kg': _float(h.weight_before),
+                'weight_after_kg': _float(h.weight_after),
+                'outturn': _float(h.outturn),
+                'screen_size': h.screen_size,
+                'date': h.date.isoformat() if h.date else None,
+            }
+            for h in hulling_records
+        ],
         'bagging': [
             {
                 'lot_id': b.lot_id,

@@ -683,4 +683,31 @@ class Bagging(models.Model):
         Backend simply stores the data as-is.
         """
         super().save(*args, **kwargs)
-# ...existing code...       
+
+
+class Hulling(models.Model):
+    """Hulling operation — removes parchment/husk before bagging."""
+    lot_id = models.CharField(max_length=100, db_index=True, help_text="Lot id from drying/bagging chain")
+    weight_before = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0.01)])
+    weight_after = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    expecting_outturn = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True)
+    outturn = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True)
+    screen_size = models.CharField(max_length=50, blank=True)
+    activity = models.CharField(max_length=50, default='hulling')
+    custom_activity = models.CharField(max_length=100, blank=True)
+    staff_id = models.CharField(max_length=50, blank=True)
+    date = models.DateField(default=timezone.now)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-date', '-created_at']
+        verbose_name = 'Hulling Record'
+        verbose_name_plural = 'Hulling Records'
+        indexes = [
+            models.Index(fields=['-date']),
+            models.Index(fields=['lot_id']),
+        ]
+
+    def __str__(self):
+        return f"Lot {self.lot_id} — {self.weight_before}kg → {self.weight_after or '?'}kg"       

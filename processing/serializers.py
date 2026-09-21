@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Fermenting, Washing, NaturalSundrying, Drying, Bagging, Ripeness, Floating, Batch
+from .models import Fermenting, Washing, NaturalSundrying, Drying, Bagging, Hulling, Ripeness, Floating, Batch
 
 class FermentingSerializer(serializers.ModelSerializer):
     """
@@ -137,6 +137,18 @@ class DryingSerializer(serializers.ModelSerializer):
             )
         return value
     
+class HullingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Hulling
+        fields = [
+            'id', 'lot_id', 'weight_before', 'weight_after',
+            'expecting_outturn', 'outturn', 'screen_size',
+            'activity', 'custom_activity', 'staff_id', 'date',
+            'created_at', 'updated_at',
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+
 class BaggingSerializer(serializers.ModelSerializer):
     """
     Serializer for Bagging model (final stage)
