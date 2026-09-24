@@ -124,6 +124,19 @@ def build_eudr_dossier(harvest_id: str) -> dict:
         return None
 
     source = trace.get('source') or {}
+    # Strip non-serializable farmer model before JSON/PDF export
+    if isinstance(source.get('farmer_registration'), object) and hasattr(source['farmer_registration'], 'farmer_id'):
+        fr = source['farmer_registration']
+        source = {
+            **source,
+            'farmer_registration': {
+                'farmer_id': fr.farmer_id,
+                'gps_coordinates': fr.gps_coordinates,
+                'village': fr.village,
+                'parish': fr.parish,
+                'district': fr.district,
+            },
+        }
     documents = list(
         ExportComplianceDocument.objects.filter(harvest_id=harvest_id).values(
             'id', 'document_type', 'title', 'notes', 'file', 'uploaded_at',

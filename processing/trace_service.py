@@ -64,6 +64,7 @@ def _resolve_harvest_source(harvest_id):
         return {
             'source_type': 'aggregation',
             'farmer_name': fh.name,
+            'farmer_id': farmer_reg.farmer_id if farmer_reg else None,
             'block_id': None,
             'harvest_weight': _float(fh.weight_on_delivery),
             'delivery_date': fh.date_of_delivery.isoformat() if fh.date_of_delivery else None,
@@ -71,6 +72,7 @@ def _resolve_harvest_source(harvest_id):
             'gps_coordinates': gps,
             'coffee_type': fh.coffee_type,
             'amount_paid': _float(fh.amount_paid),
+            'farmer_registration': farmer_reg,
         }
     except FarmerHarvest.DoesNotExist:
         pass
@@ -205,6 +207,68 @@ def _serialize_surveillance(report):
     }
 
 
+def _farmer_registration_field_history(farmer_reg):
+    """Plot-level history from aggregation farmer registration when no block QR exists."""
+    if not farmer_reg:
+        return None
+
+    practices = []
+    if farmer_reg.standard_practices:
+        practices.append('Standard GAP practices declared')
+
+    plot = {
+        'farmer_id': farmer_reg.farmer_id,
+        'coffee_variety': getattr(farmer_reg, 'coffee_variety', '') or '',
+        'number_of_trees': getattr(farmer_reg, 'number_of_trees', None),
+        'planted_date': farmer_reg.planted_date.isoformat() if getattr(farmer_reg, 'planted_date', None) else None,
+        'fertilizers': getattr(farmer_reg, 'fertilizers', '') or '',
+        'pesticide': getattr(farmer_reg, 'pesticide', '') or '',
+        'standard_practices': bool(getattr(farmer_reg, 'standard_practices', False)),
+        'source_of_seedlings': getattr(farmer_reg, 'source_of_seedlings', '') or '',
+        'location': ', '.join(
+            p for p in [farmer_reg.village, farmer_reg.parish, farmer_reg.district] if p
+        ),
+        'gps_coordinates': farmer_reg.gps_coordinates or '',
+    }
+
+    inputs_summary = []
+    if plot['fertilizers']:
+        inputs_summary.append({
+            'date': None,
+            'input': plot['fertilizers'],
+            'type': 'fertilizer',
+            'quantity': None,
+            'unit': '',
+        })
+    if plot['pesticide']:
+        inputs_summary.append({
+            'date': None,
+            'input': plot['pesticide'],
+            'type': 'pesticide',
+            'quantity': None,
+            'unit': '',
+        })
+
+    practices_summary = []
+    if practices or plot['coffee_variety']:
+        practices_summary.append({
+            'date': plot['planted_date'],
+            'practices': practices,
+            'title': f"Farmer plot — {plot['coffee_variety'] or 'coffee'}",
+        })
+
+    return {
+        'source': 'farmer_registration',
+        'block_id': None,
+        'farmer_id': farmer_reg.farmer_id,
+        'plot': plot,
+        'block_activities': [],
+        'surveillance_reports': [],
+        'inputs_summary': inputs_summary,
+        'practices_summary': practices_summary,
+    }
+
+
 def _field_history_for_block(block_id, before_date=None):
     """Block-level practices, inputs, and surveillance for trace reports."""
     try:
@@ -243,6 +307,61 @@ def _field_history_for_block(block_id, before_date=None):
             }
             for a in activities.filter(log_type='practice').order_by('-activity_date')[:20]
         ],
+    }
+
+
+def _serialize_block_record(block):
+    """Production Block model → dict for scan/profile payloads."""
+    return {
+        'block_id': block.block_id,
+        'no_of_trees': block.no_of_trees,
+        'date_planted': block.date_planted.isoformat() if block.date_planted else None,
+        'type_of_coffee': block.type_of_coffee,
+        'source_of_seedling': block.source_of_seedling,
+        'type_of_seedling': block.type_of_seedling,
+        'age_of_seedling': block.age_of_seedling,
+        'fertilizers': block.fertilizers,
+        'fertilizer_names': block.fertilizer_names,
+        'use_pesticides': block.use_pesticides,
+        'pesticides_list': block.pesticides_list,
+        'standard_practices': block.standard_practices,
+        'created_at': block.created_at.isoformat() if block.created_at else None,
+        'updated_at': block.updated_at.isoformat() if block.updated_at else None,
+    }
+
+
+def trace_block(block_id):
+    """
+    Full block profile for BLOCK:{id} QR scans — trees, inputs, practices, activities.
+    """
+    if not block_id:
+        return None
+
+    try:
+        from production.models import Block, Harvests
+    except ImportError:
+        return None
+
+    block = Block.objects.filter(block_id=block_id).first()
+    if not block:
+        return None
+
+    field_history = _field_history_for_block(block_id)
+    harvests = list(
+        Harvests.objects.filter(block_id=block_id)
+        .order_by('-date_of_delivery')
+        .values('harvest_id', 'worker_name', 'weight_on_delivery', 'date_of_delivery')[:30]
+    )
+
+    return {
+        'scan_type': 'block',
+        'block_id': block_id,
+        'qr_code': f'BLOCK:{block_id}',
+        'block': _serialize_block_record(block),
+        'field_history': field_history,
+        'harvests': harvests,
+        'activity_count': len(field_history.get('block_activities') or []),
+        'surveillance_count': len(field_history.get('surveillance_reports') or []),
     }
 
 
@@ -391,6 +510,31 @@ def trace_harvest(harvest_id):
 
     block_id = source.get('block_id')
     field_history = _field_history_for_block(block_id, before_date=before_date)
+    has_block_data = bool(
+        (field_history.get('block_activities') or [])
+        or (field_history.get('surveillance_reports') or [])
+        or (field_history.get('inputs_summary') or [])
+    )
+    if not has_block_data:
+        farmer_reg = source.get('farmer_registration')
+        if farmer_reg is None and source.get('farmer_id'):
+            farmer_reg = FarmerRegistration.objects.filter(
+                farmer_id=source['farmer_id']
+            ).first()
+        if farmer_reg is None and source.get('farmer_name'):
+            parts = (source['farmer_name'] or '').strip().split(' ', 1)
+            if len(parts) == 2:
+                farmer_reg = FarmerRegistration.objects.filter(
+                    first_name=parts[0], last_name=parts[1]
+                ).first()
+        farmer_history = _farmer_registration_field_history(farmer_reg)
+        if farmer_history:
+            field_history = farmer_history
+
+    source_out = {k: v for k, v in source.items() if k != 'farmer_registration'}
+    farmer_reg = source.get('farmer_registration')
+    if farmer_reg is not None:
+        source_out['farmer_id'] = getattr(farmer_reg, 'farmer_id', None)
 
     return {
         'harvest_id': harvest_id,
@@ -412,17 +556,21 @@ def trace_harvest(harvest_id):
         'bagging_date': bagging_date,
         'loss_summary': loss_summary,
         'lineage': lineage,
-        'source': source,
+        'source': source_out,
         'ripeness_score': _float(ripeness.ripeness_score) if ripeness else None,
     }
 
 
 def trace_by_code(code):
-    """Resolve LOT: or BAG: or raw lot_id / harvest_id codes."""
+    """Resolve BLOCK:, LOT:, BAG:, or raw lot_id / harvest_id codes."""
     if not code:
         return None
 
     normalized = code.strip()
+    if normalized.upper().startswith('BLOCK:'):
+        block_id = normalized.split(':', 1)[1].strip()
+        return trace_block(block_id)
+
     if normalized.upper().startswith('LOT:'):
         lot_id = normalized.split(':', 1)[1].strip()
         drying = Drying.objects.filter(lot_id=lot_id).order_by('-date').first()

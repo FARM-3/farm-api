@@ -89,11 +89,19 @@ class WageViewSet(viewsets.ModelViewSet):
     permission_classes = [AllowAny]
 
     def get_queryset(self):
+        from django.db.models import Q
         qs = super().get_queryset()
         qs = apply_date_range(qs, self.request, 'date_of_payment')
         staff_id = self.request.query_params.get('staff_id')
         if staff_id:
             qs = qs.filter(staff__staff_id=staff_id)
+        search = self.request.query_params.get('search')
+        if search:
+            qs = qs.filter(
+                Q(staff__first_name__icontains=search)
+                | Q(staff__last_name__icontains=search)
+                | Q(staff__staff_id__icontains=search)
+            )
         return qs
 
     @action(detail=False, methods=['get'], url_path='import-template')
@@ -133,11 +141,19 @@ class SaleViewSet(viewsets.ModelViewSet):
     permission_classes = [AllowAny]
 
     def get_queryset(self):
+        from django.db.models import Q
         qs = super().get_queryset()
         qs = apply_date_range(qs, self.request, 'date_of_payment')
         qs = apply_exact(qs, self.request, 'item')
         qs = apply_exact(qs, self.request, 'method_of_payment')
         qs = apply_exact(qs, self.request, 'status')
+        search = self.request.query_params.get('search')
+        if search:
+            qs = qs.filter(
+                Q(first_name__icontains=search)
+                | Q(last_name__icontains=search)
+                | Q(item__icontains=search)
+            )
         return qs
 
 class ExpenseViewSet(viewsets.ModelViewSet):
