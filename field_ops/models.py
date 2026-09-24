@@ -3,7 +3,15 @@ from django.db import models
 
 
 class BlockActivityLog(models.Model):
-    """EzyAgric-style crop production log — practices & inputs per block."""
+    """Field activity log — practices & inputs on blocks or anywhere on the farm."""
+
+    ACTIVITY_SCOPE = [
+        ('block', 'Specific block'),
+        ('farm', 'Whole farm / general'),
+        ('nursery', 'Nursery'),
+        ('processing', 'Processing area'),
+        ('other', 'Other location'),
+    ]
 
     LOG_TYPES = [
         ('practice', 'Farm Practice'),
@@ -20,7 +28,9 @@ class BlockActivityLog(models.Model):
     ]
 
     log_id = models.CharField(max_length=30, unique=True)
-    block_id = models.CharField(max_length=50, db_index=True)
+    activity_scope = models.CharField(max_length=20, choices=ACTIVITY_SCOPE, default='block')
+    location_label = models.CharField(max_length=200, blank=True, help_text='e.g. Main nursery, Fuel store')
+    block_id = models.CharField(max_length=50, blank=True, default='', db_index=True)
     log_type = models.CharField(max_length=20, choices=LOG_TYPES, default='practice')
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True)

@@ -36,10 +36,25 @@ class BlockActivityLogViewSet(viewsets.ModelViewSet):
         block_id = self.request.query_params.get('block_id')
         if block_id:
             qs = qs.filter(block_id=block_id)
+        activity_scope = self.request.query_params.get('activity_scope')
+        if activity_scope:
+            qs = qs.filter(activity_scope=activity_scope)
+        location = self.request.query_params.get('location_label')
+        if location:
+            qs = qs.filter(location_label__icontains=location)
         harvest_id = self.request.query_params.get('harvest_id')
         if harvest_id:
             qs = qs.filter(harvest_id=harvest_id)
-        return qs
+        log_type = self.request.query_params.get('log_type')
+        if log_type:
+            qs = qs.filter(log_type=log_type)
+        date_from = self.request.query_params.get('date_from')
+        if date_from:
+            qs = qs.filter(activity_date__gte=date_from)
+        date_to = self.request.query_params.get('date_to')
+        if date_to:
+            qs = qs.filter(activity_date__lte=date_to)
+        return qs.order_by('-activity_date', '-created_at')
 
     def get_serializer_context(self):
         ctx = super().get_serializer_context()
@@ -88,7 +103,19 @@ class SurveillanceReportViewSet(viewsets.ModelViewSet):
         block_id = self.request.query_params.get('block_id')
         if block_id:
             qs = qs.filter(block_id=block_id)
-        return qs
+        severity = self.request.query_params.get('severity')
+        if severity:
+            qs = qs.filter(severity=severity)
+        issue_type = self.request.query_params.get('issue_type')
+        if issue_type:
+            qs = qs.filter(issue_type=issue_type)
+        date_from = self.request.query_params.get('date_from')
+        if date_from:
+            qs = qs.filter(created_at__date__gte=date_from)
+        date_to = self.request.query_params.get('date_to')
+        if date_to:
+            qs = qs.filter(created_at__date__lte=date_to)
+        return qs.order_by('-created_at')
 
     def get_serializer_context(self):
         ctx = super().get_serializer_context()

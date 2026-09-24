@@ -136,6 +136,20 @@ class BaggingViewSet(viewsets.ModelViewSet):
     ordering_fields = ['date', 'weight', 'moisture_content', 'no_of_bags', 'created_at']
     ordering = ['-date']
 
+    @action(detail=True, methods=['get'], url_path='qr-image')
+    def qr_image(self, request, pk=None):
+        """PNG QR code for lot scan payload."""
+        import qrcode
+        from io import BytesIO
+        from django.http import HttpResponse
+
+        bag = self.get_object()
+        payload = bag.qr_code or f'LOT:{bag.lot_id}'
+        img = qrcode.make(payload)
+        buf = BytesIO()
+        img.save(buf, format='PNG')
+        return HttpResponse(buf.getvalue(), content_type='image/png')
+
     @action(detail=False, methods=['get'])
     def summary(self, request):
         """
@@ -335,5 +349,10 @@ class BatchViewSet(viewsets.ModelViewSet):
 
     # Default ordering (most recent first)
     ordering = ['-created_at']
+
+    def get_queryset(self):
+        from api.query_filters import apply_date_range
+        qs = super().get_queryset()
+        return apply_date_range(qs, self.request, 'created_at__date')
 
 

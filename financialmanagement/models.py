@@ -379,6 +379,56 @@ class Balancesheet(models.Model):
         return f"{self.account_name} ({self.get_account_type_display()}): ${self.balance}"
 
 
+class Supplier(models.Model):
+    """Vendors for farm inputs, equipment, and services (distinct from coffee farmers/outgrowers)."""
+
+    CATEGORY_CHOICES = [
+        ('inputs', 'Farm Inputs'),
+        ('equipment', 'Equipment & Machinery'),
+        ('services', 'Services'),
+        ('transport', 'Transport'),
+        ('other', 'Other'),
+    ]
+
+    supplier_id = models.CharField(max_length=20, unique=True, primary_key=True, editable=False)
+    name = models.CharField(max_length=200)
+    category = models.CharField(max_length=30, choices=CATEGORY_CHOICES, default='inputs')
+    contact_person = models.CharField(max_length=100, blank=True)
+    phone = models.CharField(max_length=20, blank=True)
+    email = models.EmailField(blank=True)
+    address = models.CharField(max_length=255, blank=True)
+    district = models.CharField(max_length=100, blank=True)
+    notes = models.TextField(blank=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['name']
+        verbose_name = 'Supplier'
+        verbose_name_plural = 'Suppliers'
+
+    def __str__(self):
+        return f'{self.name} ({self.supplier_id})'
+
+    def save(self, *args, **kwargs):
+        if not self.supplier_id:
+            self.supplier_id = self.generate_supplier_id()
+        super().save(*args, **kwargs)
+
+    @classmethod
+    def generate_supplier_id(cls):
+        with transaction.atomic():
+            latest = cls.objects.select_for_update().order_by('-supplier_id').first()
+            num = 1
+            if latest and latest.supplier_id.startswith('SUP'):
+                try:
+                    num = int(latest.supplier_id[3:]) + 1
+                except ValueError:
+                    num = cls.objects.count() + 1
+            return f'SUP{num:03d}'
+
+
 class Setprice(models.Model):
     production_kgPrice = models.CharField(max_length=10)
     farmer_kgPrice = models.CharField(max_length=10)

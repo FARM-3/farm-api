@@ -1,11 +1,18 @@
 from rest_framework import serializers
-from .models import LookupOption, ConfigCategory, CoffeeType, CoffeeSubType, FarmAsset, FarmDocument, TrainingRecord
+from .models import (
+    LookupOption, ConfigCategory, CoffeeType, CoffeeSubType,
+    FertilizerType, FertilizerSubType,
+    FarmAsset, FarmDocument, TrainingRecord,
+)
 
 
 class LookupOptionSerializer(serializers.ModelSerializer):
     class Meta:
         model = LookupOption
-        fields = ['id', 'category', 'value', 'label', 'sort_order', 'is_active']
+        fields = [
+            'id', 'category', 'value', 'label', 'sort_order', 'is_active',
+            'default_rate', 'unit_label',
+        ]
 
 
 class CoffeeSubTypeSerializer(serializers.ModelSerializer):
@@ -22,6 +29,50 @@ class CoffeeTypeSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'description', 'is_active', 'sort_order', 'sub_types', 'created_at']
 
 
+class FertilizerSubTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FertilizerSubType
+        fields = ['id', 'name', 'sort_order', 'is_active']
+
+
+class FertilizerTypeSerializer(serializers.ModelSerializer):
+    sub_types = FertilizerSubTypeSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = FertilizerType
+        fields = ['id', 'name', 'description', 'is_active', 'sort_order', 'sub_types', 'created_at']
+
+
+class FertilizerTypeWriteSerializer(serializers.ModelSerializer):
+    sub_types = FertilizerSubTypeSerializer(many=True, required=False)
+
+    class Meta:
+        model = FertilizerType
+        fields = ['id', 'name', 'description', 'is_active', 'sort_order', 'sub_types']
+
+    def create(self, validated_data):
+        sub_types_data = validated_data.pop('sub_types', [])
+        fertilizer_type = FertilizerType.objects.create(**validated_data)
+        for idx, st in enumerate(sub_types_data):
+            st = dict(st)
+            st.setdefault('sort_order', idx)
+            FertilizerSubType.objects.create(fertilizer_type=fertilizer_type, **st)
+        return fertilizer_type
+
+    def update(self, instance, validated_data):
+        sub_types_data = validated_data.pop('sub_types', None)
+        for attr, val in validated_data.items():
+            setattr(instance, attr, val)
+        instance.save()
+        if sub_types_data is not None:
+            instance.sub_types.all().delete()
+            for idx, st in enumerate(sub_types_data):
+                st = dict(st)
+                st.setdefault('sort_order', idx)
+                FertilizerSubType.objects.create(fertilizer_type=instance, **st)
+        return instance
+
+
 class CoffeeTypeWriteSerializer(serializers.ModelSerializer):
     sub_types = CoffeeSubTypeSerializer(many=True, required=False)
 
@@ -33,7 +84,9 @@ class CoffeeTypeWriteSerializer(serializers.ModelSerializer):
         sub_types_data = validated_data.pop('sub_types', [])
         coffee_type = CoffeeType.objects.create(**validated_data)
         for idx, st in enumerate(sub_types_data):
-            CoffeeSubType.objects.create(coffee_type=coffee_type, sort_order=idx, **st)
+            st = dict(st)
+            st.setdefault('sort_order', idx)
+            CoffeeSubType.objects.create(coffee_type=coffee_type, **st)
         return coffee_type
 
     def update(self, instance, validated_data):
@@ -44,7 +97,9 @@ class CoffeeTypeWriteSerializer(serializers.ModelSerializer):
         if sub_types_data is not None:
             instance.sub_types.all().delete()
             for idx, st in enumerate(sub_types_data):
-                CoffeeSubType.objects.create(coffee_type=instance, sort_order=idx, **st)
+                st = dict(st)
+                st.setdefault('sort_order', idx)
+                CoffeeSubType.objects.create(coffee_type=instance, **st)
         return instance
 
 

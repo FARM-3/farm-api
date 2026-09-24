@@ -5,6 +5,9 @@ class ConfigCategory(models.TextChoices):
     COFFEE_TYPE = 'coffee_type', 'Coffee Type'
     COFFEE_VARIETY = 'coffee_variety', 'Coffee Variety'
     FERTILIZER = 'fertilizer', 'Fertilizer'
+    FERTILIZER_ORGANIC = 'fertilizer_organic', 'Organic Fertilizer Products'
+    FERTILIZER_INORGANIC = 'fertilizer_inorganic', 'Inorganic Fertilizer Products'
+    EXPENSE_CATEGORY = 'expense_category', 'Expense Category'
     PESTICIDE = 'pesticide', 'Pesticide'
     STANDARD_PRACTICE = 'standard_practice', 'Standard Practice'
     SEEDLING_TYPE = 'seedling_type', 'Seedling Type'
@@ -21,6 +24,14 @@ class LookupOption(models.Model):
     label = models.CharField(max_length=120, blank=True)
     sort_order = models.PositiveIntegerField(default=0)
     is_active = models.BooleanField(default=True)
+    default_rate = models.DecimalField(
+        max_digits=14, decimal_places=2, null=True, blank=True,
+        help_text='Default unit price (UGX) — used for sale items',
+    )
+    unit_label = models.CharField(
+        max_length=20, blank=True, default='kg',
+        help_text='Unit of measure label (kg, unit, etc.)',
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -52,6 +63,38 @@ class CoffeeType(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class FertilizerType(models.Model):
+    """Parent fertilizer type — Organic, Inorganic, Mixed, etc."""
+
+    name = models.CharField(max_length=100, unique=True)
+    description = models.CharField(max_length=255, blank=True)
+    is_active = models.BooleanField(default=True)
+    sort_order = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['sort_order', 'name']
+
+    def __str__(self):
+        return self.name
+
+
+class FertilizerSubType(models.Model):
+    """Product under a fertilizer type (e.g. NPK under Inorganic)."""
+
+    fertilizer_type = models.ForeignKey(FertilizerType, on_delete=models.CASCADE, related_name='sub_types')
+    name = models.CharField(max_length=120)
+    sort_order = models.PositiveIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ['sort_order', 'name']
+        unique_together = [('fertilizer_type', 'name')]
+
+    def __str__(self):
+        return f'{self.fertilizer_type.name} / {self.name}'
 
 
 class CoffeeSubType(models.Model):

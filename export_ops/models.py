@@ -35,6 +35,7 @@ class InventoryLot(models.Model):
     warehouse = models.ForeignKey(Warehouse, on_delete=models.SET_NULL, null=True, blank=True, related_name='lots')
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='in_stock')
     source_harvest_id = models.CharField(max_length=100, blank=True)
+    qr_code = models.CharField(max_length=255, blank=True, help_text='Scan payload e.g. LOT:W38')
     notes = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -56,6 +57,13 @@ class DispatchNote(models.Model):
 
     dispatch_id = models.CharField(max_length=30, unique=True)
     lot = models.ForeignKey(InventoryLot, on_delete=models.PROTECT, related_name='dispatches')
+    sale = models.ForeignKey(
+        'financialmanagement.Sale',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='dispatches',
+    )
     buyer_name = models.CharField(max_length=200)
     buyer_contact = models.CharField(max_length=100, blank=True)
     quantity_kg = models.DecimalField(max_digits=12, decimal_places=2)
@@ -67,6 +75,7 @@ class DispatchNote(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL)
     notes = models.TextField(blank=True)
+    proof_notes = models.TextField(blank=True, help_text='Gate proof — signature ref, photo note, etc.')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -75,6 +84,37 @@ class DispatchNote(models.Model):
 
     def __str__(self):
         return f'{self.dispatch_id} → {self.buyer_name}'
+
+
+class ExportComplianceDocument(models.Model):
+    """Supporting documents for export due-diligence (prototype EUDR pack)."""
+
+    DOC_TYPES = [
+        ('land_title', 'Land title / tenure'),
+        ('permit', 'Permit / licence'),
+        ('photo_plot', 'Plot / geolocation photo'),
+        ('contract', 'Purchase contract'),
+        ('other', 'Other'),
+    ]
+
+    harvest_id = models.CharField(max_length=100, db_index=True)
+    document_type = models.CharField(max_length=30, choices=DOC_TYPES, default='other')
+    title = models.CharField(max_length=200)
+    file = models.FileField(upload_to='export_compliance/%Y/', blank=True, null=True)
+    notes = models.TextField(blank=True)
+    uploaded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+    )
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-uploaded_at']
+
+    def __str__(self):
+        return f'{self.harvest_id} — {self.title}'
 
 
 class ExportTraceRecord(models.Model):

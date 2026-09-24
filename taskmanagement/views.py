@@ -141,6 +141,23 @@ class TaskViewSet(viewsets.ModelViewSet):
             return TaskCreateUpdateSerializer
         return TaskSerializer
 
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        task_ids = list(queryset.values_list('id', flat=True))
+        status_map = {}
+        for sub in TaskSubmission.objects.filter(
+            assigned_task_id__in=task_ids
+        ).order_by('assigned_task_id', '-updated_at', '-created_at'):
+            if sub.assigned_task_id not in status_map:
+                status_map[sub.assigned_task_id] = sub.status
+        page = self.paginate_queryset(queryset)
+        ctx = {**self.get_serializer_context(), 'submission_status_map': status_map}
+        if page is not None:
+            serializer = TaskListSerializer(page, many=True, context=ctx)
+            return self.get_paginated_response(serializer.data)
+        serializer = TaskListSerializer(queryset, many=True, context=ctx)
+        return Response(serializer.data)
+
     def perform_create(self, serializer):
         serializer.save(created_by=self.request.user)
 
@@ -266,7 +283,7 @@ class TaskSubmissionViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         # Superadmins and managers can see all submissions
         # Regular users only see their own submissions
-        if self.request.user.role in ['superadmin', 'manager']:
+        if self.request.user.role in ['superadmin', 'manager', 'admin']:
             queryset = TaskSubmission.objects.all()
         else:
             queryset = TaskSubmission.objects.filter(user=self.request.user)
@@ -310,7 +327,7 @@ class TaskSubmissionViewSet(viewsets.ModelViewSet):
                 submission = TaskSubmission.objects.filter(
                     assigned_task_id=task.id,
                     user=request.user
-                ).first()
+                ).order_by('-updated_at', '-created_at').first()
                 task_data['has_submission'] = submission is not None
                 task_data['submission_status'] = submission.status if submission else 'assigned'
             except Exception:

@@ -47,8 +47,8 @@ class TaskSerializer(serializers.ModelSerializer):
     """Main serializer for Task with all fields"""
     created_by = UserSerializer(read_only=True)
     season_name = serializers.CharField(source='season.name', read_only=True)
-    block_name = serializers.CharField(source='block.name', read_only=True, allow_null=True)
-    block_id = serializers.IntegerField(source='block.block_id', read_only=True, allow_null=True)
+    block_name = serializers.CharField(source='block.block_id', read_only=True, allow_null=True)
+    block_id = serializers.CharField(source='block.block_id', read_only=True, allow_null=True)
     comments = TaskCommentSerializer(many=True, read_only=True)
     is_overdue = serializers.BooleanField(read_only=True)
     days_until_due = serializers.IntegerField(read_only=True)
@@ -79,9 +79,10 @@ class TaskCreateUpdateSerializer(serializers.ModelSerializer):
 
 class TaskListSerializer(serializers.ModelSerializer):
     """Lightweight serializer for task lists"""
-    block_name = serializers.CharField(source='block.name', read_only=True, allow_null=True)
-    block_id = serializers.IntegerField(source='block.block_id', read_only=True, allow_null=True)
+    block_name = serializers.CharField(source='block.block_id', read_only=True, allow_null=True)
+    block_id = serializers.CharField(source='block.block_id', read_only=True, allow_null=True)
     is_overdue = serializers.BooleanField(read_only=True)
+    submission_status = serializers.SerializerMethodField()
 
     class Meta:
         model = Task
@@ -89,8 +90,17 @@ class TaskListSerializer(serializers.ModelSerializer):
             'id', 'title', 'priority', 'assigned_to',
             'date', 'time', 'completed', 'is_overdue',
             'block', 'block_name', 'block_id', 'activity',
-            'created_at'
+            'submission_status', 'created_at'
         ]
+
+    def get_submission_status(self, obj):
+        cache = self.context.get('submission_status_map')
+        if cache is not None:
+            return cache.get(obj.id, 'assigned')
+        sub = TaskSubmission.objects.filter(
+            assigned_task_id=obj.id
+        ).order_by('-updated_at', '-created_at').first()
+        return sub.status if sub else 'assigned'
 
 
 class TaskSubmissionSerializer(serializers.ModelSerializer):
@@ -121,11 +131,25 @@ class TaskSubmissionSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['user', 'created_at', 'updated_at']
 
+    def _sync_task_completed(self, submission):
+        if submission.status == 'completed' and submission.assigned_task_id:
+            from django.utils import timezone
+            Task.objects.filter(id=submission.assigned_task_id).update(
+                completed=True, completed_at=timezone.now()
+            )
+
     def create(self, validated_data):
-        # Handle photo uploads
         uploaded_photos = validated_data.pop('uploaded_photos', [])
-        
-        # Create the submission
+        user = self.context['request'].user
+        assigned_id = validated_data.get('assigned_task_id')
+
+        if assigned_id:
+            existing = TaskSubmission.objects.filter(
+                assigned_task_id=assigned_id, user=user
+            ).order_by('-updated_at').first()
+            if existing:
+                return self.update(existing, {**validated_data, 'uploaded_photos': uploaded_photos})
+
         submission = TaskSubmission.objects.create(**validated_data)
         
         # Save photos and store URLs
@@ -142,7 +166,8 @@ class TaskSubmissionSerializer(serializers.ModelSerializer):
         if photo_urls:
             submission.photos = photo_urls
             submission.save()
-        
+
+        self._sync_task_completed(submission)
         return submission
 
     def update(self, instance, validated_data):
@@ -167,4 +192,5 @@ class TaskSubmissionSerializer(serializers.ModelSerializer):
             instance.photos = instance.photos + new_photo_urls
         
         instance.save()
+        self._sync_task_completed(instance)
         return instance

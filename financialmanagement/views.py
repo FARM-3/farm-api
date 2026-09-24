@@ -4,9 +4,9 @@ from rest_framework.decorators import action
 from .models import Balancesheet, Wage
 from .serializers import (
     WageSerializer, SaleSerializer, ExpenseSerializer, BalancesheetSerializer,
-    StaffSerializer, SetpriceSerializer, CustomerSerializer,
+    StaffSerializer, SetpriceSerializer, CustomerSerializer, SupplierSerializer,
 )
-from .models import Sale, Expense, Staff, Customer
+from .models import Sale, Expense, Staff, Customer, Supplier
 from .bulk_import import download_template, parse_csv_upload, import_staff_rows, import_wage_rows
 from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
@@ -14,12 +14,27 @@ from rest_framework.response import Response
 from django.db.models import Sum
 from datetime import datetime
 from users.permissions import IsSuperAdmin
+from api.query_filters import apply_date_range, apply_exact, apply_icontains
 
 # Create your views here.
 class StaffViewSet(viewsets.ModelViewSet):
     queryset = Staff.objects.all()
     serializer_class = StaffSerializer
     permission_classes = [AllowAny]
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        qs = apply_exact(qs, self.request, 'employment_type')
+        qs = apply_exact(qs, self.request, 'district')
+        is_active = self.request.query_params.get('is_active')
+        if is_active in ('true', 'false', '1', '0'):
+            qs = qs.filter(is_active=is_active in ('true', '1'))
+        search = self.request.query_params.get('search')
+        if search:
+            qs = qs.filter(
+                first_name__icontains=search
+            ) | qs.filter(last_name__icontains=search)
+        return qs.order_by('first_name', 'last_name')
 
     @action(detail=False, methods=['get'], url_path='import-template')
     def import_template(self, request):
@@ -33,6 +48,27 @@ class StaffViewSet(viewsets.ModelViewSet):
         rows = parse_csv_upload(file)
         created, errors = import_staff_rows(rows)
         return Response({'created': created, 'errors': errors})
+
+
+class SupplierViewSet(viewsets.ModelViewSet):
+    queryset = Supplier.objects.filter(is_active=True)
+    serializer_class = SupplierSerializer
+    permission_classes = [AllowAny]
+
+    def get_queryset(self):
+        qs = Supplier.objects.all()
+        category = self.request.query_params.get('category')
+        if category:
+            qs = qs.filter(category=category)
+        search = self.request.query_params.get('search')
+        if search:
+            qs = qs.filter(name__icontains=search)
+        active = self.request.query_params.get('is_active')
+        if active in ('true', 'false', '1', '0'):
+            qs = qs.filter(is_active=active in ('true', '1'))
+        elif self.action == 'list' and not self.request.query_params.get('include_inactive'):
+            qs = qs.filter(is_active=True)
+        return qs.order_by('name')
 
 
 class CustomerViewSet(viewsets.ModelViewSet):
@@ -51,6 +87,14 @@ class WageViewSet(viewsets.ModelViewSet):
     queryset = Wage.objects.all().select_related('staff').order_by('-date_of_payment')
     serializer_class = WageSerializer
     permission_classes = [AllowAny]
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        qs = apply_date_range(qs, self.request, 'date_of_payment')
+        staff_id = self.request.query_params.get('staff_id')
+        if staff_id:
+            qs = qs.filter(staff__staff_id=staff_id)
+        return qs
 
     @action(detail=False, methods=['get'], url_path='import-template')
     def import_template(self, request):
@@ -88,10 +132,25 @@ class SaleViewSet(viewsets.ModelViewSet):
     serializer_class = SaleSerializer
     permission_classes = [AllowAny]
 
+    def get_queryset(self):
+        qs = super().get_queryset()
+        qs = apply_date_range(qs, self.request, 'date_of_payment')
+        qs = apply_exact(qs, self.request, 'item')
+        qs = apply_exact(qs, self.request, 'method_of_payment')
+        qs = apply_exact(qs, self.request, 'status')
+        return qs
+
 class ExpenseViewSet(viewsets.ModelViewSet):
     queryset = Expense.objects.all()
     serializer_class = ExpenseSerializer
     permission_classes = [AllowAny]
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        qs = apply_date_range(qs, self.request, 'date')
+        qs = apply_exact(qs, self.request, 'category')
+        qs = apply_icontains(qs, self.request, 'supplier')
+        return qs.order_by('-date')
 
 class BalanceSheetViewSet(viewsets.ModelViewSet):
     queryset = Balancesheet.objects.all()

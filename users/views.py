@@ -101,6 +101,25 @@ def login_view(request):
             {"error": "Account is disabled"},
             status=status.HTTP_403_FORBIDDEN
         )
+
+    platform = request.data.get('platform', 'web')
+    mobile_only_roles = {'block_champion'}
+    if platform == 'web' and user.role in mobile_only_roles:
+        LoginAudit.objects.create(
+            user=user, phone=phone, success=False,
+            ip_address=_client_ip(request),
+            user_agent=request.META.get('HTTP_USER_AGENT', '')[:255],
+        )
+        return Response(
+            {
+                "error": "mobile_only",
+                "message": (
+                    "Block Champion accounts are registered for mobile access only. "
+                    "Please use the FMIS mobile app to log in with these credentials."
+                ),
+            },
+            status=status.HTTP_403_FORBIDDEN,
+        )
     
     # Step 4: Generate JWT tokens
     # Access token: short-lived, used for API requests

@@ -4,12 +4,17 @@ from django.http import FileResponse, Http404
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from .models import LookupOption, ConfigCategory, CoffeeType, FarmAsset, FarmDocument, TrainingRecord
+from .models import (
+    LookupOption, ConfigCategory, CoffeeType, FertilizerType,
+    FarmAsset, FarmDocument, TrainingRecord,
+)
 from .serializers import (
     LookupOptionSerializer, LookupOptionBulkSerializer,
-    CoffeeTypeSerializer, CoffeeTypeWriteSerializer, FarmAssetSerializer,
-    FarmDocumentSerializer, TrainingRecordSerializer,
+    CoffeeTypeSerializer, CoffeeTypeWriteSerializer,
+    FertilizerTypeSerializer, FertilizerTypeWriteSerializer,
+    FarmAssetSerializer, FarmDocumentSerializer, TrainingRecordSerializer,
 )
+from .services import sync_fertilizer_lookups_from_types
 
 
 class LookupOptionViewSet(viewsets.ModelViewSet):
@@ -32,7 +37,24 @@ class LookupOptionViewSet(viewsets.ModelViewSet):
         options = LookupOption.objects.filter(is_active=True).order_by('category', 'sort_order', 'value')
         grouped = {choice.value: [] for choice in ConfigCategory}
         for opt in options:
-            grouped.setdefault(opt.category, []).append(opt.display_label)
+            if opt.category == ConfigCategory.SALE_ITEM:
+                grouped.setdefault(opt.category, []).append({
+                    'name': opt.display_label,
+                    'default_rate': str(opt.default_rate) if opt.default_rate is not None else '',
+                    'unit_label': opt.unit_label or 'kg',
+                })
+            else:
+                grouped.setdefault(opt.category, []).append(opt.display_label)
+
+        fert_types = FertilizerType.objects.filter(is_active=True).prefetch_related('sub_types').order_by('sort_order', 'name')
+        grouped['fertilizer_types'] = FertilizerTypeSerializer(fert_types, many=True).data
+        for ft in fert_types:
+            key = ft.name.lower()
+            if key in ('organic', 'inorganic', 'mixed'):
+                grouped[f'fertilizer_{key}'] = [
+                    st.name for st in ft.sub_types.filter(is_active=True).order_by('sort_order', 'name')
+                ]
+
         return Response(grouped)
 
     @action(detail=False, methods=['post'], url_path='bulk-replace')
@@ -71,6 +93,33 @@ class CoffeeTypeViewSet(viewsets.ModelViewSet):
         if self.action in ('create', 'update', 'partial_update'):
             return CoffeeTypeWriteSerializer
         return CoffeeTypeSerializer
+
+
+class FertilizerTypeViewSet(viewsets.ModelViewSet):
+    queryset = FertilizerType.objects.prefetch_related('sub_types').all()
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        if self.action in ('list', 'retrieve') and self.request.query_params.get('active_only') == '1':
+            qs = qs.filter(is_active=True)
+        return qs.order_by('sort_order', 'name')
+
+    def get_serializer_class(self):
+        if self.action in ('create', 'update', 'partial_update'):
+            return FertilizerTypeWriteSerializer
+        return FertilizerTypeSerializer
+
+    def perform_create(self, serializer):
+        serializer.save()
+        sync_fertilizer_lookups_from_types()
+
+    def perform_update(self, serializer):
+        serializer.save()
+        sync_fertilizer_lookups_from_types()
+
+    def perform_destroy(self, instance):
+        instance.delete()
+        sync_fertilizer_lookups_from_types()
 
 
 class FarmAssetViewSet(viewsets.ModelViewSet):

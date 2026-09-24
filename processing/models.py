@@ -677,11 +677,9 @@ class Bagging(models.Model):
         return 0
 
     def save(self, *args, **kwargs):
-        """
-        Simplified save for offline-first approach.
-        Frontend handles all validation and calculations.
-        Backend simply stores the data as-is.
-        """
+        """Auto-generate standard LOT QR payload when not provided."""
+        if not self.qr_code and self.lot_id:
+            self.qr_code = f'LOT:{self.lot_id.strip()}'
         super().save(*args, **kwargs)
 
 

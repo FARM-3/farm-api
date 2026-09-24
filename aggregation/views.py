@@ -59,6 +59,14 @@ class FarmerHarvestViewSet(viewsets.ModelViewSet):
     queryset = FarmerHarvest.objects.all()
     serializer_class = FarmerHarvestSerializer
 
+    def get_queryset(self):
+        from api.query_filters import apply_date_range, apply_exact, apply_icontains
+        qs = super().get_queryset()
+        qs = apply_date_range(qs, self.request, 'date_of_delivery')
+        qs = apply_exact(qs, self.request, 'coffee_type')
+        qs = apply_icontains(qs, self.request, 'location_of_delivery')
+        return qs.order_by('-date_of_delivery')
+
 @api_view(['POST'])
 def reverse_geocode(request):
     """

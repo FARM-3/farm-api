@@ -2,15 +2,25 @@
 
 from django.core.management.base import BaseCommand
 from configuration.models import LookupOption, ConfigCategory
+from configuration.services import apply_sale_item_rates
 
 DEFAULTS = {
     ConfigCategory.COFFEE_TYPE: ['Arabica', 'Robusta', 'Liberica'],
     ConfigCategory.COFFEE_VARIETY: ['Arabica', 'Robusta', 'Liberica'],
-    ConfigCategory.FERTILIZER: ['Organic', 'Inorganic', 'Mixed', 'Compost', 'NPK'],
-    ConfigCategory.PESTICIDE: ['None', 'Copper-based', 'Neem oil', 'Biological control'],
+    ConfigCategory.FERTILIZER: ['Organic', 'Inorganic', 'Mixed'],
+    ConfigCategory.FERTILIZER_ORGANIC: [
+        'Bird Droppings', 'Rabbit Urine', 'Compost', 'Manure', 'Coffee pulp',
+    ],
+    ConfigCategory.FERTILIZER_INORGANIC: [
+        'NPK', 'Urea', 'DAP', 'CAN', 'Single Super Phosphate',
+    ],
+    ConfigCategory.PESTICIDE: [
+        'None', 'Striker', 'Fungicide', 'Copper-based', 'Neem oil', 'Biological control',
+    ],
     ConfigCategory.STANDARD_PRACTICE: [
-        'Inter-cropping', 'Pruning', 'Mulching', 'Stumping',
-        'Agro-forestry', 'Fertilizing', 'Pest control', 'Shade management',
+        'Inter-cropping', 'Pruning', 'Mulching', 'Stumping', 'Agro-forestry',
+        'Fertilizing', 'Pest control', 'Shade management',
+        'Stamping', 'Spot Weeding', 'Desuckering', 'Slashing',
     ],
     ConfigCategory.SEEDLING_TYPE: [
         'KR-01', 'KR-02', 'KR-03', 'KR-04', 'KR-05',
@@ -25,6 +35,18 @@ DEFAULTS = {
     ConfigCategory.SALE_ITEM: [
         'Green Coffee', 'Roasted Coffee', 'Coffee Cherry', 'Parchment', 'Hulled Coffee',
     ],
+    ConfigCategory.EXPENSE_CATEGORY: [
+        'General Supplies', 'Fuel & Transport', 'Labour', 'Equipment', 'Utilities',
+        'Maintenance', 'Chemicals & Inputs', 'Training', 'Aggregation', 'Other',
+    ],
+}
+
+SALE_ITEM_RATES = {
+    'Green Coffee': ('5000', 'kg'),
+    'Roasted Coffee': ('8000', 'kg'),
+    'Coffee Cherry': ('2500', 'kg'),
+    'Parchment': ('4500', 'kg'),
+    'Hulled Coffee': ('5500', 'kg'),
 }
 
 
@@ -34,16 +56,18 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         created = 0
         for category, values in DEFAULTS.items():
-            if LookupOption.objects.filter(category=category).exists():
-                self.stdout.write(f'  skip {category} (already seeded)')
-                continue
             for idx, val in enumerate(values):
-                LookupOption.objects.create(
+                defaults = {'label': val, 'sort_order': idx, 'is_active': True}
+                if category == ConfigCategory.SALE_ITEM and val in SALE_ITEM_RATES:
+                    rate, unit = SALE_ITEM_RATES[val]
+                    defaults['default_rate'] = rate
+                    defaults['unit_label'] = unit
+                _, was_created = LookupOption.objects.update_or_create(
                     category=category,
                     value=val,
-                    label=val,
-                    sort_order=idx,
-                    is_active=True,
+                    defaults=defaults,
                 )
-                created += 1
-        self.stdout.write(self.style.SUCCESS(f'Seeded {created} lookup options'))
+                if was_created:
+                    created += 1
+        apply_sale_item_rates(SALE_ITEM_RATES)
+        self.stdout.write(self.style.SUCCESS(f'Seeded {created} new lookup options; sale rates applied.'))

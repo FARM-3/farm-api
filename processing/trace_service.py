@@ -441,12 +441,25 @@ def trace_by_code(code):
                 result = trace_harvest(prefix)
                 if result:
                     return result
+        try:
+            from export_ops.models import InventoryLot
+            inv = InventoryLot.objects.filter(lot_id=lot_id).first()
+            if inv and inv.source_harvest_id:
+                result = trace_harvest(inv.source_harvest_id)
+                if result:
+                    result['scanned_lot_id'] = lot_id
+                    result['scan_type'] = 'lot'
+                    return result
+        except Exception:
+            pass
+
         bagging = Bagging.objects.filter(lot_id=lot_id).first()
         if bagging:
             return {
                 'lot_id': lot_id,
+                'scan_type': 'lot',
                 'bagging': list(Bagging.objects.filter(lot_id=lot_id).values()),
-                'note': 'Partial trace — link harvest via lot processing_id when drying records exist.',
+                'note': 'Partial trace — add drying/processing records or inventory harvest link for full history.',
             }
         return None
 
